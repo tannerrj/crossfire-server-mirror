@@ -1476,6 +1476,7 @@ void server_main(int argc, char *argv[]) {
         check_active_maps(); /* Removes unused maps after a certain timeout */
         do_specials();       /* Routines called from time to time. */
         update_players();
+        object_free_freelist();
     }
 
     /* This is unreachable. */

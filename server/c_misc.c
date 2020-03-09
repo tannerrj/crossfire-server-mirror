@@ -278,23 +278,8 @@ static void malloc_info(object *op) {
                          "[fixed]Objects:");
 
     draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
-                         "[fixed]%6d used", ob_used);
-
-    if (ob_used != nrofallocobjects - nroffreeobjects) {
-        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
-                             "[fixed]      (used list mismatch: %d)",
-                             nrofallocobjects - nroffreeobjects);
-    }
-
-    draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
-                         "[fixed]%6d free (%.2f%% of %d allocated)",
-                         ob_free, (float)ob_free / nrofallocobjects * 100, nrofallocobjects);
-
-    if (ob_free != nroffreeobjects) {
-        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
-                             "[fixed]      (free list mismatch: %d)",
-                             nroffreeobjects);
-    }
+                         i18n(op, "[fixed]%6d used (%d peak), %d laundry (of %d allocated)"),
+                         ob_used, nrofallocobjects_peak, ob_free, nrofallocobjects);
 
     draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
                          "[fixed]%6d on active list",

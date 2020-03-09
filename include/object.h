@@ -478,7 +478,7 @@ extern object *objects;
 extern object *active_objects;
 
 extern int nrofallocobjects;
-extern int nroffreeobjects;
+extern int nrofallocobjects_peak;
 
 static inline int compare_flags(const object *p, const object *q) {
     return ((p)->flags[0] == (q)->flags[0]) &&
@@ -610,5 +610,7 @@ static inline bool CAN_PROBE(const object *ob) {
 static inline uint32_t NROF(const object * const ob) {
     return ob->nrof ? ob->nrof : 1;
 }
+
+void object_free_freelist(void);
 
 #endif /* OBJECT_H */

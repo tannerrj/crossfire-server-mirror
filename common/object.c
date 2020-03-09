@@ -41,21 +41,12 @@
 
 static int compare_ob_value_lists_one(const object *, const object *);
 static int compare_ob_value_lists(const object *, const object *);
-static void expand_objects(void);
 static void permute(int *, int, int);
 static int object_set_value_s(object *, const char *, const char *, int);
 static void object_increase_nrof(object *op, uint32_t i);
 
-#ifdef MEMORY_DEBUG
-int nroffreeobjects = 0;  /**< Number of free objects. */
 int nrofallocobjects = 0; /**< Number of allocated objects. */
-#undef OBJ_EXPAND
-#define OBJ_EXPAND 1
-#else
-static object objarray[STARTMAX]; /**< All objects, allocated this way at first */
-int nroffreeobjects = STARTMAX;  /**< How many OBs allocated and free (free) */
-int nrofallocobjects = STARTMAX; /**< How many OBs allocated (free + used) */
-#endif
+int nrofallocobjects_peak = 0; //< Peak number of allocated objects
 
 object *objects;           /**< Pointer to the list of used objects */
 static object *free_objects;      /**< Pointer to the list of unused objects */
@@ -94,26 +85,7 @@ void init_objects(void) {
     /* Initialize all objects: */
     objects = NULL;
     active_objects = NULL;
-
-#ifdef MEMORY_DEBUG
     free_objects = NULL;
-#else
-    free_objects = objarray;
-    objarray[0].prev = NULL,
-    objarray[0].next = &objarray[1],
-    SET_FLAG(&objarray[0], FLAG_REMOVED);
-    SET_FLAG(&objarray[0], FLAG_FREED);
-    for (int i = 1; i < STARTMAX-1; i++) {
-        objarray[i].next = &objarray[i+1];
-        objarray[i].prev = &objarray[i-1];
-        SET_FLAG(&objarray[i], FLAG_REMOVED);
-        SET_FLAG(&objarray[i], FLAG_FREED);
-    }
-    objarray[STARTMAX-1].next = NULL;
-    objarray[STARTMAX-1].prev = &objarray[STARTMAX-2];
-    SET_FLAG(&objarray[STARTMAX-1], FLAG_REMOVED);
-    SET_FLAG(&objarray[STARTMAX-1], FLAG_FREED);
-#endif
 }
 
 /**
@@ -519,6 +491,17 @@ object *object_find_by_name_global(const char *str) {
     return op;
 }
 
+void object_free_freelist(void) {
+    object *op, *next;
+    for (op = free_objects; op != NULL; ) {
+        next = op->next;
+        free(op);
+        nrofallocobjects--;
+        op = next;
+    }
+    free_objects = NULL;
+}
+
 /**
  * Destroys all allocated objects.
  *
@@ -529,18 +512,8 @@ object *object_find_by_name_global(const char *str) {
  * this should be the last method called.
  */
 void object_free_all_data(void) {
-#ifdef MEMORY_DEBUG
+    object_free_freelist();
     object *op, *next;
-
-    for (op = free_objects; op != NULL; ) {
-        next = op->next;
-        free(op);
-        nrofallocobjects--;
-        nroffreeobjects--;
-        op = next;
-    }
-    free_objects = NULL;
-
     for (op = objects; op != NULL; ) {
         next = op->next;
         if (!QUERY_FLAG(op, FLAG_FREED)) {
@@ -548,9 +521,8 @@ void object_free_all_data(void) {
         }
         op = next;
     }
-#endif
 
-    LOG(llevDebug, "%d allocated objects, %d free objects, STARMAX=%d\n", nrofallocobjects, nroffreeobjects, STARTMAX);
+    LOG(llevDebug, "%d allocated objects\n", nrofallocobjects);
 }
 
 /**
@@ -963,80 +935,24 @@ void object_copy_with_inv(const object *src_ob, object *dest_ob) {
 }
 
 /**
- * Allocates more objects for the list of unused objects.
- *
- * It is called from object_new() if the unused list is empty.
- *
- * If there is not enough memory, fatal() is called.
- */
-static void expand_objects(void) {
-    int i;
-    object *new;
-
-    new = (object *)CALLOC(OBJ_EXPAND, sizeof(object));
-
-    if (new == NULL)
-        fatal(OUT_OF_MEMORY);
-    free_objects = new;
-    new[0].prev = NULL;
-    new[0].next = &new[1],
-    SET_FLAG(&new[0], FLAG_REMOVED);
-    SET_FLAG(&new[0], FLAG_FREED);
-
-    for (i = 1; i < OBJ_EXPAND-1; i++) {
-        new[i].next = &new[i+1],
-        new[i].prev = &new[i-1],
-        SET_FLAG(&new[i], FLAG_REMOVED);
-        SET_FLAG(&new[i], FLAG_FREED);
-    }
-    new[OBJ_EXPAND-1].prev = &new[OBJ_EXPAND-2],
-    new[OBJ_EXPAND-1].next = NULL,
-    SET_FLAG(&new[OBJ_EXPAND-1], FLAG_REMOVED);
-    SET_FLAG(&new[OBJ_EXPAND-1], FLAG_FREED);
-
-    nrofallocobjects += OBJ_EXPAND;
-    nroffreeobjects += OBJ_EXPAND;
-}
-
-/**
- * Grabs an object from the list of unused objects, makes
- * sure it is initialised, and returns it.
- *
- * If there are no free objects, expand_objects() is called to get more.
+ * Allocate an object, makes sure it is initialised, and returns it.
  *
  * @return
  * cleared and ready to use object*.
  *
  * @note
- * will never fail, as expand_objects() will fatal() if memory allocation error.
+ * will never fail, as will fatal() if memory allocation error.
  */
 object *object_new(void) {
     object *op;
-#ifdef MEMORY_DEBUG
-    /* FIXME: However this doesn't work since object_free() sometimes add
-     * objects back to the free_objects linked list, and some functions mess
-     * with the object after return of object_free(). This is bad and should be
-     * fixed. But it would need fairly extensive changes and a lot of debugging.
-     */
     op = calloc(1, sizeof(object));
-    if (op == NULL)
+    if (op == NULL) {
         fatal(OUT_OF_MEMORY);
-#else
-    if (free_objects == NULL) {
-        expand_objects();
     }
-    op = free_objects;
-    if (!QUERY_FLAG(op, FLAG_FREED)) {
-        LOG(llevError, "Fatal: Getting busy object.\n");
-#ifdef MANY_CORES
-        abort();
-#endif
+    nrofallocobjects++;
+    if (nrofallocobjects > nrofallocobjects_peak) {
+        nrofallocobjects_peak = nrofallocobjects;
     }
-    free_objects = op->next;
-    if (free_objects != NULL)
-        free_objects->prev = NULL;
-    nroffreeobjects--;
-#endif
     op->count = ++ob_count;
     op->name = NULL;
     op->name_pl = NULL;
@@ -1486,17 +1402,14 @@ void object_free(object *ob, int flags) {
         }
     }
 
-#ifdef MEMORY_DEBUG
-    free(ob);
-#else
-    /* Now link it with the free_objects list: */
+    /* Now link it with the free_objects list for reclaimation at end of tick.
+     * This allows the server to briefly use the object after "free" to check
+     * for FLAG_REMOVED */
     ob->prev = NULL;
     ob->next = free_objects;
     if (free_objects != NULL)
         free_objects->prev = ob;
     free_objects = ob;
-    nroffreeobjects++;
-#endif
 }
 
 /**

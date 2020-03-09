@@ -419,19 +419,6 @@
 #define MAP_DEFAULTRESET       7200
 
 /**
- * Defining MEMORY_DEBUG disables Crossfire's object allocator, which allocates
- * OBJ_EXPAND objects at a time and manages its own free list. It is faster at
- * allocating lots of objects, but defeats memory debuggers and mitigation
- * techniques by managing its own allocations and enabling use-after-free bugs.
- *
- * Unfortunately, much of the code does not work without use-after-free because
- * even checking if an object was freed requires looking in the object. Until
- * these issues are fixed, Crossfire needs MEMORY_DEBUG unset in order to run
- * without crashing frequently.
- */
-/*#define MEMORY_DEBUG*/
-
-/**
  * If you want to have a Message Of The Day file, define MOTD to be
  * the file with the message.  If the file doesn't exist or if it
  * is empty, no message will be displayed.
@@ -512,8 +499,6 @@
 #define BANISHFILE      "banish_file"
 
 #define MAX_ERRORS      25      /**< Bail out if more are received during tick. */
-#define STARTMAX        500     /**< How big array of objects to start with. */
-#define OBJ_EXPAND      100     /**< How big steps to use when expanding array. */
 
 #define HIGHSCORE_LENGTH 1000   /**< How many entries there are room for. */
 
