@@ -30,6 +30,52 @@ extern unsigned long todtick;
 weathermap_t **weathermap;
 
 static void dawn_to_dusk(const timeofday_t *tod);
+static void read_pressuremap(void);
+static void init_pressure(void);
+static void read_winddirmap(void);
+static void read_windspeedmap(void);
+static void init_wind(void);
+static void read_gulfstreammap(void);
+static void init_gulfstreammap(void);
+static void read_humidmap(void);
+static void write_elevmap(void);
+static void read_elevmap(void);
+static void write_watermap(void);
+static void read_watermap(void);
+static void init_humid_elev(void);
+static void read_temperaturemap(void);
+static void init_temperature(void);
+static void read_rainfallmap(void);
+static void init_rainfall(void);
+static void init_weatheravoid (weather_avoids_t wa[]);
+static void perform_weather(void);
+static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int grow);
+static void calculate_temperature(mapstruct *m);
+static void let_it_snow(mapstruct *m);
+static void singing_in_the_rain(mapstruct *m);
+static void plant_a_garden(mapstruct *m);
+static void change_the_world(mapstruct *m);
+static char *weathermap_to_worldmap_corner(int wx, int wy, int *x, int *y, int dir, char* buffer, int bufsize);
+static int polar_distance(int x, int y, int equator);
+static void update_humid(void);
+static int humid_tile(int x, int y);
+static void temperature_calc(int x, int y, const timeofday_t *tod);
+static int real_temperature(int x, int y);
+static void smooth_pressure(void);
+static void perform_pressure(void);
+static void smooth_wind(void);
+static void plot_gulfstream(void);
+static void compute_sky(void);
+static void process_rain(void);
+static void spin_globe(void);
+static void weather_effect(mapstruct *m);
+
+/** Speed of the gulf stream. */
+static int gulf_stream_speed[GULF_STREAM_WIDTH][WEATHERMAPTILESY];
+/** Direction of the gulf stream. */
+static int gulf_stream_dir[GULF_STREAM_WIDTH][WEATHERMAPTILESY];
+static int gulf_stream_start;
+static int gulf_stream_direction;
 
 /** How to alter darkness, based on time of day and season. */
 static const int season_timechange[5][HOURS_PER_DAY] = {
