@@ -3187,7 +3187,7 @@ static void compute_sky(void) {
 /**
  * Keep track of how much rain has fallen in a given weathermap square.
  */
-void process_rain(void) {
+static void process_rain(void) {
     int x, y, rain;
 
     for (x = 0; x < WEATHERMAPTILESX; x++) {
@@ -3424,3 +3424,4 @@ void write_weather_images(void) {
     fprintf(fp, "%lu", todtick);
     fclose(fp);
 }
+
