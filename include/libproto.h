@@ -219,6 +219,7 @@ extern int on_same_map(const object *op1, const object *op2);
 extern object *map_find_by_flag(mapstruct *map, int x, int y, int flag);
 extern void map_remove_unique_files(const mapstruct *map);
 extern const char *map_get_path(const object *item);
+extern int load_overlay_map(const char *filename, mapstruct *m);
 /* ob_methods.cpp */
 extern method_ret ob_apply(object *op, object *applier, int aflags);
 extern method_ret ob_process(object *op);

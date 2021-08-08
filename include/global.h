@@ -294,6 +294,7 @@ typedef struct Settings {
     uint32_t  worldmaptilesy;         /**< Number of tiles high the worldmap is */
     uint32_t  worldmaptilesizex;      /**< Number of squares wide in a wm tile */
     uint32_t  worldmaptilesizey;      /**< Number of squares high in a wm tile */
+    uint16_t  dynamiclevel;           /**< How dynamic is the world? */
     uint8_t   fastclock;              /**< If true, clock goes warp 9 */
 
     char    *emergency_mapname;       /**< Map to return players to in emergency */

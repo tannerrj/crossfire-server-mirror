@@ -189,6 +189,7 @@ struct Settings settings = {
     0,
     0,
     0,
+    0,
     nullptr,
     EMERGENCY_X,
     EMERGENCY_Y,

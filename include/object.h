@@ -428,6 +428,7 @@ typedef struct obj {
     uint8_t       temp_anim_speed; /**< Ticks between temporary animation-frames */
     uint8_t       smoothlevel;    /**< how to smooth this square around*/
     uint8_t       map_layer;      /**< What level to draw this on the map */
+    int32_t       elevation;      /** Map tile elevation -- used by weather code */
 
     MoveType    move_type;      /**< Type of movement this object uses */
     MoveType    move_block;     /**< What movement types this blocks */

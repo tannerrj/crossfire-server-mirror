@@ -63,6 +63,40 @@ Total Players in %s (%d) -- WIZ(%d) AFK(%d) BOT(%d)|Total Joueurs dans %s (%d) -
 Total Players in party %s (%d) -- WIZ(%d) AFK(%d) BOT(%d)|Total Joueurs dans le groupe %s (%d) -- WIZ(%d) AFK(%d) BOT(%d)
 You are no longer AFK|Vous êtes à nouveau disponible
 You are now AFK|Vous êtes marqué comme absent
+The weather is perpetually great around here.|Le temps est perpétuellement beau ici.
+You can't see the weather from here.|Vous ne pouvez pas voir quel temps il fait de votre position.
+Real temp: %d|Température réelle: %d
+Base temp: %d|Température de base: %d
+Humid: %d|Humidité: %d
+Wind: dir=%d speed=%d|Vent: direction=%d vitesse=%d
+Pressure: %d|Pression: %d
+Avg Elevation: %d|Altitude moyenne: %d
+Rainfall: %d  Water: %d|Pluie: %d  Eau: %d
+It's currently %d degrees Centigrade out.|Il fait %d °C.
+It is very dry.|Il fait très sec.
+It is very comfortable today.|Il fait bon aujourd'hui.
+It is a bit muggy.|Il fait un peu moite.
+It is muggy.|Il fait moite.
+It is uncomfortably muggy.|Le temps est très moite.
+There is a mild breeze coming from the %s.|Une brise souffle du %s.
+There is a strong breeze coming from the %s.|Une forte brise souffle du %s.
+There is a light wind coming from the %s.|Un vent léger vient du %s.
+There is a strong wind coming from the %s.|Un vent fort vient du %s.
+There is a heavy wind coming from the %s.|Un vent violent souffle du %s.
+The wind from the %s is incredibly strong!|Le vent soufflant du %s est incroyablement fort !
+There isn't a cloud in the sky.|Il n'y a pas un seul nuage à l'horizon.
+There are a few light clouds in the sky|Il y a quelques nuages.
+The sky is cloudy and dreary.|Le ciel est couvert.
+It is raining softly.|Il bruine.
+It is raining.|Il pleut.
+It is raining heavily.|Il tombe des cordes.
+There is a heavy storm!  You should go inside!|C'est une vraie tempête ! Vous devriez vous abriter !
+It's foggy and miserable.|Il y a du brouillard.
+It's hailing out!  Take cover!|Il grêle ! Abritez-vous !
+Snow is gently falling from the sky.|Il tombe un peu de neige.
+It is snowing out.|Il neige.
+Snow is falling very heavily.|Il tombe assez bien de neige.
+A full blown blizzard is in effect.  You might want to take cover!|Quel blizzard ! Vous devriez vous abriter !
 Global debug level is %d.|Niveau global de debogage: %d.
 93|Debug est une commande privilégiée.
 Debug level set to %d.|Niveau de débogage: %d.
