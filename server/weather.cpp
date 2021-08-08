@@ -23,6 +23,7 @@
 #include <sproto.h>
 #endif
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 static void dawn_to_dusk(const timeofday_t *tod)
@@ -406,6 +407,9 @@ void tick_the_clock(void) {
     }
     /* perform_weather must follow calculators */
     perform_weather();
+    if (settings.dynamiclevel > 0) {
+        spin_globe();
+    }
 }
 
 /*
@@ -3183,7 +3187,11 @@ static void compute_sky(void) {
 /**
  * Keep track of how much rain has fallen in a given weathermap square.
  */
+<<<<<<< HEAD
 void process_rain(void) {
+=======
+static void process_rain(void) {
+>>>>>>> 479f181d (Import weather patch)
     int x, y, rain;
 
     for (x = 0; x < WEATHERMAPTILESX; x++) {
