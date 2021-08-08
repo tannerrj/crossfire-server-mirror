@@ -3187,11 +3187,7 @@ static void compute_sky(void) {
 /**
  * Keep track of how much rain has fallen in a given weathermap square.
  */
-<<<<<<< HEAD
 void process_rain(void) {
-=======
-static void process_rain(void) {
->>>>>>> 479f181d (Import weather patch)
     int x, y, rain;
 
     for (x = 0; x < WEATHERMAPTILESX; x++) {
