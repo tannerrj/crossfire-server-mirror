@@ -1138,6 +1138,7 @@ void init(int argc, char **argv) {
     // The weather module needs a lot of stuff already loaded.
     // So initialize modules out here so that the info is there
     init_modules();
+    init_weather();
     init_server();
     metaserver2_init();
     accounts_load();
