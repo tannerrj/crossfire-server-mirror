@@ -137,6 +137,7 @@ void command_whereami(object *op, const char *params);
 void command_maps(object *op, const char *params);
 void command_strings(object *op, const char *params);
 void command_time(object *op, const char *params);
+void command_weather(object *op, const char *params);
 void command_archs(object *op, const char *params);
 void command_hiscore(object *op, const char *params);
 void command_debug(object *op, const char *params);
