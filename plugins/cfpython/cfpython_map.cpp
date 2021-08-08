@@ -144,6 +144,17 @@ static PyObject *Map_GetEnterY(Crossfire_Map *whoptr, void *closure) {
     return Py_BuildValue("i", cf_map_get_enter_y(whoptr->map));
 }
 
+static PyObject* Map_GetWPartX(Crossfire_Map* whoptr, void* closure)
+{
+    MAPEXISTCHECK(whoptr);
+    return Py_BuildValue("i", cf_map_get_wpartx(whoptr->map));
+}
+static PyObject* Map_GetWPartY(Crossfire_Map* whoptr, void* closure)
+{
+    MAPEXISTCHECK(whoptr);
+    return Py_BuildValue("i", cf_map_get_wparty(whoptr->map));
+}
+
 static PyObject *Map_GetMessage(Crossfire_Map *whoptr, void *closure) {
     (void)closure;
     MAPEXISTCHECK(whoptr);
@@ -471,6 +482,8 @@ static PyGetSetDef Map_getseters[] = {
     { "Height",          (getter)Map_GetHeight,      NULL, NULL, NULL },
     { "EnterX",          (getter)Map_GetEnterX,      NULL, NULL, NULL },
     { "EnterY",          (getter)Map_GetEnterY,      NULL, NULL, NULL },
+    { "WPartX",          (getter)Map_GetWPartX,      NULL, NULL, NULL },
+    { "WPartY",          (getter)Map_GetWPartY,      NULL, NULL, NULL },
     { "Message",         (getter)Map_GetMessage,     NULL, NULL, NULL },
     { "Region",          (getter)Map_GetRegion,      NULL, NULL, NULL },
     { "Unique",          (getter)Map_GetUnique,      NULL, NULL, NULL },

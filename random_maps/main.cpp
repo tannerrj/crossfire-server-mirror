@@ -372,6 +372,12 @@ void set_darkness_map(mapstruct *m) {
     (void)m;
 }
 
+int players_on_map(mapstruct *m, int show_all) {
+    (void)m;
+    (void)show_all;
+    return 0;
+}
+
 object *find_skill_by_number(object *who, int skillno) {
     (void)who;
     (void)skillno;
@@ -389,4 +395,7 @@ void esrv_update_spells(player *pl) {
 
 void rod_adjust(object *rod) {
     (void)rod;
+}
+
+void do_map_precipitation(mapstruct *) {
 }

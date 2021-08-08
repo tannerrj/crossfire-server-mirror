@@ -427,6 +427,7 @@ void key_confirm_quit(object *op, char key);
 int check_pick(object *op);
 int fire_bow(object *op, object *arrow, int dir, int wc_mod, int16_t sx, int16_t sy);
 void fire(object *op, int dir);
+int similar_direction(int a, int b);
 object *find_key(object *pl, object *container, object *door);
 void move_player_attack(object *op, int dir);
 int move_player(object *op, int dir);
@@ -613,7 +614,23 @@ int cftimer_find_free_id(void);
 void cftimer_init(void);
 /* weather.c */
 void set_darkness_map(mapstruct *m);
+int get_world_darkness();
 void tick_the_clock(void);
+/* modules/cfweather.c */
+void tick_weather(void);
+void process_rain(void);
+int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct *m);
+int real_world_temperature(int x, int y, mapstruct *m);
+int write_rainfallmap(const Settings *settings);
+int write_skymap(void);
+int write_gulfstreammap(const Settings *settings);
+int write_temperaturemap(const Settings *settings);
+int write_humidmap(const Settings *settings);
+int write_windspeedmap(const Settings *settings);
+int write_winddirmap(const Settings *settings);
+int write_pressuremap(const Settings *settings);
+int write_weather_images(void);
+void compute_sky(void);
 /* server.c */
 char const* newhash(char const *password);
 bool check_password(const char *typed, const char *crypted);

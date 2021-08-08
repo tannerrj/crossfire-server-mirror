@@ -1,0 +1,28 @@
+# Config file for weather module
+# Here we define the water density of various desert/dry tiles,
+# so that the amount of desert in an area can affect the weather.
+# We can skip actual water tiles, though, since IS_WATER is set on those
+# so the check is separate.
+#
+# If you change this file, you will need to delete humidmap
+# from (installdir)/var/crossfire/ and restart the server
+# to regenerate it with changes.
+#
+# File format is as follows:
+#  - arch/object name
+#  - 0 if name was for an arch, 1 if for an object
+#  - the water density value of the tile
+#
+
+desert, 0, -2
+dunes, 0, -1
+pstone_1, 0, -1
+pstone_2, 0, -1
+pstone_3, 0, -1
+pstone_4, 0, -1
+pstone_5, 0, -1
+small_stones, 0, -1
+medium_stones, 0, -1
+large_stones, 0, -1
+crater, 0, -1
+steppe, 1, -2

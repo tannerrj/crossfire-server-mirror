@@ -1236,6 +1236,18 @@ static void cfapi_map_get_map_property(int *type, ...) {
         *type = CFAPI_INT;
         break;
 
+    case CFAPI_MAP_PROP_WPARTX:
+        rint = va_arg(args, int*);
+        *rint = map->wpartx;
+        *type = CFAPI_INT;
+        break;
+
+    case CFAPI_MAP_PROP_WPARTY:
+        rint = va_arg(args, int*);
+        *rint = map->wparty;
+        *type = CFAPI_INT;
+        break;
+
     case CFAPI_MAP_PROP_MESSAGE:
         rstr = va_arg(args, sstring *);
         *rstr = map->msg;

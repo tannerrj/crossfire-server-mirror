@@ -301,6 +301,7 @@ static PyObject *Player_QuestWasCompleted(Crossfire_Player *whoptr, PyObject *ar
 }
 
 /* Object properties. Get and maybe set. */
+
 static PyObject *Object_GetSStringProperty(Crossfire_Object *whoptr, void *closure) {
     (void)closure;
     EXISTCHECK(whoptr);

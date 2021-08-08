@@ -185,6 +185,8 @@ extern int          cf_map_get_width(mapstruct *map);
 extern int          cf_map_get_height(mapstruct *map);
 extern int          cf_map_get_enter_x(mapstruct *map);
 extern int          cf_map_get_enter_y(mapstruct *map);
+extern int          cf_map_get_wpartx(mapstruct* map);
+extern int          cf_map_get_wparty(mapstruct* map);
 extern int          cf_map_change_light(mapstruct *m, int change);
 extern void         cf_map_trigger_connected(objectlink *ol, object *cause, int state);
 

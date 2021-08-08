@@ -55,6 +55,7 @@ static module_information modules[] = {
     { "citybell", "Ring bells every hour for defined temples", true, cfcitybell_init, cfcitybell_close },
     { "citylife", "Add NPCs in towns", true, citylife_init, citylife_close },
     { "rhg", "Add random maps to exits in towns", false, random_house_generator_init, random_house_generator_close },
+    { "weather", "Add weather effects to the world map.", true, cfweather_init, cfweather_close },
     { NULL, NULL, false, NULL, NULL }
 };
 
@@ -583,7 +584,7 @@ static void free_materials(void) {
  * be here or in the common directory - but since only the server needs this
  * information, having it here probably makes more sense.
  */
-static void load_settings(void) {
+void load_settings(void) {
     char buf[MAX_BUF], *cp, dummy[1];
     int has_val;
     FILE *fp;
@@ -698,6 +699,13 @@ static void load_settings(void) {
                 LOG(llevError, "load_settings: worldmaptilesizey must be greater than 1, %d is invalid\n", size);
             else
                 settings.worldmaptilesizey = size;
+        } else if (!strcasecmp(buf, "dynamiclevel")) {
+            int lev = atoi(cp);
+
+            if (lev < 0)
+                LOG(llevError, "load_settings: dynamiclevel must be at least 0, %d is invalid\n", lev);
+            else
+                settings.dynamiclevel = lev;
         } else if (!strcasecmp(buf, "fastclock")) {
             int lev = atoi(cp);
 
@@ -1084,7 +1092,6 @@ void init(int argc, char **argv) {
     parse_args(argc, argv, 1);
 
     add_server_collect_hooks();
-    init_modules();
 
     init_library();     /* Must be called early */
     load_settings();    /* Load the settings file */
@@ -1105,6 +1112,9 @@ void init(int argc, char **argv) {
     parse_args(argc, argv, 3);
 
     init_beforeplay();
+    // The weather module needs a lot of stuff already loaded.
+    // So initialize modules out here so that the info is there
+    init_modules();
     init_server();
     metaserver2_init();
     accounts_load();
@@ -1187,7 +1197,7 @@ static void help(void) {
  * Called before the server starts listening to connections, processes various
  * dump-related options.
  */
-static void init_beforeplay(void) {
+void init_beforeplay(void) {
     init_archetype_pointers(); /* Setup global pointers to archetypes */
     finish_races();    /* overwrite race designations using entries in lib/races file */
     assets_finish_archetypes_for_play();

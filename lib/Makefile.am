@@ -21,12 +21,19 @@ CONF_FILES = \
 	config/dm_file \
 	config/exp_table \
 	config/forbid \
+	config/gavoiddefs \
 	config/metaserver2 \
 	config/motd \
 	config/news \
 	config/rules \
 	config/settings \
-	config/stat_bonus
+	config/stat_bonus \
+	config/treedefs \
+	config/waterdefs \
+	config/wavoiddefs \
+	config/wevapdefs \
+	config/wmeltdefs \
+	config/wreplacedefs
 
 VAR_FILES = highscore banish_file bookarch temp.maps clockdata
 EXTRA_DIST = README .collect-stamp $(CONF_FILES)

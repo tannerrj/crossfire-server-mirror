@@ -23,8 +23,13 @@
 #include <sproto.h>
 #endif
 #include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+extern unsigned long todtick;
 
 static void dawn_to_dusk(const timeofday_t *tod);
+
 /** How to alter darkness, based on time of day and season. */
 static const int season_timechange[5][HOURS_PER_DAY] = {
 /*    0  1  2  3  4  5  6  7  8  9 10 11 12 13 14  1  2  3  4  5  6  7  8  9 10 11 12 13 */
@@ -57,6 +62,26 @@ void set_darkness_map(mapstruct *m) {
     for (i = 0; i <= tod.hour; i++) {
         change_map_light(m, season_timechange[tod.season][i]);
     }
+}
+
+/**
+ * Get the darkness of the world map at this point.
+ * Since the darkness of the world map is uniform, we can get away with
+ * this calculation.
+ *
+ * @return
+ * The darkenss value of the world at the current time.
+ */
+int get_world_darkness() {
+    timeofday_t tod;
+    get_tod(&tod); // Get time of day.
+    // Determine the darkness on the world
+    // Since the world map has uniform darkness, just calculate it outright.
+    int darkness = 0;
+    for (int i = 0; i < tod.hour; ++i) {
+        darkness += season_timechange[tod.season][i];
+    }
+    return darkness;
 }
 
 /**

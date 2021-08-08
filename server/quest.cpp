@@ -792,7 +792,7 @@ void command_quest(object *op, const char *params) {
         return;
     }
 
-    /* 
+    /*
      * Quest display for clients using the quest system, similar to 'info' above
      * but using the (shared) quest's client_code instead of the (player unique) index.
      */

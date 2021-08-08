@@ -86,6 +86,8 @@ extern const char *const map_layer_name[MAP_LAYERS];
 /** Default Y coordinate for map enter. */
 #define MAP_ENTER_Y(m)          (m)->enter_y
 
+#define MAP_WORLDPARTX(m)	(m)->wpartx
+#define MAP_WORLDPARTY(m)	(m)->wparty
 #define MAP_NOSMOOTH(m)         (m)->nosmooth
 
 /**
@@ -346,6 +348,7 @@ struct mapstruct {
     oblinkpt *buttons;          /**< Linked list of linked lists of buttons. */
     MapSpace *spaces;           /**< Array of spaces on this map. */
     struct shopitems *shopitems;       /**< List of item-types the map's shop will trade in. */
+    int     wpartx,wparty;      /**< Highly fasten conversion between worldmap and weathermap. */
     char    *shoprace;          /**< The preffered race of the local shopkeeper. */
     double  shopgreed;          /**< How much our shopkeeper overcharges. */
     uint64_t  shopmin;            /**< Minimum price a shop will trade for. */

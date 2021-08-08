@@ -1,0 +1,36 @@
+# Config file for weather module
+# Here we define the tree density of various wooded tiles,
+# so that the amount of trees in an area can affect the weather.
+#
+# If you change this file, you will need to delete humidmap
+# from (installdir)/var/crossfire/ and restart the server
+# to regenerate it with changes.
+#
+# File format is as follows:
+#  - arch/object name
+#  - 0 if name was for an arch, 1 if for an object
+#  - the tree density value of the tile
+#
+
+evergreens, 0, 5
+evergreens2, 0, 5
+evergreen, 0, 1
+tree5, 0, 1
+tree, 0, 1
+tree3, 0, 1
+jungle_1, 0, 7
+jungle_2, 0, 7
+tree4, 0, 1
+woods, 0, 4
+woods4, 0, 4
+woods_3, 0, 2
+woods5, 0, 2
+ytree_2, 0, 1
+woods_2, 0, 5
+treed_hills, 0, 2
+darkforest, 0, 4
+fernsdense, 0, 4
+fernssparse, 0, 2
+forestsparse, 0, 2
+palm, 0, 1
+palms, 0, 3
