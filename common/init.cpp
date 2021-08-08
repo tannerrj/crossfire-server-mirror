@@ -188,6 +188,7 @@ struct Settings settings = {
     .worldmaptilesy = 0,
     .worldmaptilesizex = 0,
     .worldmaptilesizey = 0,
+    .dynamiclevel = 0,
     .fastclock = 0,
     .emergency_mapname = nullptr,
     .emergency_x = EMERGENCY_X,

@@ -1413,6 +1413,16 @@ int cf_map_get_enter_y(mapstruct *map) {
     return cf_map_get_int_property(map, CFAPI_MAP_PROP_ENTER_Y);
 }
 
+int cf_map_get_wpartx(mapstruct* map)
+{
+	return cf_map_get_int_property(map,CFAPI_MAP_PROP_WPARTX);
+}
+
+int cf_map_get_wparty(mapstruct* map)
+{
+	return cf_map_get_int_property(map,CFAPI_MAP_PROP_WPARTY);
+}
+
 /**
  * Wrapper for change_map_light().
  * @copydoc change_map_light().

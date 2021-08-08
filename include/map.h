@@ -81,6 +81,8 @@ extern const char *const map_layer_name[MAP_LAYERS];
 /** Default Y coordinate for map enter. */
 #define MAP_ENTER_Y(m)          (m)->enter_y
 
+#define MAP_WORLDPARTX(m)	(m)->wpartx
+#define MAP_WORLDPARTY(m)	(m)->wparty
 #define MAP_NOSMOOTH(m)         (m)->nosmooth
 
 /**
@@ -265,6 +267,30 @@ struct MapSpace {
 };
 
 /**
+ * This is an overlay structure of the whole world.  It exists as a simple
+ * high level map, which doesn't contain the full data of the underlying map.
+ * in this map, only things such as weather are recorded.  By doing so, we
+ * can keep the entire world parameters in memory, and act as a whole on
+ * them at once.  We can then, in a separate loop, update the actual world
+ * with the new values we have assigned.
+ */
+
+typedef struct wmapdef {
+    int16_t	temp;		/**< Base temperature of this tile (F). */
+    int16_t	pressure;	/**< Barometric pressure (mb). */
+    int8_t	humid;		/**< Humitidy of this tile. */
+    int8_t	windspeed;	/**< Windspeed of this tile. */
+    int8_t	winddir;	/**< Direction of wind. */
+    int8_t	sky;		/**< Sky conditions. */
+    int32_t	avgelev;	/**< Average elevation. */
+    uint32_t	rainfall;	/**< Cumulative rainfall. */
+    uint8_t	darkness;	/**< Indicates level of darkness of map. */
+    int8_t	water;		/**< -100 - 100 percentage of water tiles. < 0 means it is a droughty spot */
+    /*Dynamic parts*/
+    int16_t  realtemp;		/**< Temperature at a given calculation step for this tile. */
+} weathermap_t;
+
+/**
  * This is a game region.
  * Each map is in a given region of the game world and links to a region definiton, so
  * they have to appear here in the headers, before the mapstruct
@@ -341,7 +367,8 @@ struct mapstruct {
                                  *   at enter_x,enter_y when they arrive.    */
     oblinkpt *buttons;          /**< Linked list of linked lists of buttons. */
     MapSpace *spaces;           /**< Array of spaces on this map. */
-    struct shopitems *shopitems;       /**< List of item-types the map's shop will trade in. */
+    int     wpartx,wparty;      /**< Highly fasten conversion between worldmap and weathermap. */
+    struct shopitems *shopitems;     /**< List of item-types the map's shop will trade in. */
     char    *shoprace;          /**< The preffered race of the local shopkeeper. */
     double  shopgreed;          /**< How much our shopkeeper overcharges. */
     uint64_t  shopmin;            /**< Minimum price a shop will trade for. */

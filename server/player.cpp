@@ -2271,7 +2271,7 @@ int fire_bow(object *op, object *arrow, int dir, int wc_mod, int16_t sx, int16_t
  * @return
  * 1 if similar, 0 if not.
  */
-static int similar_direction(int a, int b) {
+int similar_direction(int a, int b) {
     /* shortcut the obvious */
     if (a == b)
         return 1;
