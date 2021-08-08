@@ -832,6 +832,7 @@ A       .+
 
 ^weapontype{S}      op->weapontype = IVAL;
 ^casting_time{S}    op->casting_time = FVAL;
+^elevation{S}       op->elevation = IVAL;
 ^smoothlevel{S}     op->smoothlevel = IVAL;
 ^smoothface{S}      {
                         /** @todo fix evil const cast */

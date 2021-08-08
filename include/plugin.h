@@ -257,6 +257,8 @@ struct crossfire_plugin {
 #define CFAPI_MAP_PROP_HEIGHT               11
 #define CFAPI_MAP_PROP_ENTER_X              12
 #define CFAPI_MAP_PROP_ENTER_Y              13
+#define CFAPI_MAP_PROP_WPARTX               20
+#define CFAPI_MAP_PROP_WPARTY               21
 #define CFAPI_MAP_PROP_MESSAGE              22
 #define CFAPI_MAP_PROP_NEXT                 23
 #define CFAPI_MAP_PROP_REGION               24

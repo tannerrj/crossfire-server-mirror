@@ -173,6 +173,7 @@ void commands_init(void) {
     RN("title", command_title,            0.0);
     RN("use", command_use,                1.0);
     RN("usekeys", command_usekeys,        0.0);
+    RN("weather", command_weather,        0.0);
     RN("whereabouts", command_whereabouts, 0.0);
     RN("whereami", command_whereami,      0.0);
     RN("unarmed_skill", command_unarmed_skill, 0.0);
