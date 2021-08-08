@@ -770,6 +770,11 @@ static void do_exit_map(mapstruct *map) {
                 } else if (test->move_slow != 0)
                     gdImageSetPixel(infomap, x*50+tx, y*50+ty, color_slowing);
 
+                if (item->elevation) {
+                    elevation_min = MIN(elevation_min, item->elevation);
+                    elevation_max = MAX(elevation_max, item->elevation);
+                    elevation_info[x*50+tx][y*50+ty] = item->elevation;
+                }
             } FOR_MAP_FINISH();
         }
     }
