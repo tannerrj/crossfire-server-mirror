@@ -769,6 +769,7 @@ static void do_exit_map(mapstruct *map) {
                     break;
                 } else if (test->move_slow != 0)
                     gdImageSetPixel(infomap, x*50+tx, y*50+ty, color_slowing);
+
             } FOR_MAP_FINISH();
         }
     }
