@@ -1804,9 +1804,6 @@ mapstruct *ready_map_name(const char *name, int flags) {
 
     /* Map is good to go, so just return it */
     if (m && (m->in_memory == MAP_LOADING || m->in_memory == MAP_IN_MEMORY)) {
-        // If the map is already good to go, just reload the precipitation.
-        if (m->outdoor)
-            do_map_precipitation(m);
         return m;
     }
 
@@ -1895,7 +1892,6 @@ mapstruct *ready_map_name(const char *name, int flags) {
 
     if (m->outdoor) {
         set_darkness_map(m);
-        do_map_precipitation(m);
     }
     if (!(flags&(MAP_FLUSH))) {
         if (m->last_reset_time == 0) {

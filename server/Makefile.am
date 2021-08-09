@@ -51,7 +51,8 @@ libserver_a_SOURCES = \
 	modules/cfcitybell.cpp \
 	modules/citylife.cpp \
 	modules/random_house_generator.cpp \
-	win32.cpp
+	win32.cpp \
+	modules/cfweather.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -DDATADIR=\"$(pkgdatadir)\" -DCONFDIR=\"$(pkgconfdir)\" \
 	      -DLIBDIR=\"$(pkglibdir)\" -DLOCALDIR=\"$(pkgstatedir)\" \

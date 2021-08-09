@@ -27,4 +27,6 @@ void citylife_close();
 void random_house_generator_init(Settings *settings);
 void random_house_generator_close();
 
+void cfweather_init(Settings *settings);
+void cfweather_close();
 #endif /* MODULES_H */
