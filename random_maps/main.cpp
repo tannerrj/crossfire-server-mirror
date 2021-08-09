@@ -372,9 +372,6 @@ void set_darkness_map(mapstruct *m) {
     (void)m;
 }
 
-void do_map_precipitation(mapstruct *m) {
-}
-
 int players_on_map(mapstruct *m, int show_all) {
     return 0;
 }
