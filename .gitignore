@@ -550,6 +550,7 @@ utils/mapper/crossfire-mapper
 utils/mapper/html
 utils/openseadragon
 utils/test-driver
+utils/test_weather
 test/unit/common/check_asset_load_write
 plugins/cfpython/pyi-generate
 test/unit/common/check_artifact
