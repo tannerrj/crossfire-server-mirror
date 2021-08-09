@@ -396,3 +396,6 @@ void esrv_update_spells(player *pl) {
 void rod_adjust(object *rod) {
     (void)rod;
 }
+
+void do_map_precipitation(mapstruct *) {
+}

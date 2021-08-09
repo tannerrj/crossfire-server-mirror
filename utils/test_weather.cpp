@@ -1,7 +1,10 @@
 #include <stdio.h>
 
 #include "global.h"
+<<<<<<< HEAD
 #include "sproto.h"
+=======
+>>>>>>> a3085b6c (Add weather test program)
 
 void init_beforeplay(void);
 void init_modules();

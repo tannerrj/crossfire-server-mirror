@@ -825,9 +825,9 @@ void process_object(object *op) {
 
             // Make sure to update the player view
             if (op->type == PLAYER) {
-                esrv_map_scroll(&op->contr->socket, freearr_x[dir], freearr_y[dir]);
-                op->contr->socket.update_look = 1;
-                op->contr->socket.look_position = 0;
+                esrv_map_scroll(op->contr->socket, freearr_x[dir], freearr_y[dir]);
+                op->contr->socket->update_look = 1;
+                op->contr->socket->look_position = 0;
             } else if (op->type == TRANSPORT) {
                 FOR_INV_PREPARE(op, pl)
                     if (pl->type == PLAYER) {
@@ -835,9 +835,9 @@ void process_object(object *op) {
                         pl->map = op->map;
                         pl->x = op->x;
                         pl->y = op->y;
-                        esrv_map_scroll(&pl->contr->socket, freearr_x[dir], freearr_y[dir]);
-                        pl->contr->socket.update_look = 1;
-                        pl->contr->socket.look_position = 0;
+                        esrv_map_scroll(pl->contr->socket, freearr_x[dir], freearr_y[dir]);
+                        pl->contr->socket->update_look = 1;
+                        pl->contr->socket->look_position = 0;
                     }
                 FOR_INV_FINISH();
             }
