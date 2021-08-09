@@ -66,7 +66,7 @@ static void perform_pressure(void);
 static void smooth_wind(void);
 static void plot_gulfstream(void);
 static void compute_sky(void);
-static void process_rain(void);
+void process_rain(void);
 static void spin_globe(void);
 static void weather_effect(mapstruct *m);
 
@@ -400,6 +400,17 @@ static void dawn_to_dusk(const timeofday_t *tod) {
     }
 }
 
+void tick_weather() {
+    assert(settings.dynamiclevel > 0);
+    perform_pressure();     /* pressure is the random factor */
+    smooth_wind();          /* calculate the wind. depends on pressure */
+    plot_gulfstream();
+    update_humid();
+    init_temperature();
+    spin_globe();
+    //compute_sky(); This is done in perform_weather
+}
+
 /**
  * This performs the basic function of advancing the clock one tick
  * forward.  Every 20 ticks, the clock is saved to disk.  It is also
@@ -418,21 +429,13 @@ void tick_the_clock(void) {
     dawn_to_dusk(&tod);
     /* call the weather calculators, here, in order */
     if (settings.dynamiclevel > 0) {
-        perform_pressure();     /* pressure is the random factor */
-        smooth_wind();          /* calculate the wind. depends on pressure */
-        plot_gulfstream();
-        update_humid();
-        init_temperature();
-        //compute_sky(); This is done in perform_weather
+        tick_weather();
         if (tod.hour == 0) {
             process_rain();
         }
     }
     /* perform_weather must follow calculators */
     perform_weather();
-    if (settings.dynamiclevel > 0) {
-        spin_globe();
-    }
 }
 
 /*
@@ -3210,7 +3213,7 @@ static void compute_sky(void) {
 /**
  * Keep track of how much rain has fallen in a given weathermap square.
  */
-static void process_rain(void) {
+void process_rain(void) {
     int x, y, rain;
 
     for (x = 0; x < WEATHERMAPTILESX; x++) {
@@ -3447,4 +3450,3 @@ void write_weather_images(void) {
     fprintf(fp, "%lu", todtick);
     fclose(fp);
 }
-
