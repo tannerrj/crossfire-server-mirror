@@ -72,9 +72,6 @@ void set_darkness_map(mapstruct *m) {
     (void)m;
 }
 
-void do_map_precipitation(mapstruct *m) {
-}
-
 object *find_skill_by_number(object *who, int skillno) {
     (void)who;
     (void)skillno;
