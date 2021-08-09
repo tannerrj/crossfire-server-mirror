@@ -37,7 +37,7 @@
 #include "modules.h"
 
 static void help(void);
-static void init_beforeplay(void);
+void init_beforeplay(void);
 static void init_startup(void);
 
 /** If set after command line argument parsing, then the server will exit. */
@@ -606,7 +606,7 @@ static void free_materials(void) {
  * be here or in the common directory - but since only the server needs this
  * information, having it here probably makes more sense.
  */
-static void load_settings(void) {
+void load_settings(void) {
     char buf[MAX_BUF], *cp, dummy[1];
     int has_val;
     FILE *fp;
