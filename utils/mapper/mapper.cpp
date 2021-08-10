@@ -2744,6 +2744,7 @@ static const char *ignore_name[] = {
     ".",
     "..",
     ".svn",
+    ".git",
     "README",
     NULL };
 
