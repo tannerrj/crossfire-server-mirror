@@ -719,9 +719,11 @@ static int is_blocking(object *item) {
  */
 static int get_elevation_color(int elevation, gdImagePtr elevationmap) {
     if (elevation > 0)
-        return gdImageColorResolve(elevationmap, 200*elevation/elevation_max, 0, 0);
+        return gdImageColorResolve(elevationmap, 200*elevation/elevation_max, 200-200*elevation/elevation_max, 0);
+    else if (elevation == 0)
+        return gdImageColorResolve(elevationmap, 0, 0, 0);
     else
-        return gdImageColorResolve(elevationmap, 0, 0, 200*elevation/elevation_min);
+        return gdImageColorResolve(elevationmap, 0, 0, 200-200*elevation/elevation_min);
 }
 
 /**
