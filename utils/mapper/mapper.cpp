@@ -749,6 +749,13 @@ static void do_exit_map(mapstruct *map) {
             FOR_MAP_PREPARE(map, tx, ty, item) {
                 test = HEAD(item);
 
+                // Do this first -- otherwise, blocked tiles don't calculate elevation.
+                if (item->elevation) {
+                    elevation_min = MIN(elevation_min, item->elevation);
+                    elevation_max = MAX(elevation_max, item->elevation);
+                    elevation_info[x*50+tx][y*50+ty] = item->elevation;
+                }
+
                 if (test->type == EXIT || test->type == TELEPORTER) {
                     if (!test->slaying)
                         gdImageSetPixel(infomap, x*50+tx, y*50+ty, color_unlinked_exit);
@@ -762,12 +769,6 @@ static void do_exit_map(mapstruct *map) {
                     break;
                 } else if (test->move_slow != 0)
                     gdImageSetPixel(infomap, x*50+tx, y*50+ty, color_slowing);
-
-                if (item->elevation) {
-                    elevation_min = MIN(elevation_min, item->elevation);
-                    elevation_max = MAX(elevation_max, item->elevation);
-                    elevation_info[x*50+tx][y*50+ty] = item->elevation;
-                }
             } FOR_MAP_FINISH();
         }
     }
