@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
         char filename[MAX_BUF];
         char filename2[MAX_BUF];
         snprintf(filename, sizeof(filename), "%s/weather.ppm", settings.localdir);
-        snprintf(filename2, sizeof(filename2), "%s/weather.%d.ppm", settings.localdir, i);
+        snprintf(filename2, sizeof(filename2), "%s/weather.%.3d.ppm", settings.localdir, i);
         rename(filename, filename2);
         putchar('.');
     }
