@@ -29,7 +29,7 @@
  * @return
  * 0.
  */
-static int clock_listener(int *type, ...) {
+static int weather_listener(int *type, ...) {
     va_list args;
     int code;
     mapstruct *m;
@@ -60,7 +60,7 @@ static event_registration global_handler;
  * @param settings server settings.
  */
 void cfweather_init(Settings *settings) {
-    global_handler = events_register_global_handler(EVENT_MAPENTER, clock_listener);
+    global_handler = events_register_global_handler(EVENT_MAPENTER, weather_listener);
 
     /* Disable the plugin in case it's still there */
     linked_char *disable = (linked_char *)calloc(1, sizeof(linked_char));
