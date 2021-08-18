@@ -1380,8 +1380,8 @@ static int read_rainfallmap(const Settings *settings) {
         if (*data == '\n')
             ++data;
     }
+    bufferreader_destroy(bfr);
     LOG(llevDebug, "Done.\n");
-    fclose(fp);
     return 0;
 }
 
