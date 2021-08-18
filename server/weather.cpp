@@ -2513,8 +2513,9 @@ void write_weather_images(void) {
             else
                 pixels[3*x+(0*WEATHERMAPTILESX*3+BLUE)] = (uint8_t)((weathermap[x][y].water)*scale[0]*2);
             // Either way, we use green to highlight the trees, too
-            // Make this real simple since it is established that forestry values range from 0 to 100
-            pixels[3*x+(0*WEATHERMAPTILESX*3+GREEN)] = (uint8_t)((weathermap[x][y].forestry)*2);
+            // Make this real simple since it is established that forestry values range from 0 to 100.
+            // As a result, our values go from 0-250.
+            pixels[3*x+(0*WEATHERMAPTILESX*3+GREEN)] = (uint8_t)((weathermap[x][y].forestry)*5/2);
             // elevation map -- second map of row.
             // green -- mostly land --> brighter green is higher elevation
             // blue -- mostly water --> deeper blue is lower elevation
