@@ -1585,15 +1585,15 @@ static void do_specials(void) {
         if (!(pticks%34501))
             write_windspeedmap();
         if (!(pticks%36007))
-            write_humidmap();
+            write_humidmap(&settings);
         if (!(pticks%39019))
-            write_temperaturemap();
+            write_temperaturemap(&settings);
         if (!(pticks%40507))
             write_gulfstreammap();
         if (settings.fastclock > 0 && !(pticks%42013))
             write_skymap();
         if (!(pticks%43517))
-            write_rainfallmap();
+            write_rainfallmap(&settings);
     }
 }
 
