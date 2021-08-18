@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
         get_tod(&tod);
         tick_weather();
         compute_sky();
-        if (tod.hour == 0) {
+        if (tod.minute == 0) {
             process_rain();
         }
         write_weather_images();
