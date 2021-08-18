@@ -26,7 +26,8 @@ CONF_FILES = \
 	config/news \
 	config/rules \
 	config/settings \
-	config/stat_bonus
+	config/stat_bonus \
+	config/treedefs
 
 VAR_FILES = highscore banish_file bookarch temp.maps clockdata
 EXTRA_DIST = README .collect-stamp $(CONF_FILES)
