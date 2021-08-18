@@ -398,7 +398,8 @@ void tick_the_clock(void) {
     /* call the weather calculators, here, in order */
     if (settings.dynamiclevel > 0) {
         tick_weather();
-        if (tod.hour == 0) {
+        // At every hour, measure the rainfall.
+        if (tod.minute == 0) {
             process_rain();
         }
     }
