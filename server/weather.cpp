@@ -37,16 +37,6 @@ static void read_windspeedmap(void);
 static void init_wind(void);
 static void read_gulfstreammap(void);
 static void init_gulfstreammap(void);
-static void read_humidmap(void);
-static void write_elevmap(void);
-static void read_elevmap(void);
-static void write_watermap(void);
-static void read_watermap(void);
-static void init_humid_elev(void);
-static void read_temperaturemap(void);
-static void init_temperature(void);
-static void read_rainfallmap(void);
-static void init_rainfall(void);
 static void init_weatheravoid (weather_avoids_t wa[]);
 static void perform_weather(void);
 static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int grow);
@@ -55,19 +45,8 @@ static void let_it_snow(mapstruct *m);
 static void singing_in_the_rain(mapstruct *m);
 static void plant_a_garden(mapstruct *m);
 static void change_the_world(mapstruct *m);
-static char *weathermap_to_worldmap_corner(int wx, int wy, int *x, int *y, int dir, char* buffer, int bufsize);
-static int polar_distance(int x, int y, int equator);
-static void update_humid(void);
-static int humid_tile(int x, int y);
-static void temperature_calc(int x, int y, const timeofday_t *tod);
 static int real_temperature(int x, int y);
-static void smooth_pressure(void);
-static void perform_pressure(void);
-static void smooth_wind(void);
-static void plot_gulfstream(void);
-static void compute_sky(void);
 void process_rain(void);
-static void spin_globe(void);
 static void weather_effect(mapstruct *m);
 
 /** Speed of the gulf stream. */
@@ -398,17 +377,6 @@ static void dawn_to_dusk(const timeofday_t *tod) {
 
         change_map_light(m, season_timechange[tod->season][tod->hour]);
     }
-}
-
-void tick_weather() {
-    assert(settings.dynamiclevel > 0);
-    perform_pressure();     /* pressure is the random factor */
-    smooth_wind();          /* calculate the wind. depends on pressure */
-    plot_gulfstream();
-    update_humid();
-    init_temperature();
-    spin_globe();
-    //compute_sky(); This is done in perform_weather
 }
 
 /**
@@ -866,485 +834,6 @@ static void init_gulfstreammap(void) {
     } /* done */
 }
 
-/**
- * Save humidity information.
- */
-void write_humidmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/humidmap", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
-        LOG(llevError, "Cannot open %s for writing\n", filename);
-        return;
-    }
-    LOG(llevDebug, "Writing humidity map to file.\n");
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            fprintf(fp, "%d ", weathermap[x][y].humid);
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-}
-
-/**
- * Read humidity information, or initialize it randomly if no saved information available.
- */
-static void read_humidmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y, d;
-
-    snprintf(filename, sizeof(filename), "%s/humidmap", settings.localdir);
-    LOG(llevDebug, "Reading humidity data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
-        LOG(llevInfo, "Initializing humidity and elevation maps...\n");
-        init_humid_elev();
-        write_elevmap();
-        write_humidmap();
-        write_watermap();
-        LOG(llevDebug, "Done\n");
-        return;
-    }
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%d ", &d);
-            weathermap[x][y].humid = d;
-            if (weathermap[x][y].humid < 0 ||
-                weathermap[x][y].humid > 100) {
-                weathermap[x][y].humid = rndm(0, 100);
-            }
-        }
-        (void)fscanf(fp, "\n");
-    }
-    LOG(llevDebug, "Done.\n");
-    fclose(fp);
-}
-
-/**
- * Save the average elevation information.
- */
-static void write_elevmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/elevmap", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
-        LOG(llevError, "Cannot open %s for writing\n", filename);
-        return;
-    }
-    LOG(llevDebug, "Writing elevation map to file.\n");
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            fprintf(fp, "%d ", weathermap[x][y].avgelev);
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-}
-
-/**
- * Load or initialize the elevation information.
- */
-static void read_elevmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/elevmap", settings.localdir);
-    LOG(llevDebug, "Reading elevation data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
-        /* initializing these is expensive, and should have been done
-           by the humidity.  It's not worth the wait to do it twice. */
-        return;
-    }
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%d ", &weathermap[x][y].avgelev);
-            // Randomization when out of range does weird stuff.
-            // Cap them instead.
-            if (weathermap[x][y].avgelev < -10000) {
-                weathermap[x][y].avgelev = -10000;
-            } else if (weathermap[x][y].avgelev > 15000) {
-                weathermap[x][y].avgelev = 15000;
-            }
-        }
-        (void)fscanf(fp, "\n");
-    }
-    LOG(llevDebug, "Done.\n");
-    fclose(fp);
-}
-
-/**
- * Save water percent information.
- */
-static void write_watermap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/watermap", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
-        LOG(llevError, "Cannot open %s for writing\n", filename);
-        return;
-    }
-    LOG(llevDebug, "Writing water map to file.\n");
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            fprintf(fp, "%d ", weathermap[x][y].water);
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-}
-
-/**
- * Load or initialize water information.
- */
-static void read_watermap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y, d;
-
-    snprintf(filename, sizeof(filename), "%s/watermap", settings.localdir);
-    LOG(llevDebug, "Reading water data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
-        /* initializing these is expensive, and should have been done
-           by the humidity.  It's not worth the wait to do it twice. */
-        return;
-    }
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%d ", &d);
-            weathermap[x][y].water = d;
-            if (weathermap[x][y].water > 100) {
-                weathermap[x][y].water = rndm(0, 100);
-            }
-        }
-        (void)fscanf(fp, "\n");
-    }
-    LOG(llevDebug, "Done.\n");
-    fclose(fp);
-}
-
-/**
- * Method to abstract some of the mess of the humidity map.
- *
- * @param dir
- * The map corner to handle. Should be one of 2, 4, 6, or 8.
- *
- * @param x
- * @param y
- * The x,y coordinates of the weather map we are handling.
- *
- * @param tx
- * @param ty
- * Pointers to the coordinates on the map we are loading.
- * The looping structure needs these.
- *
- * @return
- * 0 if successful, -1 on failure.
- */
-static int load_humidity_map_part(mapstruct **m, int dir, int x, int y, int *tx, int *ty) {
-    char mapname[MAX_BUF];
-    if (!m || !tx || !ty)
-        return -1;
-    // Now we do what was wanted.
-    weathermap_to_worldmap_corner(x, y, tx, ty, dir, mapname, sizeof(mapname));
-    *m = mapfile_load(mapname, 0);
-    if (*m == NULL) {
-        return -1;
-    }
-
-    int res = load_overlay_map(mapname, *m);
-    if (res != 0) {
-        return -1;
-    }
-    return 0;
-}
-
-/**
- * Do the water and elevation updates on the given map tile.
- *
- * @param m
- * The map we are working on
- *
- * @param x
- * @param y
- * The x,y coordinates we are handling for the current space.
- *
- * @param water
- * Pointer to a water count variable.
- * Will be updated by this function.
- *
- * @param elev
- * Pointer to an elevation sum variable.
- * Will be updated by this function.
- *
- * @return
- * 0 if successful, -1 if failure
- */
-static int do_water_elev_calc(mapstruct *m, int x, int y, int *water, int64_t *elev) {
-    if (!m || !water || !elev)
-        return -1;
-    object *ob = GET_MAP_OB(m, x, y);
-    if (ob) {
-        if (QUERY_FLAG(ob, FLAG_IS_WATER)) {
-            (*water)++;
-        }
-        // Deserts will reduce the precipitation in the spaces they exist in.
-        if (strcmp(ob->name, "desert") == 0) {
-            (*water)--;
-        }
-        (*elev) += ob->elevation;
-    }
-    return 0;
-}
-
-/**
- * Initialize both humidity and elevation.
- */
-static void init_humid_elev(void) {
-    int x, y, tx, ty, nx, ny, ax, ay, j;
-    int spwtx, spwty;
-    int64_t elev;
-    int water, space;
-    mapstruct *m;
-
-    /* handling of this is kinda nasty.  For that reason,
-     * we do the elevation here too.  Not because it makes the
-     * code cleaner, or makes handling easier, but because I do *not*
-     * want to maintain two of these nightmares.
-     */
-
-    spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX;
-    spwty = (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            water = 0;
-            elev = 0;
-            nx = 0;
-            ny = 0;
-            space = 0;
-
-            /* top left */
-            if (load_humidity_map_part(&m, 8, x, y, &tx, &ty) == -1)
-                continue;
-
-            for (nx = 0, ax = tx; nx < spwtx && ax < settings.worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
-                for (ny = 0, ay = ty; ny < spwty && ay < settings.worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
-                    do_water_elev_calc(m, ax, ay, &water, &elev);
-                }
-            }
-            delete_map(m);
-
-            /* bottom left */
-            if (load_humidity_map_part(&m, 6, x, y, &tx, &ty) == -1)
-                continue;
-
-            j = ny;
-            for (nx = 0, ax = tx; nx < spwtx && ax < settings.worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
-                for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
-                    do_water_elev_calc(m, ax, ay, &water, &elev);
-                }
-            }
-            delete_map(m);
-
-            /* top right */
-            if (load_humidity_map_part(&m, 2, x, y, &tx, &ty) == -1)
-                continue;
-
-            for (ax = MAX(0, tx-(spwtx-1)); nx < spwtx && ax < tx && space < spwtx*spwty; ax++, nx++) {
-                for (ny = 0, ay = ty; ny < spwty && ay < settings.worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
-                    do_water_elev_calc(m, ax, ay, &water, &elev);
-                }
-            }
-            delete_map(m);
-
-            /* bottom left */
-            if (load_humidity_map_part(&m, 4, x, y, &tx, &ty) == -1)
-                continue;
-
-            for (nx = 0, ax = MAX(0, tx - (spwtx-1)); nx < spwtx && ax < tx && space < spwtx*spwty; ax++, nx++) {
-                for (ny = 0, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
-                    do_water_elev_calc(m, ax, ay, &water, &elev);
-                }
-            }
-            delete_map(m);
-
-            /* jesus thats confusing as all hell */
-            // Per meteorology, full ocean usually only gets to 80% humidity at the standard height it is measured.
-            // This should help prevent a forever-hurricane over the ocean.
-            weathermap[x][y].humid = water*80/(spwtx*spwty);
-            weathermap[x][y].avgelev = elev/(spwtx*spwty);
-            weathermap[x][y].water = water*100/(spwtx*spwty);
-        }
-    }
-
-    /* and this does all the real work */
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            weathermap[x][y].humid = humid_tile(x, y);
-        }
-    }
-}
-
-/**
- * Save temperature information.
- */
-void write_temperaturemap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/temperaturemap", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
-        LOG(llevError, "Cannot open %s for writing\n", filename);
-        return;
-    }
-    LOG(llevDebug, "Writing temperature map to file.\n");
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            fprintf(fp, "%d ", weathermap[x][y].temp);
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-}
-
-/**
- * Load or initialize temperature information.
- */
-static void read_temperaturemap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/temperaturemap", settings.localdir);
-    LOG(llevDebug, "Reading temperature data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
-        LOG(llevInfo, "Initializing temperature map.\n");
-        init_temperature();
-        write_temperaturemap();
-        return;
-    }
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%hd ", &weathermap[x][y].temp);
-            if (weathermap[x][y].temp < -30 ||
-                weathermap[x][y].temp > 60) {
-                weathermap[x][y].temp = rndm(-10, 40);
-            }
-        }
-        (void)fscanf(fp, "\n");
-    }
-    LOG(llevDebug, "Done.\n");
-    fclose(fp);
-}
-
-/**
- * Initialize the temperature based on the time.
- */
-static void init_temperature(void) {
-    int x, y;
-    timeofday_t tod;
-
-    get_tod(&tod);
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            temperature_calc(x, y, &tod);
-        }
-    }
-}
-
-/**
- * Save rainfall information.
- */
-void write_rainfallmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/rainfallmap", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
-        LOG(llevError, "Cannot open %s for writing\n", filename);
-        return;
-    }
-    LOG(llevDebug, "Writing rainfall map to file.\n");
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            fprintf(fp, "%u ", weathermap[x][y].rainfall);
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-}
-
-/**
- * Read or initialize rainfall information.
- */
-static void read_rainfallmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/rainfallmap", settings.localdir);
-    LOG(llevDebug, "Reading rainfall data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
-        LOG(llevInfo, "Initializing rainfall map...\n");
-        init_rainfall();
-        write_rainfallmap();
-        return;
-    }
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%u ", &weathermap[x][y].rainfall);
-        }
-        (void)fscanf(fp, "\n");
-    }
-    LOG(llevDebug, "Done.\n");
-    fclose(fp);
-}
-
-/**
- * Initialize rainfall.
- */
-static void init_rainfall(void)
-{
-    int x, y;
-    int days = todtick/HOURS_PER_DAY;
-
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            if (weathermap[x][y].humid < 10) {
-                weathermap[x][y].rainfall = days/20;
-            } else if (weathermap[x][y].humid < 20) {
-                weathermap[x][y].rainfall = days/15;
-            } else if (weathermap[x][y].humid < 30) {
-                weathermap[x][y].rainfall = days/10;
-            } else if (weathermap[x][y].humid < 40) {
-                weathermap[x][y].rainfall = days/5;
-            } else if (weathermap[x][y].humid < 50) {
-                weathermap[x][y].rainfall = days/2;
-            } else if (weathermap[x][y].humid < 60) {
-                weathermap[x][y].rainfall = days;
-            } else if (weathermap[x][y].humid < 80) {
-                weathermap[x][y].rainfall = days*2;
-            } else {
-                weathermap[x][y].rainfall = days*3;
-            }
-        }
-    }
-}
-
 /* END of read/write/init */
 
 /**
@@ -1409,10 +898,8 @@ void init_weather(void) {
     read_winddirmap();
     read_windspeedmap();
     read_gulfstreammap();
-    read_humidmap();
-    read_watermap(); /* On first run, we want to do this after humidity. Otherwise, it doesn't seem to matter */
-    read_elevmap(); /* elevation must allways follow humidity */
-    read_temperaturemap();
+    /* The rest have been migrated over to the weather module. */
+
     gulf_stream_direction = rndm(0, 1);
     for (tx = 0; tx < GULF_STREAM_WIDTH; tx++) {
         for (ty = 0; ty < WEATHERMAPTILESY-1; ty++) {
@@ -1433,9 +920,7 @@ void init_weather(void) {
     }
 
     gulf_stream_start = rndm(GULF_STREAM_WIDTH, WEATHERMAPTILESY-GULF_STREAM_WIDTH);
-    read_rainfallmap();
-
-    LOG(llevDebug, "Done reading weathermaps\n");
+    // Get current map position
     snprintf(filename, sizeof(filename), "%s/wmapcurpos", settings.localdir);
     LOG(llevDebug, "Reading current weather position from %s...\n", filename);
     if ((fp = fopen(filename, "r")) == NULL) {
@@ -1453,8 +938,6 @@ void init_weather(void) {
     if (wmperformstarty > settings.worldmaptilesy) {
         wmperformstarty = 0;
     }
-    // Initialize the sky so we can get accurate precipitation at initial load.
-    compute_sky();
 }
 
 /**
@@ -2549,56 +2032,6 @@ int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct* m) {
 }
 
 /**
- * Return the path of the map in specified direction.
- *
- * @param wx
- * @param wy
- * weather map coordinates.
- * @param[out] x
- * @param[out] y
- * will contain coordinates in the new map. Mustn't be NULL.
- * @param dir
- * direction to find map for. Valid values are 2 4 6 8 for the corners.
- * @param buffer
- * buffer that will contain the path of map in specified direction.
- * @param bufsize
- * length of buffer
- * @return
- * buffer.
- */
-static char *weathermap_to_worldmap_corner(int wx, int wy, int *x, int *y, int dir, char* buffer, int bufsize) {
-    int spwtx, spwty;
-    int tx, ty, nx, ny;
-
-    spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX;
-    spwty = (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
-    switch (dir) {
-    case 2: wx++; break;
-    case 4: wx++; wy++; break;
-    case 6: wy++; break;
-    case 8: break;
-    }
-    if (wx > 0) {
-        tx = (wx*spwtx)-1;
-    } else {
-        tx = wx;
-    }
-    if (wy > 0) {
-        ty = (wy*spwty)-1;
-    } else {
-        ty = wy;
-    }
-
-    nx = (tx/settings.worldmaptilesizex)+settings.worldmapstartx;
-    ny = (ty/settings.worldmaptilesizey)+settings.worldmapstarty;
-    snprintf(buffer, bufsize, "world/world_%d_%d", nx, ny);
-
-    *x = tx%settings.worldmaptilesizex;
-    *y = ty%settings.worldmaptilesizey;
-    return buffer;
-}
-
-/**
  * Calculate the direction to push an object from wind
  *
  * @param m
@@ -2654,129 +2087,6 @@ uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t
     // winddir is the direction the wind is coming from.
     // so we need to reverse it to push where the wind is going to.
     return absdir(weathermap[nx][ny].winddir+4);
-}
-
-/**
- * Calculates the distance to the nearest pole.
- * @param x
- * @param y
- * weathermap coordinates.
- * @param equator
- * current location of the equator.
- * @return
- * distance as an int.
- */
-static int polar_distance(int x, int y, int equator) {
-    if ((x+y) > equator) { /* south pole */
-        x = WEATHERMAPTILESX - x;
-        y = WEATHERMAPTILESY - y;
-        return ((x+y)/2);
-    } else if ((x+y) < equator) { /* north pole */
-        return ((x+y)/2);
-    } else {
-        return equator/2;
-    }
-}
-
-/**
- * Update the humidity for all weathermap tiles.
- */
-static void update_humid(void) {
-    int x, y;
-
-    for (y = 0; y < WEATHERMAPTILESY; y++) {
-        for (x = 0; x < WEATHERMAPTILESX; x++) {
-            weathermap[x][y].humid = humid_tile(x, y);
-        }
-    }
-}
-
-/**
- * Calculate the humidity of this tile.
- *
- * @param x
- * @param y
- * weathermap coordinates we wish to calculate humidity for.
- * @return
- * the humidity of the weathermap square.
- */
-static int humid_tile(int x, int y) {
-    int ox, oy, humid;
-
-    ox = x;
-    oy = y;
-
-    /* find the square the wind is coming from, without going out of bounds */
-
-    if (weathermap[x][y].winddir == 8 || weathermap[x][y].winddir <= 2) {
-        if (y != 0) {
-            oy = y-1;
-        }
-    }
-    if (weathermap[x][y].winddir >= 6) {
-        if (x != 0) {
-            ox = x-1;
-        }
-    }
-    if (weathermap[x][y].winddir >= 4 && weathermap[x][y].winddir <= 6) {
-        if (y < WEATHERMAPTILESY-1) {
-            oy = y+1;
-        }
-    }
-    if (weathermap[x][y].winddir >= 2 && weathermap[x][y].winddir <= 4) {
-        if (x < WEATHERMAPTILESX-1) {
-            ox = x+1;
-        }
-    }
-    humid = (weathermap[x][y].humid*2+
-        weathermap[ox][oy].humid*weathermap[ox][oy].windspeed +
-        weathermap[x][y].water+rndm(0, 10))/
-        (weathermap[ox][oy].windspeed+3)+rndm(0, 5);
-    if (humid < 0) {
-        humid = 1;
-    }
-    if (humid > 100) {
-        humid = 100;
-    }
-    return humid;
-}
-
-/**
- * Calculate temperature of a spot.
- *
- * @param x
- * @param y
- * weathermap coordinates.
- * @param tod
- * time of day.
- */
-static void temperature_calc(int x, int y, const timeofday_t *tod) {
-    int dist, equator, elev, n;
-    float diff, tdiff;
-
-    equator = (WEATHERMAPTILESX+WEATHERMAPTILESY)/4;
-    diff = (float)(EQUATOR_BASE_TEMP-POLAR_BASE_TEMP)/(float)equator;
-    tdiff = (float)SEASONAL_ADJUST/(float)(MONTHS_PER_YEAR/2.0);
-    equator *= 2;
-    n = 0;
-    /* we essentially move the equator during the season */
-    if (tod->month > (MONTHS_PER_YEAR/2)) { /* EOY */
-        n -= (tod->month*tdiff);
-    } else {
-        n = (MONTHS_PER_YEAR - tod->month)*tdiff;
-    }
-    dist = polar_distance(x-n/2, y-n/2, equator);
-
-    /* now we have the base temp, unadjusted for time.  Time adjustment
-       is not recorded on the map, rather, it's done JIT. */
-    weathermap[x][y].temp = (int)(dist * diff);
-    /* just scrap these for now, its mostly ocean */
-    if (weathermap[x][y].avgelev < 0) {
-        elev = 0;
-    } else {
-        elev = MAX(10000, weathermap[x][y].avgelev)/1000;
-    }
-    weathermap[x][y].temp -= elev;
 }
 
 /**
@@ -2865,7 +2175,7 @@ int real_world_temperature(int x, int y, mapstruct *m) {
 /**
  * This code simply smooths the pressure map
  */
-static void smooth_pressure(void) {
+void smooth_pressure(void) {
     int x, y;
     int k;
 
@@ -2901,118 +2211,10 @@ static void smooth_pressure(void) {
 }
 
 /**
- * Perform small randomizations in the pressure map.  Then, apply the
- * smoothing algorithim.. This causes the pressure to change very slowly
- */
-static void perform_pressure(void) {
-    int x, y, l, n, j, k;
-
-    /* create random spikes in the pressure */
-    for (l = 0; l < PRESSURE_SPIKES; l++) {
-        x = rndm(0, WEATHERMAPTILESX-1);
-        y = rndm(0, WEATHERMAPTILESY-1);
-        n = rndm(600, 1300);
-        weathermap[x][y].pressure = n;
-        if (x > 5 && y > 5 && x < WEATHERMAPTILESX-5 && y < WEATHERMAPTILESY-5) {
-            for (j = x-2; j < x+2; j++) {
-                for (k = y-2; k < y+2; k++) {
-                    weathermap[j][k].pressure = n;
-                    /* occasionally add a storm */
-                    if (rndm(1, 20) == 1) {
-                        weathermap[j][k].humid = rndm(50, 80);
-                    }
-                }
-            }
-        }
-    }
-
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            weathermap[x][y].pressure += rndm(-1, 4);
-        }
-    }
-
-    smooth_pressure();
-}
-
-/**
- * It doesn't really smooth it as such.  The main function of this is to
- * apply the pressuremap to the wind direction and speed.  Then, we run
- * a quick pass to update the windspeed.
- */
-static void smooth_wind(void) {
-    int x, y;
-    int tx, ty, dx, dy;
-    int minp;
-
-    /* skip the outer squares.. it makes handling alot easier */
-    dx = 0;
-    dy = 0;
-    for (x = 1; x < WEATHERMAPTILESX-1; x++)
-        for (y = 1; y < WEATHERMAPTILESY-1; y++) {
-            minp = PRESSURE_MAX + 1;
-            for (tx = -1; tx < 2; tx++) {
-                for (ty = -1; ty < 2; ty++) {
-                    if (!(tx == 0 && ty == 0)) {
-                        if (weathermap[x+tx][y+ty].pressure < minp) {
-                            minp = weathermap[x+tx][y+ty].pressure;
-                            dx = tx;
-                            dy = ty;
-                        }
-                    }
-                }
-            }
-
-            /* if the wind is strong, the pressure won't decay it completely */
-            if (weathermap[x][y].windspeed > 5 && !similar_direction(weathermap[x][y].winddir, find_dir_2(dx, dy))) {
-                weathermap[x][y].windspeed -= 2*2;
-            } else {
-                weathermap[x][y].winddir = find_dir_2(dx, dy);
-                weathermap[x][y].windspeed = (weathermap[x][y].pressure-weathermap[x+dx][y+dy].pressure)*WIND_FACTOR;
-            }
-                /* Add in sea breezes. */
-            weathermap[x][y].windspeed += weathermap[x][y].water/4;
-            if (weathermap[x][y].windspeed < 0) {
-                weathermap[x][y].windspeed = 0;
-            }
-        }
-
-    /*  now, lets crank on the speed.  When surrounding tiles all have
-        the same speed, inc ours.  If it's chaos. drop it.
-     */
-    for (x = 1; x < WEATHERMAPTILESX-1; x++) {
-        for (y = 1; y < WEATHERMAPTILESY-1; y++) {
-            minp = 0;
-            for (tx = -1; tx < 2; tx++) {
-                for (ty = -1; ty < 2; ty++) {
-                    if (tx != 0 && ty != 0) {
-                        if (similar_direction(weathermap[x][y].winddir, weathermap[x+tx][y+ty].winddir)) {
-                            minp++;
-                        }
-                    }
-                }
-            }
-            if (minp > 4) {
-                weathermap[x][y].windspeed++;
-            }
-            if (minp > 6) {
-                weathermap[x][y].windspeed += 2;
-            }
-            if (minp < 2) {
-                weathermap[x][y].windspeed--;
-            }
-            if (weathermap[x][y].windspeed < 0) {
-                weathermap[x][y].windspeed = 0;
-            }
-        }
-    }
-}
-
-/**
  * Plot the gulfstream map over the wind map.  This is done after the wind,
  * to avoid the windsmoothing scrambling the jet stream.
  */
-static void plot_gulfstream(void) {
+void plot_gulfstream(void) {
     int x, y, tx;
 
     x = gulf_stream_start;
@@ -3106,7 +2308,7 @@ static void plot_gulfstream(void) {
  * calculated up to now, to figure out what the sky conditions are for this
  * square.
  */
-static void compute_sky(void) {
+void compute_sky(void) {
     int x, y;
     int temp;
 
@@ -3231,28 +2433,6 @@ void process_rain(void) {
 }
 
 /**
- * The world spinning drags the weather with it.
- * The equator is diagonal, and the poles are 45 degrees from north /south.
- * What the hell, lets spin the planet backwards.
- */
-static void spin_globe(void) {
-    int x, y;
-    int buffer_humid;
-    int buffer_sky;
-
-    for (y = 0; y < WEATHERMAPTILESY; y++) {
-        buffer_humid = weathermap[0][y].humid;
-        buffer_sky = weathermap[0][y].sky;
-        for (x = 0; x < (WEATHERMAPTILESX-1); x++) {
-            weathermap[x][y].humid = weathermap[x+1][y].humid;
-            weathermap[x][y].sky = weathermap[x+1][y].sky;
-        }
-        weathermap[WEATHERMAPTILESX-1][y].humid = buffer_humid;
-        weathermap[WEATHERMAPTILESX-1][y].sky = buffer_sky;
-    }
-}
-
-/**
  * Dump all the weather data as an image.
  * Writes two other files that are useful for creating animations and web pages.
  */
@@ -3326,12 +2506,15 @@ void write_weather_images(void) {
     for (y = 0; y < WEATHERMAPTILESY; y++) {
         memset(pixels, 0, 3 * 3 * WEATHERMAPTILESX);
         for (x = 0; x < WEATHERMAPTILESX; x++) {
-            // water map -- first map of row
-            // blue = high water amount, black = low water amount, red = desert-like
+            // water/tree map -- first map of row
+            // blue = high water amount, black = low water amount, red = desert-like, green = trees
             if (weathermap[x][y].water < 0)
                 pixels[3*x+(0*WEATHERMAPTILESX*3+RED)] = (uint8_t)(255-(weathermap[x][y].water-min[0])*scale[0]*2);
             else
                 pixels[3*x+(0*WEATHERMAPTILESX*3+BLUE)] = (uint8_t)((weathermap[x][y].water)*scale[0]*2);
+            // Either way, we use green to highlight the trees, too
+            // Make this real simple since it is established that forestry values range from 0 to 100
+            pixels[3*x+(0*WEATHERMAPTILESX*3+GREEN)] = (uint8_t)((weathermap[x][y].forestry)*2);
             // elevation map -- second map of row.
             // green -- mostly land --> brighter green is higher elevation
             // blue -- mostly water --> deeper blue is lower elevation
