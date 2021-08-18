@@ -251,7 +251,7 @@ static void smooth_wind() {
  * smoothing algorithim.. This causes the pressure to change very slowly
  */
 static void perform_pressure() {
-    int x, y, l, n, j, k;
+    int x, y, l, n, j, k, is_storm;
 
     /* create random spikes in the pressure */
     for (l = 0; l < PRESSURE_SPIKES; l++) {
@@ -260,11 +260,14 @@ static void perform_pressure() {
         n = rndm(600, 1300);
         weathermap[x][y].pressure = n;
         if (x > 5 && y > 5 && x < WEATHERMAPTILESX-5 && y < WEATHERMAPTILESY-5) {
+            /* occasionally add a storm
+             * and make sure the whole pressure spot is a storm, not just pieces of it
+             */
+            is_storm = (rndm(1, 20) == 1);
             for (j = x-2; j < x+2; j++) {
                 for (k = y-2; k < y+2; k++) {
                     weathermap[j][k].pressure = n;
-                    /* occasionally add a storm */
-                    if (rndm(1, 20) == 1) {
+                    if (is_storm) {
                         weathermap[j][k].humid = rndm(50, 80);
                     }
                 }
@@ -314,9 +317,8 @@ static void temperature_calc(int x, int y, const timeofday_t *tod) {
     if (weathermap[x][y].avgelev < 0) {
         elev = 0;
     } else {
-        // FIXME: elev will always be at least 10000 here.
-        // That seems rather dubious to me.
-        elev = MAX(10000, weathermap[x][y].avgelev)/1000;
+        // Make sure that higher elevations cause lower temps.
+        elev = MIN(15000, weathermap[x][y].avgelev)/1000;
     }
     weathermap[x][y].temp -= elev;
 }
@@ -390,7 +392,7 @@ static int humid_tile(int x, int y) {
         weathermap[ox][oy].humid*weathermap[ox][oy].windspeed +
         weathermap[x][y].water +
         weathermap[x][y].forestry/10 + rndm(0, 10))/
-        (weathermap[ox][oy].windspeed+3)+rndm(-3, 3);
+        (weathermap[ox][oy].windspeed+3)+rndm(-1, 4);
     if (humid < 0) {
         humid = 0;
     }
