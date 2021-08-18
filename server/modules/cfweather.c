@@ -481,8 +481,24 @@ static int init_forestry_vals(const Settings *settings) {
                     // Format is like this:
                     // name, (0 if arch, 1 if object name), # trees
                     // [spaces are expected after commas]
-                    found = sscanf(line, "%s, %d, %d", name, &is_obj_name, &tree_count);
-                    if (found != 3) {
+
+                    // sscanf on strings is wonky (it always reads to whitespace),
+                    // so I'm gonna do it by just nabbing part of the buffer.
+                    name = line; // Each line starts with name
+                    line = strchr(line, ',');
+                    if (line == NULL) {
+                        LOG(llevError, "init_forestry_vals: Malformed forestry entry in %s, line %d:\n%s\n",
+                            filename, bufferreader_current_line(bfr), line);
+                        // Move on to the next line and hope it is fine.
+                        continue;
+                    }
+                    // Null terminate the end of the name, and move to the next space.
+                    *(line++) = '\0';
+                    // Move past whitespace.
+                    while (*line == ',' || *line == ' ')
+                        ++line;
+                    found = sscanf(line, "%d, %d\n", &is_obj_name, &tree_count);
+                    if (found != 2) {
                         // Print an error for the malformed line
                         LOG(llevError, "init_forestry_vals: Malformed forestry entry in %s, line %d:\n%s\n",
                             filename, bufferreader_current_line(bfr), line);
@@ -597,7 +613,7 @@ static int do_water_elev_calc(mapstruct *m, int x, int y, int *water, int64_t *e
                 if ((tmp->is_obj && tmp->name == obtmp->name) ||
                     // Does arch name match?
                     (!tmp->is_obj && tmp->name == obtmp->arch->name)) {
-                        *trees += tmp->num_trees;
+                        (*trees) += tmp->num_trees;
                         break;
                 }
 
