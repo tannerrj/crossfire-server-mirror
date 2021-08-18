@@ -1272,14 +1272,13 @@ static int read_watermap(const Settings *settings) {
  * @return
  * 0 on success without initialization, 1 on success with initialization.
  * Returns -1 on failure.
- *
- * @todo
- * Refactor to use a bufferreader.
  */
 static int read_temperaturemap(const Settings *settings) {
-    char filename[MAX_BUF];
+    char filename[MAX_BUF], *data, *tmp;
     FILE *fp;
-    int x, y;
+    BufferReader *bfr;
+    int x, y, res;
+    int16_t temperature;
 
     snprintf(filename, sizeof(filename), "%s/temperaturemap", settings->localdir);
     LOG(llevDebug, "Reading temperature data from %s...\n", filename);
@@ -1292,18 +1291,36 @@ static int read_temperaturemap(const Settings *settings) {
             return 1;
         return -1;
     }
+    bfr = bufferreader_create();
+    bufferreader_init_from_file(bfr, fp);
+    fclose(fp);
+    data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%hd ", &weathermap[x][y].temp);
-            if (weathermap[x][y].temp < -30 ||
-                weathermap[x][y].temp > 60) {
-                weathermap[x][y].temp = rndm(-10, 40);
+            res = sscanf(data, "%hd ", &temperature);
+            if (res != 1) {
+                LOG(llevError, "Temperature file is malformed, unable to load temps from file.\n");
+                bufferreader_destroy(bfr);
+                return -1;
             }
+            // Clip to reasonable bounds.
+            weathermap[x][y].temp = MIN(60, MAX(-30, temperature));
+            // Adjust the data pointer.
+            tmp = strpbrk(data, " \n");
+            if (tmp == NULL) {
+                LOG(llevError, "Unexpected end of file in temperature map.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Okay, so we want the first character after the space/newline.
+            data = tmp + 1;
         }
-        (void)fscanf(fp, "\n");
+        // Make sure we don't leave a newline in the event of a trailing space on a given line.
+        if (*data == '\n')
+            ++data;
     }
+    bufferreader_destroy(bfr);
     LOG(llevDebug, "Done.\n");
-    fclose(fp);
     return 0;
 }
 
@@ -1319,14 +1336,12 @@ static int read_temperaturemap(const Settings *settings) {
  * @return
  * 0 if success without initialization, 1 if success with initialization.
  * Returns -1 on failure.
- *
- * @todo
- * Refactor to use a bufferreader
  */
 static int read_rainfallmap(const Settings *settings) {
-    char filename[MAX_BUF];
+    char filename[MAX_BUF], *data, *tmp;
     FILE *fp;
-    int x, y;
+    BufferReader *bfr;
+    int x, y, res;
 
     snprintf(filename, sizeof(filename), "%s/rainfallmap", settings->localdir);
     LOG(llevDebug, "Reading rainfall data from %s...\n", filename);
@@ -1334,14 +1349,36 @@ static int read_rainfallmap(const Settings *settings) {
         LOG(llevError, "Cannot open %s for reading\n", filename);
         LOG(llevInfo, "Initializing rainfall map...\n");
         init_rainfall();
-        write_rainfallmap(settings);
+        // If we write to file successfully, consider initialization a success.
+        if (write_rainfallmap(settings) != 0);
+            return -1;
         return 1;
     }
+    bfr = bufferreader_create();
+    bufferreader_init_from_file(bfr, fp);
+    fclose(fp);
+    data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%u ", &weathermap[x][y].rainfall);
+            res = sscanf(data, "%u ", &weathermap[x][y].rainfall);
+            if (res != 1) {
+                LOG(llevError, "Rainfall file is corrupted, cannot load rainfall from file.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Now we update the pointer to data to move to the next item.
+            tmp = strpbrk(data, " \n");
+            if (tmp == NULL) {
+                LOG(llevError, "Unexpected end of file in rainfall map.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Okay, so we want the first character after the space/newline.
+            data = tmp + 1;
         }
-        (void)fscanf(fp, "\n");
+        // Make sure we don't leave a newline in the event of a trailing space on a given line.
+        if (*data == '\n')
+            ++data;
     }
     LOG(llevDebug, "Done.\n");
     fclose(fp);
