@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
     settings.dynamiclevel = 2; // overwrite settings
     init_beforeplay();
     init_weather();
+    init_modules(); // Abunch of weather code lives in the modules now.
     LOG(llevInfo, "Simulating weather for %d ticks: ", num);
     for (int i = 0; i < num; i++) {
         timeofday_t tod;
