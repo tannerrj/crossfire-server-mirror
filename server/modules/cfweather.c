@@ -224,6 +224,10 @@ static void smooth_wind() {
     int tx, ty, dx, dy;
     int minp;
 
+    // Grab the old wind speed.
+    // Moving air is lower pressure than stationary air.
+    int oldwind = weathermap[x][y].windspeed;
+
     /* skip the outer squares.. it makes handling alot easier */
     dx = 0;
     dy = 0;
@@ -287,6 +291,10 @@ static void smooth_wind() {
             }
         }
     }
+
+    // Apply a difference to the pressure equal to our change in wind.
+    // Higher wind speed is lower pressure.
+    weathermap[x][y].pressure -= weathermap[x][y].windspeed - oldwind;
 }
 
 /**
@@ -500,6 +508,10 @@ static void temperature_calc(int x, int y, const timeofday_t *tod) {
     int dist, equator, elev, n, trees;
     float diff, tdiff;
 
+    // Warmer air has higher pressure than colder air.
+    // Store the old value for temperature.
+    int oldtemp = weathermap[x][y].temp, tempdiff;
+
     equator = (WEATHERMAPTILESX+WEATHERMAPTILESY)/4;
     diff = (float)(EQUATOR_BASE_TEMP-POLAR_BASE_TEMP)/(float)equator;
     tdiff = (float)SEASONAL_ADJUST/(float)(MONTHS_PER_YEAR/2.0);
@@ -521,7 +533,7 @@ static void temperature_calc(int x, int y, const timeofday_t *tod) {
         elev = 0;
     } else {
         // Make sure that higher elevations cause lower temps.
-        elev = MIN(15000, weathermap[x][y].avgelev)/1000;
+        elev = MIN(20000, weathermap[x][y].avgelev)/1000;
     }
     weathermap[x][y].temp -= elev;
 
@@ -544,6 +556,13 @@ static void temperature_calc(int x, int y, const timeofday_t *tod) {
     else {
         weathermap[x][y].temp -= trees/8;
     }
+
+    // Now we determine the difference in temperature and adjust the pressure accordingly.
+    tempdiff = weathermap[x][y].temp - oldtemp;
+    // The rate (arbitrarily chosen) for temperature-to-pressure change is 1 degrees per millibar
+    // I'd have to keep track of partial millibar changes if I wanted to be coarser in this.
+    if (tempdiff != 0)
+        weathermap[x][y].pressure += tempdiff;
 }
 
 /**
