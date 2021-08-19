@@ -253,8 +253,6 @@ static void smooth_wind() {
                 weathermap[x][y].winddir = find_dir_2(dx, dy);
                 weathermap[x][y].windspeed = (weathermap[x][y].pressure-weathermap[x+dx][y+dy].pressure)*WIND_FACTOR;
             }
-            /* Add in sea breezes. */
-            weathermap[x][y].windspeed += weathermap[x][y].water/4;
             // Disrupt the wind where trees are present (a reduction of up to 5 is possible).
             weathermap[x][y].windspeed -= weathermap[x][y].forestry/20;
             if (weathermap[x][y].windspeed < 0) {
