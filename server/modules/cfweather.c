@@ -533,11 +533,11 @@ static void temperature_calc(int x, int y, const timeofday_t *tod) {
      */
     // Arbitrarily make the cutoff threshold for heat-hold as 60
     trees = weathermap[x][y].forestry;
-    // Dense trees can raise the temperature up to 6 degrees, per the calculations below.
+    // Dense trees can raise the temperature up to ~3 degrees, per the calculations below.
     if (trees >= 60) {
         weathermap[x][y].temp += (trees-60)/15;
     }
-    // If not, then we have heat reduction, most effective (-5 degrees) at 30.
+    // If not, then we have heat reduction, most effective (~4 degrees) at 30.
     else if (trees >= 30){
         weathermap[x][y].temp -= (60-trees)/8;
     }
