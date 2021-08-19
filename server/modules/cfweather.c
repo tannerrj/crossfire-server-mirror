@@ -212,7 +212,8 @@ static void init_temperature();
 
 /**
  * It doesn't really smooth it as such.  The main function of this is to
- * apply the pressuremap to the wind direction and speed.  Then, we run
+ * apply the pressuremap to the wind direction and speed, followed by some
+ * tree-driven disruption.  Then, we run
  * a quick pass to update the windspeed.
  */
 static void smooth_wind() {
@@ -245,8 +246,10 @@ static void smooth_wind() {
                 weathermap[x][y].winddir = find_dir_2(dx, dy);
                 weathermap[x][y].windspeed = (weathermap[x][y].pressure-weathermap[x+dx][y+dy].pressure)*WIND_FACTOR;
             }
-                /* Add in sea breezes. */
+            /* Add in sea breezes. */
             weathermap[x][y].windspeed += weathermap[x][y].water/4;
+            // Disrupt the wind where trees are present (a reduction of up to 5 is possible).
+            weathermap[x][y].windspeed -= weathermap[x][y].forestry/20;
             if (weathermap[x][y].windspeed < 0) {
                 weathermap[x][y].windspeed = 0;
             }
