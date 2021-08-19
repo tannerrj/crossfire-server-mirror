@@ -340,6 +340,8 @@ static void perform_pressure() {
     for (l = 0; l < PRESSURE_SPIKES; l++) {
         x = rndm(0, WEATHERMAPTILESX-1);
         y = rndm(0, WEATHERMAPTILESY-1);
+        // This goes beyond the valid bounds so that the smoothing proces ends up
+        // making different-sized pressure spikes.
         n = rndm(600, 1300);
         weathermap[x][y].pressure = n;
         // Get close to the edge. But, to make things cleaner, don't go off the edge.
