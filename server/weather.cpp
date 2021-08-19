@@ -45,7 +45,6 @@ static void let_it_snow(mapstruct *m);
 static void singing_in_the_rain(mapstruct *m);
 static void plant_a_garden(mapstruct *m);
 static void change_the_world(mapstruct *m);
-static int real_temperature(int x, int y);
 void process_rain(void);
 static void weather_effect(mapstruct *m);
 
@@ -65,11 +64,6 @@ static const int season_timechange[5][HOURS_PER_DAY] = {
     { 0, 0, 0, 0, 0,-1,-1,-1,-1,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0 },
     { 0, 0, 0, 0, 0, 0,-1,-1,-1,-1,-1,-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0 }
 };
-
-/** How to alter the temperature, based on the hour of the day. */
-static const int season_tempchange[HOURS_PER_DAY] = {
-/*  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14  1  2  3  4  5  6  7  8  9 10 11 12 13 */
-    0, 0, 0, 0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1};
 
 /**
  * The table below is used to set which tiles the weather will avoid
@@ -2088,89 +2082,6 @@ uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t
     // winddir is the direction the wind is coming from.
     // so we need to reverse it to push where the wind is going to.
     return absdir(weathermap[nx][ny].winddir+4);
-}
-
-/**
- * Compute the real (adjusted) temperature of a given weathermap tile.
- * This takes into account the wind, base temp, sunlight, and other fun
- * things.  Seasons are automatically handled by moving the equator.
- * Elevation is partially considered in the base temp. x and y are the
- * weathermap coordinates.
- *
- * @param x
- * @param y
- * weathermap coordinates.
- */
-static int real_temperature(int x, int y) {
-    int i, temp;
-    timeofday_t tod;
-
-    /* adjust for time of day */
-    temp = weathermap[x][y].temp;
-    get_tod(&tod);
-    for (i = HOURS_PER_DAY/2; i < HOURS_PER_DAY; i++) {
-        temp += season_tempchange[i];
-        /* high amounts of water has a buffering effect on the temp */
-        if (weathermap[x][y].water > 33) {
-            i++;
-        }
-    }
-    for (i = 0; i <= tod.hour; i++) {
-        temp += season_tempchange[i];
-        if (weathermap[x][y].water > 33) {
-            i++;
-        }
-    }
-
-    /* windchill */
-    for (i = 1; i < weathermap[x][y].windspeed; i += i) {
-        temp--;
-    }
-
-    return temp;
-}
-
-/**
- * Compute the temperature for a specific square.  Used to normalize elevation.
- *
- * @param x
- * @param y
- * map coordinates.
- * @param m
- * map we're on.
- * @return
- * temperature.
- */
-int real_world_temperature(int x, int y, mapstruct *m) {
-    int wx, wy, temp, eleva, elevb;
-    object *op;
-
-    /*LOG(llevDebug, "real_world_temperature: worldmaptoweathermap : %s\n",m->path);*/
-    worldmap_to_weathermap(x, y, &wx, &wy, /*m->path*/m);
-    temp = real_temperature(wx, wy);
-    if (weathermap[wx][wy].avgelev < 0) {
-        eleva = 0;
-    } else {
-        eleva = weathermap[x][y].avgelev;
-    }
-
-    op = GET_MAP_OB(m, x, y);
-    if (!op) {
-        return eleva;
-    }
-
-    elevb = op->elevation;
-    if (elevb < 0) {
-        elevb = 0;
-    }
-    if (elevb > eleva) {
-        elevb -= eleva;
-        temp -= elevb/1000;
-    } else {
-        elevb = eleva - elevb;
-        temp += elevb/1000;
-    }
-    return temp;
 }
 
 /**

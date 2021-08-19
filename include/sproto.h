@@ -638,6 +638,7 @@ uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t
 void plot_gulfstream(void);
 void smooth_pressure(void);
 void compute_sky(void);
+int real_temperature(int x, int y);
 /* server.c */
 char const* newhash(char const *password);
 bool check_password(const char *typed, const char *crypted);
