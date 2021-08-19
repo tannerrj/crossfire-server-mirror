@@ -349,6 +349,26 @@ void set_darkness_map(mapstruct *m) {
 }
 
 /**
+ * Get the darkness of the world map at this point.
+ * Since the darkness of the world map is uniform, we can get away with
+ * this calculation.
+ *
+ * @return
+ * The darkenss value of the world at the current time.
+ */
+int get_world_darkness() {
+    timeofday_t tod;
+    get_tod(&tod); // Get time of day.
+    // Determine the darkness on the world
+    // Since the world map has uniform darkness, just calculate it outright.
+    int darkness = 0;
+    for (int i = 0; i < tod.hour; ++i) {
+        darkness += season_timechange[tod.season][i];
+    }
+    return darkness;
+}
+
+/**
  * Compute the darkness level for all loaded maps in the game.
  *
  * @param tod

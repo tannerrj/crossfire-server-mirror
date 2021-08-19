@@ -643,7 +643,7 @@ static void spin_globe() {
  */
 static int humid_tile(int x, int y) {
     // ox and oy denote the neighbor that is influencing us (due to winds from there)
-    int ox = x, oy = y, humid;
+    int ox = x, oy = y, humid, evap, tempeffect, lightness;
 
     /* find the square the wind is coming from, without going out of bounds */
 
@@ -667,14 +667,53 @@ static int humid_tile(int x, int y) {
             ox = x+1;
         }
     }
+    // Determine the effect of sunlight on evaporation.
+    int light = MAX_DARKNESS - get_world_darkness();
+    // The sky conditions affect how strong an effect the sunlight has.
+    switch (weathermap[x][y].sky) {
+        case SKY_CLEAR:
+            tempeffect = light*light/4;
+            break;
+        case SKY_LIGHTCLOUD:
+            tempeffect = light*light/5;
+            break;
+        case SKY_OVERCAST:
+            tempeffect = light;
+            break;
+        case SKY_LIGHT_RAIN:
+        case SKY_LIGHT_SNOW:
+            tempeffect = light*4/5;
+            break;
+        case SKY_RAIN:
+        case SKY_SNOW:
+            tempeffect = light/2;
+        case SKY_HEAVY_RAIN:
+        case SKY_HEAVY_SNOW:
+            tempeffect = light/3;
+            break;
+        case SKY_HURRICANE:
+        case SKY_BLIZZARD:
+        case SKY_HAIL:
+            tempeffect = light/5;
+            break;
+        case SKY_FOG:
+        default:
+            tempeffect = 0;
+    }
+    // Determine the evaporative component contributing to the humidity.
+    // The amount of water, the temperature, the wind, the pressure, the time of day, the cloudcover, and the previous humidity all affect the evaporation.
+    // The exact formula is arbitrary, but it gives values that make some sense.
+    evap = (weathermap[x][y].water/2+20+tempeffect)*(weathermap[x][y].temp+tempeffect)*weathermap[x][y].windspeed*weathermap[x][y].windspeed*(100-weathermap[x][y].humid)/(weathermap[x][y].pressure*weathermap[x][y].humid+1);
+    // Don't go negative if temperature gets too low.
+    evap = MAX(0, evap);
     // This is where the magic happens
     // If humidity is unstable over time, this is what will need to be tweaked
     // (or one of the values it depends on, if not this)
     humid = (weathermap[x][y].humid*2 +
-        weathermap[ox][oy].humid*weathermap[ox][oy].windspeed +
-        weathermap[x][y].water +
-        weathermap[x][y].forestry/10 + rndm(0, 10))/
-        (weathermap[ox][oy].windspeed+3)+rndm(-1, 4);
+        (weathermap[ox][oy].humid)*weathermap[ox][oy].windspeed/100 +
+        // Evaporative components.
+        evap + weathermap[x][y].forestry/10 + rndm(-3, 7))/
+        (weathermap[ox][oy].windspeed/100+3)+rndm(-3, 3);
     if (humid < 0) {
         humid = 0;
     }
@@ -701,10 +740,10 @@ static void update_humid() {
 
 void tick_weather() {
     assert(settings.dynamiclevel > 0);
+    update_humid();         /* Run the humidity updates based on prior pressure, temperature, and wind */
     perform_pressure();     /* pressure is the random factor */
     smooth_wind();          /* calculate the wind. depends on pressure */
     plot_gulfstream();
-    update_humid();
     init_temperature();
     spin_globe();
     //compute_sky(); This is done in perform_weather
