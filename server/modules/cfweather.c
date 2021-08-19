@@ -213,8 +213,10 @@ static void init_temperature();
 /**
  * It doesn't really smooth it as such.  The main function of this is to
  * apply the pressuremap to the wind direction and speed, followed by some
- * tree-driven disruption.  Then, we run
- * a quick pass to update the windspeed.
+ * tree-driven disruption.  Then, we run a quick pass to update the windspeed.
+ *
+ * @todo
+ * Replace manual sea breezes with better calcs that make it happen on their own.
  */
 static void smooth_wind() {
     int x, y;
