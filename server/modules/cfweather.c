@@ -425,10 +425,12 @@ int real_world_temperature(int x, int y, mapstruct *m) {
     trees = get_trees_tile(x, y, m);
     // Sparse trees reduce local temp by 1.
     // Dense trees raise it by one.
-    if (trees < 4)
-        --temp;
-    else
-        ++temp;
+    if (trees > 0) {
+        if (trees < 4)
+            --temp;
+        else
+            ++temp;
+    }
     // And done!
     return temp;
 }
