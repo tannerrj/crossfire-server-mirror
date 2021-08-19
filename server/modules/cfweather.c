@@ -160,6 +160,43 @@ static int polar_distance(int x, int y, int equator) {
     }
 }
 
+/**
+ * Get trees tile retrieves the tree tile from a given space.
+ *
+ * @param x
+ * @param y
+ * The coordinates on the map we wish to check
+ *
+ * @param m
+ * The map the cooridnates belong to.
+ *
+ * @return
+ * The trees value of the bottommost tree tile at this location,
+ * or 0 if there are no trees here.
+ */
+static int get_trees_tile(const int x, const int y, const mapstruct *m) {
+    object *ob = GET_MAP_OB(m, x, y);
+    struct forestry *tmp;
+    // Our trees are not always the floor. Look higher if need be.
+    while (ob) {
+        // Look at our forestry config data for tree amounts.
+        tmp = forest_list;
+        while (tmp) {
+            // Does object name match?
+            if ((tmp->is_obj && tmp->name == ob->name) ||
+                // Does arch name match?
+                (!tmp->is_obj && tmp->name == ob->arch->name)) {
+                    return tmp->num_trees;
+                }
+
+            tmp = tmp->next;
+        }
+        ob = ob->above;
+    }
+    // If we get here, there were no trees.
+    return 0;
+}
+
 /********************************************************************************************
  * Section END -- weather data helpers
  ********************************************************************************************/
@@ -282,43 +319,6 @@ static void perform_pressure() {
     }
 
     smooth_pressure();
-}
-
-/**
- * Get trees tile retrieves the tree tile from a given space.
- *
- * @param x
- * @param y
- * The coordinates on the map we wish to check
- *
- * @param m
- * The map the cooridnates belong to.
- *
- * @return
- * The trees value of the bottommost tree tile at this location,
- * or 0 if there are no trees here.
- */
-static int get_trees_tile(const int x, const int y, const mapstruct *m) {
-    object *ob = GET_MAP_OB(m, x, y);
-    struct forestry *tmp;
-    // Our trees are not always the floor. Look higher if need be.
-    while (ob) {
-        // Look at our forestry config data for tree amounts.
-        tmp = forest_list;
-        while (tmp) {
-            // Does object name match?
-            if ((tmp->is_obj && tmp->name == ob->name) ||
-                // Does arch name match?
-                (!tmp->is_obj && tmp->name == ob->arch->name)) {
-                    return tmp->num_trees;
-                }
-
-            tmp = tmp->next;
-        }
-        ob = ob->above;
-    }
-    // If we get here, there were no trees.
-    return 0;
 }
 
 /**
