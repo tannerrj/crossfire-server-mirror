@@ -972,8 +972,9 @@ static void init_humid_elev(const Settings *settings) {
 
             /* jesus thats confusing as all hell */
             // Per meteorology, full ocean usually only gets to 80% humidity at the standard height it is measured.
+            // And, even in the desert, relative humidity averages like 20%. So, in non-deserts, it should be like 40%.
             // This should help prevent a forever-hurricane over the ocean.
-            weathermap[x][y].humid = water*80/(spwtx*spwty);
+            weathermap[x][y].humid = 40+water*40/(spwtx*spwty);
             weathermap[x][y].avgelev = elev/(spwtx*spwty);
             weathermap[x][y].water = water*100/(spwtx*spwty);
             // Cap at 100 for tree values. Denser trees stop having any effect.
