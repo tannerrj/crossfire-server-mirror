@@ -290,6 +290,46 @@ static void smooth_wind() {
 }
 
 /**
+ * This code simply smooths the pressure map.
+ * It also does clipping to ensure we are within acceptable bounds.
+ */
+void smooth_pressure() {
+    int x, y;
+    int k;
+
+    for (k = 0; k < PRESSURE_ROUNDING_ITER; k++) {
+        for (x = 1; x < WEATHERMAPTILESX-1; x++) {
+            for (y = 1; y < WEATHERMAPTILESY-1; y++) {
+                weathermap[x][y].pressure = (weathermap[x][y].pressure*
+                    PRESSURE_ROUNDING_FACTOR+weathermap[x-1][y].pressure+
+                    weathermap[x][y-1].pressure+weathermap[x-1][y-1].pressure+
+                    weathermap[x+1][y].pressure+weathermap[x][y+1].pressure+
+                    weathermap[x+1][y+1].pressure+weathermap[x+1][y-1].pressure+
+                    weathermap[x-1][y+1].pressure)/(PRESSURE_ROUNDING_FACTOR+8);
+            }
+        }
+        for (x = WEATHERMAPTILESX-2; x > 0; x--) {
+            for (y = WEATHERMAPTILESY-2; y > 0; y--) {
+                weathermap[x][y].pressure = (weathermap[x][y].pressure*
+                    PRESSURE_ROUNDING_FACTOR+weathermap[x-1][y].pressure+
+                    weathermap[x][y-1].pressure+weathermap[x-1][y-1].pressure+
+                    weathermap[x+1][y].pressure+weathermap[x][y+1].pressure+
+                    weathermap[x+1][y+1].pressure+weathermap[x+1][y-1].pressure+
+                    weathermap[x-1][y+1].pressure)/(PRESSURE_ROUNDING_FACTOR+8);
+            }
+        }
+    }
+
+    // Clip to our valid pressure range
+    for (x = 0; x < WEATHERMAPTILESX; x++)
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            weathermap[x][y].pressure = MIN(weathermap[x][y].pressure, PRESSURE_MAX);
+            weathermap[x][y].pressure = MAX(weathermap[x][y].pressure, PRESSURE_MIN);
+        }
+
+}
+
+/**
  * Perform small randomizations in the pressure map.  Then, apply the
  * smoothing algorithim.. This causes the pressure to change very slowly
  */
@@ -303,16 +343,19 @@ static void perform_pressure() {
         n = rndm(600, 1300);
         weathermap[x][y].pressure = n;
         // Get close to the edge. But, to make things cleaner, don't go off the edge.
-        if (x > 5 && y > 5 && x < WEATHERMAPTILESX-5 && y < WEATHERMAPTILESY-5) {
+        if (x > 3 && y > 3 && x < WEATHERMAPTILESX-3 && y < WEATHERMAPTILESY-3) {
             /* occasionally add a storm
              * and make sure the whole pressure spot is a storm, not just pieces of it
+             *
+             * Also, only try to make storms out of low pressure spikes. 1013 mbar
+             * Is standard pressure at sea level.
              */
-            is_storm = (rndm(1, 20) == 1);
+            is_storm = (n < 1013 && rndm(1, 10) == 1);
             for (j = x-2; j < x+2; j++) {
                 for (k = y-2; k < y+2; k++) {
                     weathermap[j][k].pressure = n;
                     if (is_storm) {
-                        weathermap[j][k].humid = rndm(50, 80);
+                        weathermap[j][k].humid = rndm(50, 90);
                     }
                 }
             }

@@ -2085,44 +2085,6 @@ uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t
 }
 
 /**
- * This code simply smooths the pressure map
- */
-void smooth_pressure(void) {
-    int x, y;
-    int k;
-
-    for (k = 0; k < PRESSURE_ROUNDING_ITER; k++) {
-        for (x = 2; x < WEATHERMAPTILESX-2; x++) {
-            for (y = 2; y < WEATHERMAPTILESY-2; y++) {
-                weathermap[x][y].pressure = (weathermap[x][y].pressure*
-                    PRESSURE_ROUNDING_FACTOR+weathermap[x-1][y].pressure+
-                    weathermap[x][y-1].pressure+weathermap[x-1][y-1].pressure+
-                    weathermap[x+1][y].pressure+weathermap[x][y+1].pressure+
-                    weathermap[x+1][y+1].pressure+weathermap[x+1][y-1].pressure+
-                    weathermap[x-1][y+1].pressure)/(PRESSURE_ROUNDING_FACTOR+8);
-            }
-        }
-        for (x = WEATHERMAPTILESX-2; x > 2; x--) {
-            for (y = WEATHERMAPTILESY-2; y > 2; y--) {
-                weathermap[x][y].pressure = (weathermap[x][y].pressure*
-                    PRESSURE_ROUNDING_FACTOR+weathermap[x-1][y].pressure+
-                    weathermap[x][y-1].pressure+weathermap[x-1][y-1].pressure+
-                    weathermap[x+1][y].pressure+weathermap[x][y+1].pressure+
-                    weathermap[x+1][y+1].pressure+weathermap[x+1][y-1].pressure+
-                    weathermap[x-1][y+1].pressure)/(PRESSURE_ROUNDING_FACTOR+8);
-            }
-        }
-    }
-
-    for (x = 0; x < WEATHERMAPTILESX; x++)
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            weathermap[x][y].pressure = MIN(weathermap[x][y].pressure, PRESSURE_MAX);
-            weathermap[x][y].pressure = MAX(weathermap[x][y].pressure, PRESSURE_MIN);
-        }
-
-}
-
-/**
  * Plot the gulfstream map over the wind map.  This is done after the wind,
  * to avoid the windsmoothing scrambling the jet stream.
  */
