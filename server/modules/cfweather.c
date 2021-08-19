@@ -285,6 +285,155 @@ static void perform_pressure() {
 }
 
 /**
+ * Get trees tile retrieves the tree tile from a given space.
+ *
+ * @param x
+ * @param y
+ * The coordinates on the map we wish to check
+ *
+ * @param m
+ * The map the cooridnates belong to.
+ *
+ * @return
+ * The trees value of the bottommost tree tile at this location,
+ * or 0 if there are no trees here.
+ */
+static int get_trees_tile(const int x, const int y, const mapstruct *m) {
+    object *ob = GET_MAP_OB(m, x, y);
+    struct forestry *tmp;
+    // Our trees are not always the floor. Look higher if need be.
+    while (ob) {
+        // Look at our forestry config data for tree amounts.
+        tmp = forest_list;
+        while (tmp) {
+            // Does object name match?
+            if ((tmp->is_obj && tmp->name == ob->name) ||
+                // Does arch name match?
+                (!tmp->is_obj && tmp->name == ob->arch->name)) {
+                    return tmp->num_trees;
+                }
+
+            tmp = tmp->next;
+        }
+        ob = ob->above;
+    }
+    // If we get here, there were no trees.
+    return 0;
+}
+
+/**
+ * How to alter the temperature, based on the hour of the day.
+ * This is used exclusively by real_temperature.
+ *
+ * @todo
+ * Make different seasons affect temperature differently (becuase light/darkness)
+ */
+static const int season_tempchange[HOURS_PER_DAY] = {
+/*  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14  1  2  3  4  5  6  7  8  9 10 11 12 13 */
+    0, 0, 0, 0, 0, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1};
+
+/**
+ * Compute the real (adjusted) temperature of a given weathermap tile.
+ * This takes into account the wind, base temp, sunlight, and other fun
+ * things.  Seasons are automatically handled by moving the equator.
+ * Elevation is partially considered in the base temp. x and y are the
+ * weathermap coordinates.
+ *
+ * @param x
+ * @param y
+ * weathermap coordinates.
+ */
+int real_temperature(int x, int y) {
+    int i, temp;
+    timeofday_t tod;
+
+    /* adjust for time of day */
+    temp = weathermap[x][y].temp;
+    get_tod(&tod);
+    for (i = HOURS_PER_DAY/2; i < HOURS_PER_DAY; i++) {
+        temp += season_tempchange[i];
+        /* high amounts of water has a buffering effect on the temp */
+        if (weathermap[x][y].water > 33) {
+            i++;
+        }
+        // High amounts of trees also provide some amount of buffering
+        if (weathermap[x][y].forestry > 60) {
+            i++;
+        }
+    }
+    for (i = 0; i <= tod.hour; i++) {
+        temp += season_tempchange[i];
+        if (weathermap[x][y].water > 33) {
+            i++;
+        }
+        if (weathermap[x][y].forestry > 60) {
+            i++;
+        }
+    }
+
+    /* windchill */
+    for (i = 1; i < weathermap[x][y].windspeed; i += i) {
+        temp--;
+    }
+
+    return temp;
+}
+
+/**
+ * Compute the temperature for a specific square.  Used to normalize elevation.
+ *
+ * @param x
+ * @param y
+ * map coordinates.
+ * @param m
+ * map we're on.
+ *
+ * @return
+ * temperature on the provided space.
+ */
+int real_world_temperature(int x, int y, mapstruct *m) {
+    int wx, wy, temp, eleva, elevb, trees;
+    object *op;
+
+    /*LOG(llevDebug, "real_world_temperature: worldmaptoweathermap : %s\n",m->path);*/
+    worldmap_to_weathermap(x, y, &wx, &wy, m);
+    temp = real_temperature(wx, wy);
+    if (weathermap[wx][wy].avgelev < 0) {
+        eleva = 0;
+    } else {
+        eleva = weathermap[x][y].avgelev;
+    }
+
+    op = GET_MAP_OB(m, x, y);
+    if (!op) {
+        return eleva;
+    }
+
+    elevb = op->elevation;
+    if (elevb < 0) {
+        elevb = 0;
+    }
+    if (elevb > eleva) {
+        elevb -= eleva;
+        temp -= elevb/1000;
+    } else {
+        elevb = eleva - elevb;
+        temp += elevb/1000;
+    }
+
+    // Get localized effects from trees, too.
+    trees = get_trees_tile(x, y, m);
+    // Sparse trees reduce local temp by 1.
+    // Dense trees raise it by one.
+    if (trees < 4)
+        --temp;
+    else
+        ++temp;
+    // And done!
+    return temp;
+}
+
+/**
  * Calculate temperature of a spot.
  *
  * @param x
@@ -294,7 +443,7 @@ static void perform_pressure() {
  * time of day.
  */
 static void temperature_calc(int x, int y, const timeofday_t *tod) {
-    int dist, equator, elev, n;
+    int dist, equator, elev, n, trees;
     float diff, tdiff;
 
     equator = (WEATHERMAPTILESX+WEATHERMAPTILESY)/4;
@@ -321,6 +470,26 @@ static void temperature_calc(int x, int y, const timeofday_t *tod) {
         elev = MIN(15000, weathermap[x][y].avgelev)/1000;
     }
     weathermap[x][y].temp -= elev;
+
+    /**
+     * Now we adjust for the presence of trees.
+     * Thick trees create a heat-holding canopy.
+     * Sparse trees don't hold so much heat in,
+     * and actually work to reduce temperatures.
+     */
+    // Arbitrarily make the cutoff threshold for heat-hold as 60
+    trees = weathermap[x][y].forestry;
+    // Dense trees can raise the temperature up to 6 degrees, per the calculations below.
+    if (trees >= 60) {
+        weathermap[x][y].temp += (trees-60)/15;
+    }
+    // If not, then we have heat reduction, most effective (-5 degrees) at 30.
+    else if (trees >= 30){
+        weathermap[x][y].temp -= (60-trees)/8;
+    }
+    else {
+        weathermap[x][y].temp -= trees/8;
+    }
 }
 
 /**
@@ -605,27 +774,7 @@ static int do_water_elev_calc(mapstruct *m, int x, int y, int *water, int64_t *e
         }
 
         // Handle forestry
-        obtmp = ob;
-        // Our trees are not always the floor. Look higher if need be.
-        while (obtmp) {
-            // Look at our forestry config data for tree amounts.
-            tmp = forest_list;
-            while (tmp) {
-                // Does object name match?
-                if ((tmp->is_obj && tmp->name == obtmp->name) ||
-                    // Does arch name match?
-                    (!tmp->is_obj && tmp->name == obtmp->arch->name)) {
-                        (*trees) += tmp->num_trees;
-                        break;
-                }
-
-                tmp = tmp->next;
-            }
-            // If we found a tree match and broke out, break out here, too.
-            if (tmp)
-                break;
-            obtmp = obtmp->above;
-        }
+        (*trees) += get_trees_tile(x, y, m);
 
         (*elev) += ob->elevation;
     }
