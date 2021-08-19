@@ -512,16 +512,20 @@ static void spin_globe() {
     int x, y;
     int buffer_humid;
     int buffer_sky;
+    int buffer_pressure;
 
     for (y = 0; y < WEATHERMAPTILESY; y++) {
         buffer_humid = weathermap[0][y].humid;
         buffer_sky = weathermap[0][y].sky;
+        buffer_pressure = weathermap[0][y].pressure;
         for (x = 0; x < (WEATHERMAPTILESX-1); x++) {
             weathermap[x][y].humid = weathermap[x+1][y].humid;
             weathermap[x][y].sky = weathermap[x+1][y].sky;
+            weathermap[x][y].pressure = weathermap[x+1][y].pressure;
         }
         weathermap[WEATHERMAPTILESX-1][y].humid = buffer_humid;
         weathermap[WEATHERMAPTILESX-1][y].sky = buffer_sky;
+        weathermap[WEATHERMAPTILESX-1][y].pressure = buffer_pressure;
     }
 }
 
