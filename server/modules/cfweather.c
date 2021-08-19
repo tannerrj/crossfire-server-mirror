@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include <assert.h>
+#include <math.h>
 
 extern unsigned long todtick;
 extern weathermap_t **weathermap;
@@ -301,6 +302,7 @@ static void perform_pressure() {
         y = rndm(0, WEATHERMAPTILESY-1);
         n = rndm(600, 1300);
         weathermap[x][y].pressure = n;
+        // Get close to the edge. But, to make things cleaner, don't go off the edge.
         if (x > 5 && y > 5 && x < WEATHERMAPTILESX-5 && y < WEATHERMAPTILESY-5) {
             /* occasionally add a storm
              * and make sure the whole pressure spot is a storm, not just pieces of it
@@ -496,6 +498,61 @@ static void temperature_calc(int x, int y, const timeofday_t *tod) {
     }
     else {
         weathermap[x][y].temp -= trees/8;
+    }
+}
+
+/**
+ * Let the madness, begin.
+ *
+ * This function is the one that ties everything together.  Here we loop
+ * over all the weathermaps, and compare the various conditions we have
+ * calculated up to now, to figure out what the sky conditions are for each
+ * square.
+ *
+ * @todo
+ * Rework fog/hail generation
+ * Fog could certainly be less rare.
+ */
+void compute_sky() {
+    int x, y;
+    int temp;
+    int calc, inv_pressure;
+    float press_root;
+
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            temp = real_temperature(x, y);
+            // Make sure we clip to the allowed pressure range.
+            inv_pressure = MAX(0, MIN(80, (PRESSURE_MAX - weathermap[x][y].pressure)));
+            // Take the square root. This allows us to have values weighted toward
+            // producing rain. Also the resultant value is <9, since our limit is 80.
+            press_root = sqrt(inv_pressure);
+            calc = MAX(0, MIN(900, (int)(press_root * weathermap[x][y].humid)));
+            // 900 / 7 = 129-ish. So as long as we divide by a number greater than that, we're good.
+            // If we divide by smaller, we overrun the sequential weather numbers, and reach FOG and HAIL
+            // when not encountering their special cases.
+            calc /= 130;
+
+            // If wind speed is high enough and we have rain, we can add one.
+            if (calc >= SKY_LIGHT_RAIN && calc < SKY_HURRICANE && weathermap[x][y].windspeed > 30)
+                ++calc;
+            // If we are cold enough we have snow.
+            if (temp <= 0 && calc >= SKY_LIGHT_RAIN)
+                calc += 10;
+
+            // Keep the old fog/hail generation for now
+            if (weathermap[x][y].pressure < 980 && weathermap[x][y].pressure < 1000) {
+                if (temp > 0 && temp < 5 && weathermap[x][y].humid > 95 &&
+                    weathermap[x][y].windspeed < 3) {
+                    calc = SKY_FOG; /* rare */
+                }
+                if (temp > 0 && temp < 5 && weathermap[x][y].humid > 70 &&
+                    weathermap[x][y].windspeed > 35) {
+                    calc = SKY_HAIL; /* rare */
+                }
+            }
+            weathermap[x][y].sky = calc;
+        }
     }
 }
 
