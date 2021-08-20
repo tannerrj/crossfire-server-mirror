@@ -1579,15 +1579,15 @@ static void do_specials(void) {
         if (!(pticks%31511))
             write_pressuremap();
         if (!(pticks%33013))
-            write_winddirmap();
+            write_winddirmap(&settings);
         if (!(pticks%34501))
-            write_windspeedmap();
+            write_windspeedmap(&settings);
         if (!(pticks%36007))
             write_humidmap(&settings);
         if (!(pticks%39019))
             write_temperaturemap(&settings);
         if (!(pticks%40507))
-            write_gulfstreammap();
+            write_gulfstreammap(&settings);
         if (settings.fastclock > 0 && !(pticks%42013))
             write_skymap();
         if (!(pticks%43517))
