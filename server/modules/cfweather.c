@@ -1006,6 +1006,29 @@ static void plot_gulfstream() {
     }
 }
 
+/**
+ * Keep track of how much rain has fallen in a given weathermap square.
+ *
+ * This is called at the beginning of every in-game hour (tod.minute == 0)
+ * To make some amount of sampling effect out of totals.
+ */
+void process_rain() {
+    int x, y, rain;
+
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            rain = weathermap[x][y].sky;
+            if (rain >= SKY_LIGHT_SNOW) {
+                rain -= 10;
+            }
+            if (rain > SKY_OVERCAST && rain < SKY_FOG) {
+                rain -= SKY_OVERCAST;
+                weathermap[x][y].rainfall += rain;
+            }
+        }
+    }
+}
+
 void tick_weather() {
     assert(settings.dynamiclevel > 0);
     update_humid();         /* Run the humidity updates based on prior pressure, temperature, and wind */
