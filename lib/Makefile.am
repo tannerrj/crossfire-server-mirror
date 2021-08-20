@@ -27,7 +27,8 @@ CONF_FILES = \
 	config/rules \
 	config/settings \
 	config/stat_bonus \
-	config/treedefs
+	config/treedefs \
+	config/waterdefs
 
 VAR_FILES = highscore banish_file bookarch temp.maps clockdata
 EXTRA_DIST = README .collect-stamp $(CONF_FILES)
