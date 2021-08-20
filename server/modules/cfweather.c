@@ -21,6 +21,7 @@
 #include "map.h"
 #include "object.h"
 #include "output_file.h"
+#include "sproto.h"
 
 #include <string.h>
 #include <assert.h>
@@ -63,91 +64,6 @@ static int gulf_stream_speed[GULF_STREAM_WIDTH][WEATHERMAPTILESY];
 static int gulf_stream_dir[GULF_STREAM_WIDTH][WEATHERMAPTILESY];
 static int gulf_stream_start;
 static int gulf_stream_direction;
-
-/**
- * Global event handling for weather.
- * @param type
- * The event type.
- * @param m
- * The map being loaded.
- * @return
- * 0.
- */
-static int weather_listener(int *type, ...) {
-    va_list args;
-    int code;
-    mapstruct *m;
-
-    va_start(args, type);
-    code = va_arg(args, int);
-    // At this point, we don't need the entering object for this.
-    // but it is passed as an arg, so just skip it.
-    va_arg(args, object *);
-    m = va_arg(args, mapstruct *);
-
-    switch (code) {
-        case EVENT_MAPENTER:
-            if (m->outdoor)
-                do_map_precipitation(m);
-            break;
-    }
-
-    va_end(args);
-
-    return 0;
-}
-
-/**
- * Global clock event handling for weather.
- * This is separate from the mapenter listener because I felt like it.
- * They possibly could be merged, it just makes documenting the parameters
- * for the function into a mess.
- *
- * @param type
- * The event type.
- *
- * @return
- * 0.
- */
-static int weather_clock_listener(int *type, ...) {
-    va_list args;
-    int code;
-
-    va_start(args, type);
-    code = va_arg(args, int);
-    va_end(args);
-
-    switch (code) {
-        case EVENT_CLOCK:
-            // Handle weather printouts after enough server time.
-            // By using primes here, rather than inside tick_the_clock(), we can reduce the load on a given tick.
-            // (pticks%1500 is real busy otherwise)
-            // This produces the side-effect that the server actually has to be on for that length
-            // of time without interruption for the save to happen, but most servers are run long-term
-            // anyway, so this should not be an issue
-            if (!(pticks%1511))
-                write_weather_images();
-            if (!(pticks%31511))
-                write_pressuremap();
-            if (!(pticks%33013))
-                write_winddirmap(&settings);
-            if (!(pticks%34501))
-                write_windspeedmap(&settings);
-            if (!(pticks%36007))
-                write_humidmap(&settings);
-            if (!(pticks%39019))
-                write_temperaturemap(&settings);
-            if (!(pticks%40507))
-                write_gulfstreammap(&settings);
-            if (settings.fastclock > 0 && !(pticks%42013))
-                write_skymap();
-            if (!(pticks%43517))
-                write_rainfallmap(&settings);
-            break;
-    }
-
-    return 0;
-}
 
 
 /********************************************************************************************
@@ -2587,6 +2503,112 @@ static int read_winddirmap(const Settings *settings) {
 
 /********************************************************************************************
  * Section END -- weather data readers
+ ********************************************************************************************/
+
+/********************************************************************************************
+ * Section -- weather event listeners
+ ********************************************************************************************/
+
+/**
+ * Global event handling for weather.
+ * @param type
+ * The event type.
+ * @param m
+ * The map being loaded.
+ * @return
+ * 0.
+ */
+static int weather_listener(int *type, ...) {
+    va_list args;
+    int code;
+    mapstruct *m;
+
+    va_start(args, type);
+    code = va_arg(args, int);
+    // At this point, we don't need the entering object for this.
+    // but it is passed as an arg, so just skip it.
+    va_arg(args, object *);
+    m = va_arg(args, mapstruct *);
+
+    switch (code) {
+        case EVENT_MAPENTER:
+            if (m->outdoor)
+                do_map_precipitation(m);
+            break;
+    }
+
+    va_end(args);
+
+    return 0;
+}
+
+/**
+ * Global clock event handling for weather.
+ * This is separate from the mapenter listener because I felt like it.
+ * They possibly could be merged, it just makes documenting the parameters
+ * for the function into a mess.
+ *
+ * @param type
+ * The event type.
+ *
+ * @return
+ * 0.
+ */
+static int weather_clock_listener(int *type, ...) {
+    va_list args;
+    int code;
+
+    va_start(args, type);
+    code = va_arg(args, int);
+    va_end(args);
+
+    switch (code) {
+        case EVENT_CLOCK:
+            if (!(pticks%PTICKS_PER_CLOCK)) {
+                // We need the time of day for handling of process_rain()
+                timeofday_t tod;
+                get_tod(&tod);
+                /* call the weather calculators, here, in order */
+                tick_weather();
+                // At every hour, measure the rainfall.
+                if (tod.minute == 0) {
+                    process_rain();
+                }
+                /* perform_weather must follow calculators */
+                perform_weather();
+            }
+            // Handle weather printouts after enough server time.
+            // By using primes here, rather than inside tick_the_clock(), we can reduce the load on a given tick.
+            // (pticks%1500 is real busy otherwise)
+            // This produces the side-effect that the server actually has to be on for that length
+            // of time without interruption for the save to happen, but most servers are run long-term
+            // anyway, so this should not be an issue
+            if (!(pticks%1511))
+                write_weather_images();
+            if (!(pticks%31511))
+                write_pressuremap();
+            if (!(pticks%33013))
+                write_winddirmap(&settings);
+            if (!(pticks%34501))
+                write_windspeedmap(&settings);
+            if (!(pticks%36007))
+                write_humidmap(&settings);
+            if (!(pticks%39019))
+                write_temperaturemap(&settings);
+            if (!(pticks%40507))
+                write_gulfstreammap(&settings);
+            if (settings.fastclock > 0 && !(pticks%42013))
+                write_skymap();
+            if (!(pticks%43517))
+                write_rainfallmap(&settings);
+            break;
+    }
+
+    return 0;
+}
+
+/********************************************************************************************
+ * Section END -- weather event listeners
  ********************************************************************************************/
 
 static event_registration global_map_handler = NULL, global_clock_handler = NULL;
