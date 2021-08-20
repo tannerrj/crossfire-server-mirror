@@ -52,6 +52,19 @@ DensityConfig *forest_list = NULL;
 DensityConfig *water_list = NULL;
 
 /**
+ * Gulf stream variables.
+ *
+ * @todo
+ * These should probably be in a structure instead of loose variables.
+ */
+/** Speed of the gulf stream. */
+static int gulf_stream_speed[GULF_STREAM_WIDTH][WEATHERMAPTILESY];
+/** Direction of the gulf stream. */
+static int gulf_stream_dir[GULF_STREAM_WIDTH][WEATHERMAPTILESY];
+static int gulf_stream_start;
+static int gulf_stream_direction;
+
+/**
  * Global event handling for weather.
  * @param type
  * The event type.
@@ -815,6 +828,85 @@ static void update_humid() {
     }
 }
 
+/**
+ * Plot the gulfstream map over the wind map.  This is done after the wind,
+ * to avoid the windsmoothing scrambling the jet stream.
+ */
+static void plot_gulfstream() {
+    int x, y, tx, diroffset, dirdiff;
+
+    x = gulf_stream_start;
+
+    // Use the same offset/multiplier formula we used in gulf stream initialization
+    // to make the code here much cleaner to look at.
+    if (gulf_stream_direction) {
+        diroffset = 0;
+        dirdiff = -1;
+    }
+    else {
+        diroffset = 10;
+        dirdiff = 1;
+    }
+    for (y = WEATHERMAPTILESY-1; y > 0; y--) {
+        for (tx = 0; tx < GULF_STREAM_WIDTH && x+tx < WEATHERMAPTILESX; tx++) {
+            if (similar_direction(weathermap[x+tx][y].winddir, gulf_stream_dir[tx][y]) && weathermap[x+tx][y].windspeed < GULF_STREAM_BASE_SPEED-5) {
+                weathermap[x+tx][y].windspeed += gulf_stream_speed[tx][y];
+            } else{
+                weathermap[x+tx][y].windspeed = gulf_stream_speed[tx][y];
+            }
+            weathermap[x+tx][y].winddir = gulf_stream_dir[tx][y];
+            if (tx == GULF_STREAM_WIDTH-1) {
+                switch ((diroffset-gulf_stream_dir[tx][y])*dirdiff) {
+                    case 6: x--; break;
+                    case 7: break;
+                    case 8: x++; break;
+                }
+            }
+            if (x < 0) {
+                x++;
+            }
+            if (x >= WEATHERMAPTILESX-GULF_STREAM_WIDTH) {
+                x--;
+            }
+        }
+    }
+    /* occasionally move the stream
+     * Arbitrary code from the original implementation says
+     * 1 in 500 to switch, then 1 in 2 the switch actually is relevant.
+     *
+     * So, if we make the outer effect 1 in 1000, we cover both.
+     */
+    if (rndm(1, 1000) == 1) {
+        for (tx = 0; tx < GULF_STREAM_WIDTH; tx++) {
+            for (y = 0; y < WEATHERMAPTILESY-1; y++) {
+                // The direction changes here are dir + 4 mod 8, but 8 instead of 0 on those ones.
+                gulf_stream_dir[tx][y] = (gulf_stream_dir[tx][y] + 4) & 7;
+                // And we want 8 as a direction instead of 0.
+                if (gulf_stream_dir[tx][y] == 0)
+                    gulf_stream_dir[tx][y] = 8;
+            }
+        }
+    }
+    /* Occasionally move the gulf stream starting point.
+     * Original code had 1 in 25 to try, but 1 in 3 that the move was 0.
+     *
+     * So, the chance of actual movement was 2 in 75.
+     *
+     * We will use that and redesign the inner offset generation to determine + or - movement.
+     */
+    if (rndm(1, 75) <= 2) {
+        // Only get +1 or -1
+        gulf_stream_start += 1-2*rndm(0, 1);
+        // Make sure we don't go off the map.
+        if (gulf_stream_start >= WEATHERMAPTILESX-GULF_STREAM_WIDTH) {
+            gulf_stream_start--;
+        }
+        if (gulf_stream_start < 1) {
+            gulf_stream_start++;
+        }
+    }
+}
+
 void tick_weather() {
     assert(settings.dynamiclevel > 0);
     update_humid();         /* Run the humidity updates based on prior pressure, temperature, and wind */
@@ -1157,6 +1249,90 @@ static void init_rainfall()
     }
 }
 
+/**
+ * Initialize gulf stream
+ */
+
+
+/**
+ * Initialize the gulf stream.
+ */
+static void init_gulfstreammap() {
+    int x, y, tx, starty, ymul, diroffset, dirdiff;
+
+    /* build a gulf stream */
+    x = rndm(GULF_STREAM_WIDTH, WEATHERMAPTILESX-GULF_STREAM_WIDTH);
+    /* doth the great bob inhale or exhale? */
+    gulf_stream_direction = rndm(0, 1);
+    gulf_stream_start = x;
+
+    // Handle both gulf stream directions
+    if (gulf_stream_direction) {
+        // These variables allow us to only define the loop once.
+        // That should make the code less awful to see
+        starty = WEATHERMAPTILESY-1;
+        ymul = -1;
+        // The diroffset pieces allow us to merge the meat of the loops
+        // the mapping between the different directions is as follows
+        // 8 <-> 2
+        // 7 <-> 3
+        // 6 <-> 4
+        // Thus setting diroffset to 10 when dirdiff is 1 gives us one direction
+        // and setting diroffset to 0 when dirdiff is -1 gives us the other.
+        diroffset = 0;
+        dirdiff = -1;
+    }
+    else {
+        starty = 0;
+        ymul = 1;
+        diroffset = 10;
+        dirdiff = 1;
+    }
+    // Huzzah! a loop common to both directions!
+    for (y = starty; y >= 0 && y < WEATHERMAPTILESY; y += ymul) {
+        switch (rndm(0, 6)) {
+            case 0:
+            case 1:
+            case 2:
+                for (tx = 0; tx < GULF_STREAM_WIDTH; tx++) {
+                    gulf_stream_speed[tx][y] = rndm(GULF_STREAM_BASE_SPEED, GULF_STREAM_BASE_SPEED+10);
+                    if (x == 0) {
+                        gulf_stream_dir[tx][y] = (diroffset-7)*dirdiff;
+                    } else {
+                        gulf_stream_dir[tx][y] = (diroffset-8)*dirdiff;
+                        if (tx == 0) {
+                            x--;
+                        }
+                    }
+                }
+                break;
+
+            case 3:
+                for (tx = 0; tx < GULF_STREAM_WIDTH; tx++) {
+                    gulf_stream_speed[tx][y] = rndm(GULF_STREAM_BASE_SPEED, GULF_STREAM_BASE_SPEED+10);
+                    gulf_stream_dir[tx][y] = (diroffset-7)*dirdiff;
+                }
+                break;
+
+            case 4:
+            case 5:
+            case 6:
+                for (tx = 0; tx < GULF_STREAM_WIDTH; tx++) {
+                    gulf_stream_speed[tx][y] = rndm(GULF_STREAM_BASE_SPEED, GULF_STREAM_BASE_SPEED+10);
+                    if (x == WEATHERMAPTILESX-1) {
+                        gulf_stream_dir[tx][y] = (diroffset-7)*dirdiff;
+                    } else {
+                        gulf_stream_dir[tx][y] = (diroffset-6)*dirdiff;
+                        if (tx == 0) {
+                            x++;
+                        }
+                    }
+                }
+                break;
+        }
+    }
+}
+
 /********************************************************************************************
  * Section END -- initializations
  ********************************************************************************************/
@@ -1367,6 +1543,47 @@ int write_rainfallmap(const Settings *settings) {
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
             fprintf(fp, "%u ", weathermap[x][y].rainfall);
+        }
+        fprintf(fp, "\n");
+    }
+    of_close(&of);
+    return 0;
+}
+
+/**
+ * Save the gulf stream to localdir
+ *
+ * @param settings
+ * The settings structure we are using to find localdir.
+ * Pretty sure it's the same one as the global settings, but oh well.
+ *
+ * @return
+ * 0 if successful, 1 if failure.
+ */
+int write_gulfstreammap(const Settings *settings) {
+    char filename[MAX_BUF];
+    FILE *fp;
+    OutputFile of;
+    int x, y;
+
+    snprintf(filename, sizeof(filename), "%s/gulfstreammap", settings->localdir);
+    fp = of_open(&of, filename);
+    if (fp == NULL) {
+        LOG(llevError, "Cannot open %s for writing\n", filename);
+        return 1;
+    }
+    LOG(llevDebug, "Writing gulf stream map to file.\n");
+    // First block is speed
+    for (x = 0; x < GULF_STREAM_WIDTH; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            fprintf(fp, "%d ", gulf_stream_speed[x][y]);
+        }
+        fprintf(fp, "\n");
+    }
+    // second block is direction
+    for (x = 0; x < GULF_STREAM_WIDTH; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            fprintf(fp, "%d ", gulf_stream_dir[x][y]);
         }
         fprintf(fp, "\n");
     }
@@ -2027,6 +2244,92 @@ static int read_rainfallmap(const Settings *settings) {
     return 0;
 }
 
+/**
+ * Read the gulf stream, or initialize it if no saved information.
+ *
+ * @param settings
+ * The settings structure we use to locate config folders.
+ * Here we want localdir specifically.
+ *
+ * @return
+ * 0 if success without initialization, 1 if success with initialization.
+ * Returns -1 on failure.
+ */
+static int read_gulfstreammap(const Settings *settings) {
+    char filename[MAX_BUF], *data, *tmp;
+    FILE *fp;
+    BufferReader *bfr;
+    int x, y, in, res;
+
+    snprintf(filename, sizeof(filename), "%s/gulfstreammap", settings->localdir);
+    LOG(llevDebug, "Reading gulf stream data from %s...\n", filename);
+    if ((fp = fopen(filename, "r")) == NULL) {
+        LOG(llevError, "Cannot open %s for reading\n", filename);
+        LOG(llevInfo, "Initializing gulf stream maps...\n");
+        init_gulfstreammap();
+        res = write_gulfstreammap(settings);
+        LOG(llevDebug, "Done\n");
+        if (res == 0)
+            return 1;
+        return -1;
+    }
+    bfr = bufferreader_create();
+    bufferreader_init_from_file(bfr, fp);
+    fclose(fp);
+    data = bufferreader_data(bfr);
+    // First we read in the speeds
+    for (x = 0; x < GULF_STREAM_WIDTH; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            res = sscanf(data, "%d ", &in);
+            if (res != 1) {
+                LOG(llevError, "Gulf stream speed definitions are malformed. Cannot load gulf stream from file.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            gulf_stream_speed[x][y] = MIN(120, MAX(0, in));
+            // Now we update the pointer to data to move to the next item.
+            tmp = strpbrk(data, " \n");
+            if (tmp == NULL) {
+                LOG(llevError, "Unexpected end of file in gulfstream speed map.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Okay, so we want the first character after the space/newline.
+            data = tmp + 1;
+        }
+        // Make sure we don't leave a newline in the event of a trailing space on a given line.
+        if (*data == '\n')
+            ++data;
+    }
+    // Then we read in the directions.
+    for (x = 0; x < GULF_STREAM_WIDTH; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            res = sscanf(data, "%d ", &in);
+            if (res != 1) {
+                LOG(llevError, "Gulf stream direction definitions are malformed. Cannot load gulf stream from file.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            gulf_stream_dir[x][y] = MAX(1, MIN(8, in));
+            // Now we update the pointer to data to move to the next item.
+            tmp = strpbrk(data, " \n");
+            if (tmp == NULL) {
+                LOG(llevError, "Unexpected end of file in gulfstream direction map.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Okay, so we want the first character after the space/newline.
+            data = tmp + 1;
+        }
+        // Make sure we don't leave a newline in the event of a trailing space on a given line.
+        if (*data == '\n')
+            ++data;
+    }
+    bufferreader_destroy(bfr);
+    LOG(llevDebug, "Done.\n");
+    return 0;
+}
+
 /********************************************************************************************
  * Section END -- weather data readers
  ********************************************************************************************/
@@ -2038,9 +2341,33 @@ static event_registration global_map_handler, global_clock_handler;
  * @param settings server settings.
  */
 void cfweather_init(Settings *settings) {
+    int tx, ty;
     // Initialize the forestry information from file.
     init_config_vals(settings, "treedefs", &forest_list);
     init_config_vals(settings, "waterdefs", &water_list);
+    // Begin to initialize the various data pieces for the weather
+    read_gulfstreammap(settings);
+    // Some gulf stream fiddling that happens every startup.
+    gulf_stream_direction = rndm(0, 1);
+    for (tx = 0; tx < GULF_STREAM_WIDTH; tx++) {
+        for (ty = 0; ty < WEATHERMAPTILESY-1; ty++) {
+            if (gulf_stream_direction) {
+                switch (gulf_stream_dir[tx][ty]) {
+                case 2: gulf_stream_dir[tx][ty] = 6; break;
+                case 3: gulf_stream_dir[tx][ty] = 7; break;
+                case 4: gulf_stream_dir[tx][ty] = 8; break;
+                }
+            } else {
+                switch (gulf_stream_dir[tx][ty]) {
+                case 6: gulf_stream_dir[tx][ty] = 2; break;
+                case 7: gulf_stream_dir[tx][ty] = 3; break;
+                case 8: gulf_stream_dir[tx][ty] = 4; break;
+                }
+            }
+        }
+    }
+
+    gulf_stream_start = rndm(GULF_STREAM_WIDTH, WEATHERMAPTILESY-GULF_STREAM_WIDTH);
     // Trees help stabilize local temperature and evaporate water from deeper underground.
     // This is calculated at the same time as elevation and humidity.
     int result = read_humidmap(settings);
