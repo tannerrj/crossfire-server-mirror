@@ -1566,33 +1566,6 @@ static void do_specials(void) {
 
     if (!(pticks%12503))
         fix_luck();
-
-    // Handle weather printouts after enough server time.
-    // By using primes here, rather than inside tick_the_clock(), we can reduce the load on a given tick.
-    // (pticks%1500 is real busy otherwise)
-    // This produces the side-effect that the server actually has to be on for that length
-    // of time without interruption for the save to happen, but most servers are run long-term
-    // anyway, so this should not be an issue
-    if (settings.dynamiclevel > 0) {
-        if (!(pticks%1511))
-            write_weather_images();
-        if (!(pticks%31511))
-            write_pressuremap();
-        if (!(pticks%33013))
-            write_winddirmap(&settings);
-        if (!(pticks%34501))
-            write_windspeedmap(&settings);
-        if (!(pticks%36007))
-            write_humidmap(&settings);
-        if (!(pticks%39019))
-            write_temperaturemap(&settings);
-        if (!(pticks%40507))
-            write_gulfstreammap(&settings);
-        if (settings.fastclock > 0 && !(pticks%42013))
-            write_skymap();
-        if (!(pticks%43517))
-            write_rainfallmap(&settings);
-    }
 }
 
 /**
