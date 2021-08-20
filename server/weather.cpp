@@ -1577,64 +1577,6 @@ static void change_the_world(mapstruct *m) {
 }
 
 /**
- * Calculate the direction to push an object from wind
- *
- * @param m
- * The map the player is on.
- *
- * @param x,y
- * The coordinates of the player on the map
- *
- * @param move_type
- * The movement type the object is attempting to use.
- *
- * @param wt
- * The total weight the object has (incl. carrying)
- *
- * @param stats
- * The stat block of the object, or NULL if it is not alive.
- *
- * @return
- * The direction to push (1-8), or 0 if push does not occur
- */
-uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t wt, living *stats) {
-    // If we're inside, the weather can't get us :P
-    if (!m || !m->outdoor)
-        return 0;
-    // First, we get the weathermap for this location
-    int nx, ny;
-    if (worldmap_to_weathermap(x, y, &nx, &ny, m))
-        return 0;
-    int windspeed = weathermap[nx][ny].windspeed;
-    int is_fly = move_type & MOVE_FLYING;
-    // If not flying, then strong winds are needed to affect you.
-    if (!is_fly)
-        windspeed -= 20;
-    // If no wind, then no push.
-    if (windspeed <= 0)
-        return 0;
-    // Reduce effect from carrying more stuff.
-    // Also, being on the ground makes the same wind increase affect you less as well.
-    // Higher strength characters can also resist being blown by the wind when on the ground.
-    if (!is_fly)
-        wt /= (10000 * (stats && stats->Str) ? stats->Str : 1);
-    // When flying, we care about Dex over Str.
-    else
-        wt /= (20000 * (stats && stats->Dex) ? stats->Dex : 1);
-    // Massive things are pushed around less easily.
-    if (windspeed*2 < wt)
-        return 0;
-    // The push will not happen every try. The greater the wind, the more often it succeeds.
-    // Also, the lighter the object, the more often it succeeds
-    // We do two rolls because it normalizes the effects better than a single roll.
-    if (rndm(0, windspeed)+rndm(0, windspeed) < wt)
-        return 0;
-    // winddir is the direction the wind is coming from.
-    // so we need to reverse it to push where the wind is going to.
-    return absdir(weathermap[nx][ny].winddir+4);
-}
-
-/**
  * Keep track of how much rain has fallen in a given weathermap square.
  */
 void process_rain(void) {
