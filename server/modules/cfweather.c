@@ -1250,11 +1250,6 @@ static void init_rainfall()
 }
 
 /**
- * Initialize gulf stream
- */
-
-
-/**
  * Initialize the gulf stream.
  */
 static void init_gulfstreammap() {
@@ -1329,6 +1324,23 @@ static void init_gulfstreammap() {
                     }
                 }
                 break;
+        }
+    }
+}
+
+/**
+ * Initialize the wind randomly. Does both direction and speed in one pass
+ *
+ * Values for speed are fairly low -- the calculations for wind
+ * are built in a way where this is not a problem.
+ */
+static void init_wind(void) {
+    int x, y;
+
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            weathermap[x][y].winddir = rndm(1, 8);
+            weathermap[x][y].windspeed = rndm(1, 10);
         }
     }
 }
@@ -1589,6 +1601,71 @@ int write_gulfstreammap(const Settings *settings) {
     }
     of_close(&of);
     return 0;
+}
+
+/**
+ * Save the wind speed to localdir
+ *
+ * @param settings
+ * The settings structure we are using to find localdir.
+ * Pretty sure it's the same one as the global settings, but oh well.
+ *
+ * @return
+ * 0 if successful, 1 if failure.
+ */
+int write_windspeedmap(const Settings *settings) {
+    char filename[MAX_BUF];
+    FILE *fp;
+    OutputFile of;
+    int x, y;
+
+    snprintf(filename, sizeof(filename), "%s/windspeedmap", settings->localdir);
+    fp = of_open(&of, filename);
+    if (fp == NULL) {
+        LOG(llevError, "Cannot open %s for writing\n", filename);
+        return 1;
+    }
+    LOG(llevDebug, "Writing wind speed map to file.\n");
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            fprintf(fp, "%hd ", weathermap[x][y].windspeed);
+        }
+        fprintf(fp, "\n");
+    }
+    of_close(&of);
+    return 0;
+}
+
+/**
+ * Save wind direction to localdir
+ *
+ * @param settings
+ * The settings structure we are using to find localdir.
+ * Pretty sure it's the same one as the global settings, but oh well.
+ *
+ * @return
+ * 0 if successful, 1 if failure.
+ */
+int write_winddirmap(const Settings *settings) {
+    char filename[MAX_BUF];
+    FILE *fp;
+    OutputFile of;
+    int x, y;
+
+    snprintf(filename, sizeof(filename), "%s/winddirmap", settings->localdir);
+    fp = of_open(&of, filename);
+    if (fp == NULL) {
+        LOG(llevError, "Cannot open %s for writing\n", filename);
+        return 1;
+    }
+    LOG(llevDebug, "Writing wind direction map to file.\n");
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            fprintf(fp, "%d ", weathermap[x][y].winddir);
+        }
+        fprintf(fp, "\n");
+    }
+    of_close(&of);
 }
 
 /* This stuff is for creating the images,
@@ -2330,6 +2407,132 @@ static int read_gulfstreammap(const Settings *settings) {
     return 0;
 }
 
+/**
+ * Read the wind speed.
+ * We do not init here, since winddir should have handled that already.
+ * Depends on wind direction loading having been run before it as a result.
+ *
+ * @param settings
+ * Pointer to the settings structure.
+ * We want localdir from it.
+ *
+ * @return
+ * 0 if sucessfully loaded, -1 if failed.
+ * There is no init, so it won't return 1 ever.
+ */
+static int read_windspeedmap(const Settings *settings) {
+    char filename[MAX_BUF], *data, *tmp;
+    FILE *fp;
+    BufferReader *bfr;
+    int x, y, res;
+    int8_t spd;
+
+    snprintf(filename, sizeof(filename), "%s/windspeedmap", settings->localdir);
+    LOG(llevDebug, "Reading wind speed data from %s...\n", filename);
+    if ((fp = fopen(filename, "r")) == NULL) {
+        LOG(llevError, "Cannot open %s for reading\n", filename);
+        // Wind direction is done before this, and should have initialized this already.
+        return -1;
+    }
+    bfr = bufferreader_create();
+    bufferreader_init_from_file(bfr, fp);
+    fclose(fp);
+    data = bufferreader_data(bfr);
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            res = sscanf(data, "%hhd ", &spd);
+            if (res != 1) {
+                LOG(llevError, "Wind speed file is malformed. Cannot load wind speed file.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Clip to reasonable bounds
+            weathermap[x][y].windspeed = MIN(120, MAX(0, spd));
+            // Now we update the pointer to data to move to the next item.
+            tmp = strpbrk(data, " \n");
+            if (tmp == NULL) {
+                LOG(llevError, "Unexpected end of file in wind speed map.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Okay, so we want the first character after the space/newline.
+            data = tmp + 1;
+        }
+        // Make sure we don't leave a newline in the event of a trailing space on a given line.
+        if (*data == '\n')
+            ++data;
+    }
+    bufferreader_destroy(bfr);
+    LOG(llevDebug, "Done.\n");
+    return 0;
+}
+
+/**
+ * Read the wind direction. Will initialize the entirety of wind if file doesn't exist.
+ *
+ * @param settings
+ * The settings structure we will use to find localdir
+ *
+ * @return
+ * 0 if success without initialization, 1 if success with initialization
+ * returns -1 on failure
+ */
+static int read_winddirmap(const Settings *settings) {
+    char filename[MAX_BUF], *data, *tmp;
+    FILE *fp;
+    BufferReader *bfr;
+    int x, y, d, res;
+
+    snprintf(filename, sizeof(filename), "%s/winddirmap", settings->localdir);
+    LOG(llevDebug, "Reading wind direction data from %s...\n", filename);
+    if ((fp = fopen(filename, "r")) == NULL) {
+        LOG(llevError, "Cannot open %s for reading\n", filename);
+        LOG(llevInfo, "Initializing wind direction and speed maps...\n");
+        init_wind();
+        // If both of these succeed, the end result is 0.
+        res = write_winddirmap(settings);
+        res += write_windspeedmap(settings);
+        LOG(llevDebug, "Done\n");
+        if (res == 0)
+            return 1;
+        return -1;
+    }
+    bfr = bufferreader_create();
+    bufferreader_init_from_file(bfr, fp);
+    fclose(fp);
+    data = bufferreader_data(bfr);
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            res = sscanf(data, "%d ", &d);
+            if (res != 1) {
+                LOG(llevError, "Wind direction map is malformed. Could not load wind direction.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // If the direction is not valid, just give it one randomly.
+            if (d < 1 || d > 8) {
+                d = rndm(1, 8);
+            }
+            weathermap[x][y].winddir = d;
+            // Now we update the pointer to data to move to the next item.
+            tmp = strpbrk(data, " \n");
+            if (tmp == NULL) {
+                LOG(llevError, "Unexpected end of file in wind direction map.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Okay, so we want the first character after the space/newline.
+            data = tmp + 1;
+        }
+        // Make sure we don't leave a newline in the event of a trailing space on a given line.
+        if (*data == '\n')
+            ++data;
+    }
+    bufferreader_destroy(bfr);
+    LOG(llevDebug, "Done.\n");
+    return 0;
+}
+
 /********************************************************************************************
  * Section END -- weather data readers
  ********************************************************************************************/
@@ -2346,6 +2549,9 @@ void cfweather_init(Settings *settings) {
     init_config_vals(settings, "treedefs", &forest_list);
     init_config_vals(settings, "waterdefs", &water_list);
     // Begin to initialize the various data pieces for the weather
+    // If wind direction did initialization, we don't need to read the wind speed from file.
+    if (read_winddirmap(settings) == 0)
+        read_windspeedmap(settings);
     read_gulfstreammap(settings);
     // Some gulf stream fiddling that happens every startup.
     gulf_stream_direction = rndm(0, 1);
