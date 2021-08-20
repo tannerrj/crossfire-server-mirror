@@ -1575,23 +1575,3 @@ static void change_the_world(mapstruct *m) {
         }
     }
 }
-
-/**
- * Keep track of how much rain has fallen in a given weathermap square.
- */
-void process_rain(void) {
-    int x, y, rain;
-
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            rain = weathermap[x][y].sky;
-            if (rain >= SKY_LIGHT_SNOW) {
-                rain -= 10;
-            }
-            if (rain > SKY_OVERCAST && rain < SKY_FOG) {
-                rain -= SKY_OVERCAST;
-                weathermap[x][y].rainfall += rain;
-            }
-        }
-    }
-}
