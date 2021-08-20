@@ -33,7 +33,6 @@ static void dawn_to_dusk(const timeofday_t *tod);
 static void read_pressuremap(void);
 static void init_pressure(void);
 static void init_weatheravoid (weather_avoids_t wa[]);
-static void perform_weather(void);
 static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int grow);
 static void calculate_temperature(mapstruct *m);
 static void let_it_snow(mapstruct *m);
@@ -346,16 +345,6 @@ void tick_the_clock(void) {
     }
     get_tod(&tod);
     dawn_to_dusk(&tod);
-    /* call the weather calculators, here, in order */
-    if (settings.dynamiclevel > 0) {
-        tick_weather();
-        // At every hour, measure the rainfall.
-        if (tod.minute == 0) {
-            process_rain();
-        }
-    }
-    /* perform_weather must follow calculators */
-    perform_weather();
 }
 
 /*
@@ -587,7 +576,7 @@ void free_weather(void) {
  * The main point of this is stuff like growing herbs, soil, decaying crap,
  * etc etc etc.  Not actual *weather*, but weather *effects*.
  */
-static void perform_weather(void) {
+void perform_weather(void) {
     mapstruct *m;
     char filename[MAX_BUF];
     FILE *fp;
