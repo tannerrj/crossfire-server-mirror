@@ -670,10 +670,13 @@ static void spin_globe() {
  * @param y
  * weathermap coordinates we wish to calculate humidity for.
  *
+ * @param dark
+ * The darkness amount on the world. Presumably from get_world_darkness().
+ *
  * @return
  * the humidity of the weathermap square, trimmed to the range [0, 100]
  */
-static int humid_tile(int x, int y) {
+static int humid_tile(int x, int y, int dark) {
     // ox and oy denote the neighbor that is influencing us (due to winds from there)
     int ox = x, oy = y, humid, evap, tempeffect, lightness;
 
@@ -700,7 +703,7 @@ static int humid_tile(int x, int y) {
         }
     }
     // Determine the effect of sunlight on evaporation.
-    int light = MAX_DARKNESS - get_world_darkness();
+    int light = MAX_DARKNESS - dark;
     // The sky conditions affect how strong an effect the sunlight has.
     switch (weathermap[x][y].sky) {
         case SKY_CLEAR:
@@ -761,11 +764,11 @@ static int humid_tile(int x, int y) {
  * All the fun stuff happens in humid_tile
  */
 static void update_humid() {
-    int x, y;
+    int x, y, dark = get_world_darkness();
 
     for (y = 0; y < WEATHERMAPTILESY; y++) {
         for (x = 0; x < WEATHERMAPTILESX; x++) {
-            weathermap[x][y].humid = humid_tile(x, y);
+            weathermap[x][y].humid = humid_tile(x, y, dark);
         }
     }
 }
