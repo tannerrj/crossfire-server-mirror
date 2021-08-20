@@ -632,7 +632,7 @@ int write_humidmap(const Settings *settings);
 void write_windspeedmap(void);
 void write_winddirmap(void);
 void write_pressuremap(void);
-void write_weather_images(void);
+int write_weather_images(void);
 void compute_sky(void);
 uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t wt, living *stats);
 /* Functions that are temporarily un-static-ized to make converting into a module easier.*/

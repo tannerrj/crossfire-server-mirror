@@ -1409,15 +1409,16 @@ static const uint32_t skies[] = {
  *
  * The image created is a ppm image, so it is really easy to just write it without a library.
  *
- * @todo
- * Use atomic file writes to ensure we can't run out of space mid-write
+ * @return
+ * 0 if successful, 1 if failed.
  */
-void write_weather_images() {
+int write_weather_images() {
     char filename[MAX_BUF];
     FILE *fp;
+    OutputFile of;
     int x, y;
-    int32_t min[10], max[10], avgrain, avgwind, realmaxwind;
-    double scale[10], realscalewind;
+    int32_t min[8], max[8], avgrain, avgwind, realmaxwind;
+    double scale[8], realscalewind;
     uint8_t pixels[3*3*WEATHERMAPTILESX];
     int64_t total_rainfall = 0;
     int64_t total_wind = 0;
@@ -1433,11 +1434,10 @@ void write_weather_images() {
     min[2] = 0;            max[2] = 0;
     min[3] = PRESSURE_MIN; max[3] = PRESSURE_MAX;
     min[4] = 0;            max[4] = 0;
-    min[5] = 1;            max[5] = 8;
+    // The 6th tile is raw wind direction, and thus does not need limits
     min[6] = 0;            max[6] = 100;
     min[7] = -45;          max[7] = 45;
-    min[8] = 0;            max[8] = 16;
-    min[9] = 0;            max[9] = 0;
+    // The 9th tile is raw sky data and does not need limits
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
 /*          min[0] = MIN(min[0], weathermap[x][y].water); */
@@ -1445,42 +1445,39 @@ void write_weather_images() {
             min[2] = MIN(min[2], weathermap[x][y].rainfall);
 /*          min[3] = MIN(min[3], weathermap[x][y].pressure); */
             min[4] = MIN(min[4], weathermap[x][y].windspeed);
-/*          min[5] = MIN(min[5], weathermap[x][y].winddir); */
 /*          min[6] = MIN(min[6], weathermap[x][y].humid); */
 /*          min[7] = MIN(min[7], real_temp[x][y]); */
-/*          min[8] = MIN(min[8], weathermap[x][y].sky); */
-/*          min[9] = MIN(min[9], weathermap[x][y].darkness); */
 
 /*          max[0] = MAX(max[0], weathermap[x][y].water); */
             max[1] = MAX(max[1], weathermap[x][y].avgelev);
             max[2] = MAX(max[2], weathermap[x][y].rainfall);
 /*          max[3] = MAX(max[3], weathermap[x][y].pressure); */
             max[4] = MAX(max[4], weathermap[x][y].windspeed);
-/*          max[5] = MAX(max[5], weathermap[x][y].winddir); */
 /*          max[6] = MAX(max[6], weathermap[x][y].humid); */
 /*          max[7] = MAX(max[7], real_temp[x][y]); */
-/*          max[8] = MAX(max[8], weathermap[x][y].sky); */
-/*          max[9] = MAX(max[9], weathermap[x][y].darkness); */
             total_rainfall += weathermap[x][y].rainfall;
             total_wind += weathermap[x][y].windspeed;
         }
     }
+    // Twiddle the data on total rainfall, since they have a different color for above/below average
+    // This allows us to have the full scale of color range on each above average and below average.
     avgrain = total_rainfall/(WEATHERMAPTILESX*WEATHERMAPTILESY);
     avgwind = (total_wind   /((WEATHERMAPTILESX*WEATHERMAPTILESY)*3/2));
     max[2] = avgrain-1;
     realscalewind = 255.0l/(max[4]-min[4]);
     realmaxwind = max[4];
     max[4] = avgwind-1;
-    for (x = 0; x < 10; x++) {
+    for (x = 0; x < 8; x++) {
         scale[x] = 255.0l/(max[x]-min[x]);
     }
 
     LOG(llevDebug, "Writing weather conditions map.\n");
 
     snprintf(filename, sizeof(filename), "%s/weather.ppm", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
+    fp = of_open(&of, filename);
+    if (fp == NULL) {
         LOG(llevError, "Cannot open %s for writing\n", filename);
-        return;
+        return 1;
     }
     fprintf(fp, "P6\n%d %d\n", 3*WEATHERMAPTILESX, 3*WEATHERMAPTILESY);
     fprintf(fp, "255\n");
@@ -1537,9 +1534,6 @@ void write_weather_images() {
                 pixels[3*x+(1*WEATHERMAPTILESX*3+BLUE)] = speed;
             } else {
                 speed = (speed-realmaxwind)*realscalewind;
-/*              if (speed < 100) {
-                    speed = 100;
-                }*/
                 pixels[3*x+(1*WEATHERMAPTILESX*3+RED)] = speed;
                 pixels[3*x+(1*WEATHERMAPTILESX*3+GREEN)] = 0;
                 pixels[3*x+(1*WEATHERMAPTILESX*3+BLUE)] = 0;
@@ -1606,7 +1600,8 @@ void write_weather_images() {
         }
         fwrite(pixels, sizeof(uint8_t), (3*3*WEATHERMAPTILESX), fp);
     }
-    fclose(fp);
+    of_close(&of);
+    return 0;
 }
 
 /********************************************************************************************
