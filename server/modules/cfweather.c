@@ -423,7 +423,26 @@ static const int season_tempchange[HOURS_PER_DAY] = {
  * The temperature of the provided weathermap tile.
  */
 static int real_temperature(int x, int y, const timeofday_t *tod) {
-    int i, temp;
+    int i, temp, adj;
+
+    // Clear and partly-cloudy skies have a stronger temperature effect
+    // than overcast skies, since clouds create a barrier to heat escaping
+    // and sunlight entering. Super thick clouds add additional buffer.
+    // If adj is set to one, then the weather provides some amount of buffer effect.
+    // This buffer will override the forestry one if it is set.
+    switch (weathermap[x][y].sky) {
+        case SKY_CLEAR:
+        case SKY_LIGHTCLOUD:
+            adj = 0;
+            break;
+        case SKY_HURRICANE:
+        case SKY_BLIZZARD:
+            adj = 2;
+            break;
+        default:
+            adj = 1;
+            break;
+    }
 
     /* adjust for time of day */
     temp = weathermap[x][y].temp;
@@ -433,8 +452,11 @@ static int real_temperature(int x, int y, const timeofday_t *tod) {
         if (weathermap[x][y].water > 33) {
             i++;
         }
-        // High amounts of trees also provide some amount of buffering
-        if (weathermap[x][y].forestry > 60) {
+        // Cloudy skies will have a buffering effect on the temperature
+        if (adj >= 1)
+            i += adj;
+        // High amounts of trees also provide some amount of buffering under clear skies
+        else if (weathermap[x][y].forestry > 60) {
             i++;
         }
     }
@@ -443,7 +465,11 @@ static int real_temperature(int x, int y, const timeofday_t *tod) {
         if (weathermap[x][y].water > 33) {
             i++;
         }
-        if (weathermap[x][y].forestry > 60) {
+        // Cloudy skies will have a buffering effect on the temperature
+        if (adj >= 1)
+            i += adj;
+        // High amounts of trees also provide some amount of buffering under clear skies
+        else if (weathermap[x][y].forestry > 60) {
             i++;
         }
     }
