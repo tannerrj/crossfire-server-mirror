@@ -32,9 +32,6 @@ weathermap_t **weathermap;
 static void dawn_to_dusk(const timeofday_t *tod);
 static void read_pressuremap(void);
 static void init_pressure(void);
-static void read_winddirmap(void);
-static void read_windspeedmap(void);
-static void init_wind(void);
 static void init_weatheravoid (weather_avoids_t wa[]);
 static void perform_weather(void);
 static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int grow);
@@ -490,133 +487,6 @@ static void init_pressure(void) {
     smooth_pressure();
 }
 
-/**
- * Save wind direction.
- */
-void write_winddirmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/winddirmap", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
-        LOG(llevError, "Cannot open %s for writing\n", filename);
-        return;
-    }
-    LOG(llevDebug, "Writing wind direction map to file.\n");
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            fprintf(fp, "%d ", weathermap[x][y].winddir);
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-}
-
-/**
- * Read the wind direction. Will initialize the direction if file doesn't exist.
- */
-static void read_winddirmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y, d;
-
-    snprintf(filename, sizeof(filename), "%s/winddirmap", settings.localdir);
-    LOG(llevDebug, "Reading wind direction data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
-        LOG(llevInfo, "Initializing wind direction maps...\n");
-        init_wind();
-        write_winddirmap();
-        LOG(llevDebug, "Done\n");
-        return;
-    }
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%d ", &d);
-            weathermap[x][y].winddir = d;
-            if (weathermap[x][y].winddir < 1 ||
-                weathermap[x][y].winddir > 8) {
-                weathermap[x][y].winddir = rndm(1, 8);
-            }
-        }
-        (void)fscanf(fp, "\n");
-    }
-    LOG(llevDebug, "Done.\n");
-    fclose(fp);
-}
-
-/**
- * Save the wind speed.
- */
-void write_windspeedmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/windspeedmap", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
-        LOG(llevError, "Cannot open %s for writing\n", filename);
-        return;
-    }
-    LOG(llevDebug, "Writing wind speed map to file.\n");
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            fprintf(fp, "%hd ", weathermap[x][y].windspeed);
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-}
-
-/**
- * Read the wind speed, or init it if save file doesnt exist.
- */
-static void read_windspeedmap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-    int8_t d;
-
-    snprintf(filename, sizeof(filename), "%s/windspeedmap", settings.localdir);
-    LOG(llevDebug, "Reading wind speed data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
-        LOG(llevInfo, "Initializing wind speed maps...\n");
-        init_wind();
-        write_windspeedmap();
-        LOG(llevDebug, "Done\n");
-        return;
-    }
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%hhd ", &d);
-            weathermap[x][y].windspeed = d;
-            if (weathermap[x][y].windspeed < 0 ||
-                weathermap[x][y].windspeed > 120) {
-                weathermap[x][y].windspeed = rndm(1, 30);
-            }
-        }
-        (void)fscanf(fp, "\n");
-    }
-    LOG(llevDebug, "Done.\n");
-    fclose(fp);
-}
-
-/**
- * Initialize the wind randomly. Does both direction and speed in one pass
- */
-static void init_wind(void) {
-    int x, y;
-
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            weathermap[x][y].winddir = rndm(1, 8);
-            weathermap[x][y].windspeed = rndm(1, 10);
-        }
-    }
-}
-
 /* END of read/write/init */
 
 /**
@@ -678,8 +548,6 @@ void init_weather(void) {
     /* now we load the values in the big worldmap weather array */
     /* do not re-order these */
     read_pressuremap();
-    read_winddirmap();
-    read_windspeedmap();
     /* The rest have been migrated over to the weather module. */
     // Get current map position
     snprintf(filename, sizeof(filename), "%s/wmapcurpos", settings.localdir);
