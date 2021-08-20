@@ -30,22 +30,26 @@ extern unsigned long todtick;
 extern weathermap_t **weathermap;
 
 /**
- * Structure to hold forestry data entries.
+ * Structure to hold density data entries.
+ * It is used for both forestry data and for
+ * desert data, and is named generically so
+ * it makes sense for both.
  */
-struct forestry {
+typedef struct density {
     // Use shared strings so we can do pointer comparisons.
     sstring name;
     // 0 if name is the arch name, 1 if it is the object name.
     int is_obj;
-    // The tree density the tile type counts for.
-    int num_trees;
+    // The density the tile type counts for.
+    int value_density;
     // Pointer to the next item in the list
     // We're scanning all of these when we check anyway,
     // so might as well use a structure that works fine that way.
-    struct forestry *next;
-};
+    struct density *next;
+} DensityConfig;
 
-struct forestry *forest_list = NULL;
+DensityConfig *forest_list = NULL;
+DensityConfig *water_list = NULL;
 
 /**
  * Global event handling for weather.
@@ -162,39 +166,50 @@ static int polar_distance(int x, int y, int equator) {
 }
 
 /**
- * Get trees tile retrieves the tree tile from a given space.
+ * Get config tile retrieves the desired tile's associated value from a given space.
+ * This can be used for trees, deserts, water, anything of the sort.
  *
  * @param x
  * @param y
  * The coordinates on the map we wish to check
  *
  * @param m
- * The map the cooridnates belong to.
+ * The map the coordinates belong to.
+ *
+ * @param list
+ * The list we are pulling from.
+ * This allows us to use the same code for denoting water
+ * as for denoting trees.
  *
  * @return
- * The trees value of the bottommost tree tile at this location,
- * or 0 if there are no trees here.
+ * The associated value of the bottommost config-specified tile at this location,
+ * or 0 if there are no matches here.
  */
-static int get_trees_tile(const int x, const int y, const mapstruct *m) {
+static int get_config_tile(const int x, const int y, const mapstruct *m, DensityConfig *list) {
+    // If no list specified, shortcut the exit.
+    if (list == NULL)
+        return 0;
     object *ob = GET_MAP_OB(m, x, y);
-    struct forestry *tmp;
+    DensityConfig *tmp;
     // Our trees are not always the floor. Look higher if need be.
+    // Even for types that are floor, check anyway. This ensures
+    // that no-magic tiles hiding underneath floor don't cause problems.
     while (ob) {
-        // Look at our forestry config data for tree amounts.
-        tmp = forest_list;
+        // Look at our config data for the associated amounts.
+        tmp = list;
         while (tmp) {
             // Does object name match?
             if ((tmp->is_obj && tmp->name == ob->name) ||
                 // Does arch name match?
                 (!tmp->is_obj && tmp->name == ob->arch->name)) {
-                    return tmp->num_trees;
+                    return tmp->value_density;
                 }
 
             tmp = tmp->next;
         }
         ob = ob->above;
     }
-    // If we get here, there were no trees.
+    // If we get here, there were no matches.
     return 0;
 }
 
@@ -480,7 +495,7 @@ int real_world_temperature(int x, int y, mapstruct *m) {
     }
 
     // Get localized effects from trees, too.
-    trees = get_trees_tile(x, y, m);
+    trees = get_config_tile(x, y, m, forest_list);
     // Sparse trees reduce local temp by 1.
     // Dense trees raise it by one.
     if (trees > 0) {
@@ -778,8 +793,8 @@ void tick_weather() {
  ********************************************************************************************/
 
 /**
- * Read the config file that tells how many trees a given
- * tree arch is worth during calculations.
+ * Read a config file that tells how many units (for an arbitrary purpose) a given
+ * arch is worth during calculations.
  * By defining in a file, we get our structure to be non-static,
  * so we can do pointer comparisons on the
  * object name or arch rather than string comparisons on the name.
@@ -788,16 +803,22 @@ void tick_weather() {
  * Pointer to the settings structure, so we can get the directory where the config
  * is stored.
  *
+ * @param conf_filename
+ * The name of the config file we are loading.
+ *
+ * @param list
+ * Pointer to the list we are appending entries to.
+ *
  * @return
  * 0 if successful (even if lines are malformed in the file), 1 otherwise
  */
-static int init_forestry_vals(const Settings *settings) {
+static int init_config_vals(const Settings *settings, const char *conf_filename, DensityConfig **list) {
     char filename[MAX_BUF], *line, *name;
     BufferReader *bfr;
     FILE *fp;
     int found, is_obj_name, tree_count;
 
-    snprintf(filename, sizeof(filename), "%s/treedefs", settings->confdir);
+    snprintf(filename, sizeof(filename), "%s/%s", settings->confdir, conf_filename);
     // Open the file, then pass it off to the buffer reader.
     fp = fopen(filename, "r");
     if (fp != NULL) {
@@ -827,7 +848,7 @@ static int init_forestry_vals(const Settings *settings) {
                     name = line; // Each line starts with name
                     line = strchr(line, ',');
                     if (line == NULL) {
-                        LOG(llevError, "init_forestry_vals: Malformed forestry entry in %s, line %d:\n%s\n",
+                        LOG(llevError, "init_config_vals: Malformed forestry entry in %s, line %d:\n%s\n",
                             filename, bufferreader_current_line(bfr), line);
                         // Move on to the next line and hope it is fine.
                         continue;
@@ -840,29 +861,29 @@ static int init_forestry_vals(const Settings *settings) {
                     found = sscanf(line, "%d, %d\n", &is_obj_name, &tree_count);
                     if (found != 2) {
                         // Print an error for the malformed line
-                        LOG(llevError, "init_forestry_vals: Malformed forestry entry in %s, line %d:\n%s\n",
+                        LOG(llevError, "init_config_vals: Malformed forestry entry in %s, line %d:\n%s\n",
                             filename, bufferreader_current_line(bfr), line);
                     }
                     else {
                         // Add a struct to the list.
-                        struct forestry *frst = (struct forestry *)malloc(sizeof(struct forestry));
+                        DensityConfig *frst = (DensityConfig *)malloc(sizeof(DensityConfig));
                         if (!frst) {
                             fatal(OUT_OF_MEMORY);
                         }
                         // Shared strings are friend, not food
                         frst->name = add_string(name);
                         frst->is_obj = is_obj_name;
-                        frst->num_trees = tree_count;
+                        frst->value_density = tree_count;
                         // Attach to front of list, since order doesn't matter much, if at all.
-                        frst->next = forest_list;
-                        forest_list = frst;
+                        frst->next = *list;
+                        *list = frst;
                     }
             }
         }
         bufferreader_destroy(bfr);
         return 0;
     }
-    LOG(llevError, "init_forestry_vals: Could not open file %s. No forestry data is defined.\n", filename);
+    LOG(llevError, "init_config_vals: Could not open file %s. No forestry data is defined.\n", filename);
     return 1;
 }
 
@@ -933,17 +954,16 @@ static int do_water_elev_calc(mapstruct *m, int x, int y, int *water, int64_t *e
         return -1;
     object *ob = GET_MAP_OB(m, x, y), *obtmp;
     if (ob) {
-        struct forestry *tmp;
+        DensityConfig *tmp;
         if (QUERY_FLAG(ob, FLAG_IS_WATER)) {
             (*water)++;
         }
         // Deserts will reduce the humidity/precipitation in the spaces they exist in.
-        if (strcmp(ob->name, "desert") == 0) {
-            (*water)--;
-        }
+        // Since the config entries are all negative, we can add the value here.
+        (*water) += get_config_tile(x, y, m, water_list);
 
         // Handle forestry
-        (*trees) += get_trees_tile(x, y, m);
+        (*trees) += get_config_tile(x, y, m, forest_list);
 
         (*elev) += ob->elevation;
     }
@@ -1324,7 +1344,7 @@ int write_rainfallmap(const Settings *settings) {
  * The forestry map contains the measure of how forested a
  * given weather map tile is. The values of each tree tile
  * are defined in the forestry data (and initialized in
- * init_forestry_vals(), and the values read here are calculated
+ * init_config_vals(), and the values read here are calculated
  * at the same time as humidity, water, and elevation.
  * Here we merely read the resultant values in.
  *
@@ -1718,7 +1738,8 @@ static event_registration global_map_handler, global_clock_handler;
  */
 void cfweather_init(Settings *settings) {
     // Initialize the forestry information from file.
-    init_forestry_vals(settings);
+    init_config_vals(settings, "treedefs", &forest_list);
+    init_config_vals(settings, "waterdefs", &water_list);
     // Trees help stabilize local temperature and evaporate water from deeper underground.
     // This is calculated at the same time as elevation and humidity.
     int result = read_humidmap(settings);
@@ -1748,12 +1769,19 @@ void cfweather_init(Settings *settings) {
 }
 
 void cfweather_close() {
-    struct forestry *cur;
+    DensityConfig *cur;
     events_unregister_global_handler(EVENT_MAPENTER, global_map_handler);
     // Deallocate our linked list of forest entries.
     while (forest_list != NULL) {
         cur = forest_list;
         forest_list = forest_list->next;
+        free_string(cur->name);
+        free(cur);
+    }
+    // Do the same for the water list
+    while (water_list != NULL) {
+        cur = water_list;
+        water_list = water_list->next;
         free_string(cur->name);
         free(cur);
     }
