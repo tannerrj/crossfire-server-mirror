@@ -2611,7 +2611,8 @@ static int weather_clock_listener(int *type, ...) {
  * Section END -- weather event listeners
  ********************************************************************************************/
 
-static event_registration global_map_handler = NULL, global_clock_handler = NULL;
+// Event handler ids start at 1, so 0 is an unset flag.
+static event_registration global_map_handler = 0, global_clock_handler = 0;
 
 /**
  * Weather module initialisation.
@@ -2679,9 +2680,9 @@ void cfweather_init(Settings *settings) {
 
 void cfweather_close() {
     DensityConfig *cur;
-    if (global_map_handler != NULL)
+    if (global_map_handler != 0)
         events_unregister_global_handler(EVENT_MAPENTER, global_map_handler);
-    if (global_clock_handler != NULL)
+    if (global_clock_handler != 0)
         events_unregister_global_handler(EVENT_CLOCK, global_clock_handler);
     // Deallocate our linked list of forest entries.
     while (forest_list != NULL) {
