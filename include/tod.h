@@ -98,15 +98,6 @@ extern void get_tod(timeofday_t *tod);
 #define SKY_BLIZZARD      16
 
 /**
- * Defines a tile the weather system should avoid.
- */
-typedef struct _weather_avoids {
-	const char *name;   /**< Tile archetype name, used during initialisation only. */
-	int snow;           /**< Is this snow? Used for various tests. */
-	archetype *what;    /**< Inited from name, faster to compare arch pointers than strings. */
-} weather_avoids_t;
-
-/**
  * Defines a tile the weather system can change to another tile.
  */
 typedef struct _weather_replace {

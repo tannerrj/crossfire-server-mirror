@@ -1,0 +1,110 @@
+# Config file for weather module
+# Here we define the archetypes that,
+# when present, are cause for avoiding adding
+# growth effects to a given space.
+#
+# File format is as follows:
+# - archetype name
+# - 0 if not a weather effect, 1 if it is
+#   Weather effects have some additional processing
+#   for cleaning up stuff. I think growth avoids can always be 0 on this.
+
+# It was formerly hardcoded to skip all biglake stuff, but since
+# we can use shared strings and pointer comparisons,
+# it should be fine to define these here without
+# too much impact to performance.
+# Due to the way parsing occurs, they will be at the end of the loaded list anyway.
+biglake_0, 0
+biglake_3_3, 0
+biglake_3_4, 0
+biglake_2_2_3, 0
+biglake_3_1, 0
+biglake_2_1_2, 0
+biglake_2_2_4, 0
+biglake_1_3, 0
+biglake_3_2, 0
+biglake_2_2_2, 0
+biglake_2_1_1, 0
+biglake_1_1, 0
+biglake_2_2_1, 0
+biglake_1_4, 0
+biglake_1_2, 0
+biglake_4, 0
+biglake_center, 0
+biglake_n, 0
+biglake_e, 0
+biglake_ne, 0
+biglake_s, 0
+biglake_sn, 0
+biglake_se, 0
+biglake_nes, 0
+biglake_w, 0
+biglake_nw, 0
+biglake_ew, 0
+biglake_new, 0
+biglake_sw, 0
+biglake_nse, 0
+biglake_sew, 0
+# end biglake stuff
+# Rivers should have been avoided, too, but prior attempts
+# to do this failed from trying to use the object name.
+river_crook_ns-ne, 0
+river_junct_ns-ne, 0
+river_junct_ns-e, 0
+river_junct_we-n, 0
+river_crook_ns-se, 0
+river_junct_ns-se, 0
+river_crook_ns-sw, 0
+river_junct_ns-sw, 0
+river_junct_ns-w, 0
+river_crook_ns-nw, 0
+river_junct_ns-nw, 0
+river_crook_we-ne, 0
+river_junct_we-ne, 0
+river_crook_we-se, 0
+river_junct_we-se, 0
+river_junct_we-s, 0
+river_crook_we-sw, 0
+river_junct_we-sw, 0
+river_crook_we-nw, 0
+river_junct_we-nw, 0
+river_ford_ns, 0
+river_ford_we, 0
+river_bridge_we, 0
+river_bridge_ns, 0
+river_se-n, 0
+river_n-s, 0
+river_sw-n, 0
+river_ne-s, 0
+river_sw-ne, 0
+river_sw-ne_l, 0
+river_sw-ne_u, 0
+river_ne-w, 0
+river_sw-e, 0
+river_w-e, 0
+river_nw-e, 0
+river_se-w, 0
+river_nw-se, 0
+river_nw-se_l, 0
+river_nw-se_u, 0
+river_nw-s, 0
+# end river stuff
+lake, 0
+cobblestones, 0
+cobblestones2, 0
+flagstone, 0
+stonefloor2, 0
+dungeon_magic, 0
+dungeon_floor, 0
+grasspond, 0
+sea, 0
+sea1, 0
+deep_sea, 0
+shallow_sea, 0
+lava, 0
+permanent_lava, 0
+# Mountain caves are technically exits.
+# We shouldn't obscure them without
+# an appropriate weather effect for them
+mountain_cave, 0
+mountain_cave2, 0
