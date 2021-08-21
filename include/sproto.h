@@ -631,12 +631,11 @@ int write_temperaturemap(const Settings *settings);
 int write_humidmap(const Settings *settings);
 int write_windspeedmap(const Settings *settings);
 int write_winddirmap(const Settings *settings);
-void write_pressuremap(void);
+int write_pressuremap(const Settings *settings);
 int write_weather_images(void);
 void compute_sky(void);
 uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t wt, living *stats);
 /* Functions that are temporarily un-static-ized to make converting into a module easier.*/
-void smooth_pressure(void);
 void perform_weather(void);
 /* server.c */
 char const* newhash(char const *password);
