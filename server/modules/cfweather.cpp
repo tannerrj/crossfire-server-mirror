@@ -4724,13 +4724,10 @@ static void command_weather (object *op, const char *params) {
  * Section END -- weather event listeners
  ********************************************************************************************/
 
-// Event/command handler ids start at 1, so 0 is an unset flag.
-static event_registration global_map_handler = 0,
-                          global_clock_handler = 0,
-                          global_object_handler = 0,
-                          global_mapload_handler = 0;
 
 static command_registration command_handler = 0;
+// Event handler ids start at 1, so 0 is an unset flag.
+static event_registration global_map_handler = 0, global_clock_handler = 0, global_object_handler = 0;
 
 /**
  * Weather module initialisation.

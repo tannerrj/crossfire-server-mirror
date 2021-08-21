@@ -805,8 +805,8 @@ void process_object(object *op) {
 
     if (QUERY_FLAG(op, FLAG_REMOVED)) {
         return;
-
     }
+
     if (QUERY_FLAG(op, FLAG_MONSTER))
         if (monster_move(op) || QUERY_FLAG(op, FLAG_FREED))
             return;
