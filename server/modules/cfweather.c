@@ -3443,7 +3443,7 @@ int write_weather_images() {
  * In this case, we care about localdir.
  *
  * @return
- * 0 if successful, 1 if failed.
+ * 0 if successful, -1 if failed.
  */
 static int read_forestrymap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
@@ -3471,7 +3471,7 @@ static int read_forestrymap(const Settings *settings) {
                     LOG(llevError, "Forestry data is corrupted and should be regenerated.\n"
                         "Please delete %s/humidmap and restart the server at your earliest convenience to regenerate the forestry map.\n", settings->localdir);
                     bufferreader_destroy(bfr);
-                    return 1;
+                    return -1;
                 }
                 // Limit the range from 0 to 100
                 weathermap[x][y].forestry = MIN(100, MAX(0, trees));
@@ -3484,7 +3484,7 @@ static int read_forestrymap(const Settings *settings) {
                     LOG(llevError, "Unexpected end of forestry file. Forestry file may need to be regenerated.\n"
                         "Please delete %s/humidmap and restart the server at your earliest convenience to regenerate the forestry map.\n", settings->localdir);
                     bufferreader_destroy(bfr);
-                    return 1;
+                    return -1;
                 }
             }
             // Due to the way the file is written, the end of the line should have a space and a newline.
@@ -3499,7 +3499,7 @@ static int read_forestrymap(const Settings *settings) {
     // Since this should be calculated and stored when humidity is calculated,
     // and stored by the time we reach here, just fail if it does not exist.
     LOG(llevError, "Cannot open %s for reading.\n", filename);
-    return 1;
+    return -1;
 }
 
 /**
@@ -3580,7 +3580,7 @@ static int read_humidmap(const Settings *settings) {
  * Specifically, we grab localdir from it
  *
  * @return
- * 0 if successful, 1 if failure.
+ * 0 if successful, -1 if failure.
  */
 static int read_elevmap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
@@ -3594,7 +3594,7 @@ static int read_elevmap(const Settings *settings) {
         LOG(llevError, "Cannot open %s for reading\n", filename);
         /* initializing these is expensive, and should have been done
            by the humidity.  It's not worth the wait to do it twice. */
-        return 1;
+        return -1;
     }
     bfr = bufferreader_create();
     bufferreader_init_from_file(bfr, fp);
@@ -3607,7 +3607,7 @@ static int read_elevmap(const Settings *settings) {
                 LOG(llevError, "Elevation data is corrupted and cannot be loaded.\n"
                     "Please delete %s/humidmap and restart your server to regenerate elevation data.\n", settings->localdir);
                 bufferreader_destroy(bfr);
-                return 1;
+                return -1;
             }
             // Individual elevation values should be in the range [-32000, 32000]
             // Averages can be capped to these as well.
@@ -3618,7 +3618,7 @@ static int read_elevmap(const Settings *settings) {
                 LOG(llevError, "Unexpected end of file in elevation data.\n"
                     "Please delete %s/humidmap and restart your server to regenerate elevation data.\n", settings->localdir);
                 bufferreader_destroy(bfr);
-                return 1;
+                return -1;
             }
             // If found, we move to the character after the space/newline.
             data = tmp + 1;
@@ -3641,7 +3641,7 @@ static int read_elevmap(const Settings *settings) {
  * The settings structure. We specifically want localdir.
  *
  * @return
- * 0 if successful, 1 if failure.
+ * 0 if successful, -1 if failure.
  */
 static int read_watermap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
@@ -3655,7 +3655,7 @@ static int read_watermap(const Settings *settings) {
         LOG(llevError, "Cannot open %s for reading\n", filename);
         /* initializing these is expensive, and should have been done
            by the humidity.  It's not worth the wait to do it twice. */
-        return 1;
+        return -1;
     }
     bfr = bufferreader_create();
     bufferreader_init_from_file(bfr, fp);
@@ -3668,7 +3668,7 @@ static int read_watermap(const Settings *settings) {
                 LOG(llevError, "Water map is corrupted and cannot be loaded.\n"
                     "Please delete %s/humidmap and restart your server to regenerate the water map.\n", settings->localdir);
                 bufferreader_destroy(bfr);
-                return 1;
+                return -1;
             }
             // Range is -100 to 100 due to deserts and such being negative.
             weathermap[x][y].water = MAX(-100, MIN(100, wtr));
@@ -3678,7 +3678,7 @@ static int read_watermap(const Settings *settings) {
                 LOG(llevError, "Unexpected end of file in water map.\n"
                     "Please delete %s/humidmap and restart your server to regenerate the water map.\n", settings->localdir);
                 bufferreader_destroy(bfr);
-                return 1;
+                return -1;
             }
             // Okay, so we want the first character after the space/newline.
             data = tmp + 1;
