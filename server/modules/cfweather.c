@@ -812,6 +812,11 @@ static void spin_globe() {
         buffer_sky = weathermap[xy-xy_eff][xy_eff].sky;
         buffer_pressure = weathermap[xy-xy_eff][xy_eff].pressure;
         for (x = xy-xy_eff; x < xy_eff; ++x) {
+            /* Using xy directly here *looks* wrong, but is actually not,
+             * since x = xy-xy_eff+c, where c is one less than the loop count;
+             * thus, xy-x = xy-xy+xy_eff-c = xy_eff-c.
+             * This is within the bounds of the map at all times.
+             */
             weathermap[x][xy-x].humid = weathermap[x+1][xy-x-1].humid;
             weathermap[x][xy-x].sky = weathermap[x+1][xy-x-1].sky;
             weathermap[x][xy-x].pressure = weathermap[x+1][xy-x-1].pressure;
