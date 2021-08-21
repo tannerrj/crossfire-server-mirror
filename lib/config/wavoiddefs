@@ -1,0 +1,53 @@
+# Config file for weather module
+# Here we define the archetypes that,
+# when present, are cause for avoiding adding
+# weather effects to a given space.
+#
+# File format is as follows:
+# - archetype name
+# - 0 if not a weather effect, 1 if it is
+#   Weather effects have some additional processing
+#   for cleaning up stuff
+
+snow, 1
+snow2, 1
+snow3, 1
+snow4, 1
+snow5, 1
+mountain1_snow, 1
+mountain2_snow, 1
+rain1_weather, 1
+rain2_weather, 1
+rain3_weather, 1
+rain4_weather, 1
+rain5_weather, 1
+mountain1_rivlets_weather, 1
+mountain2_rivlets_weather, 1
+ipond, 1
+# Originally, these were what the weather code created.
+# But, it was changed to use material effects more cleverly
+# and these were kept as separate arches for backward compatability
+rain1, 0
+rain2, 0
+rain3, 0
+rain4, 0
+rain5, 0
+mountain1_rivlets, 0
+mountain2_rivlets, 0
+# end of compatability section
+biglake_4, 0
+biglake_center, 0
+drifts, 0
+glacier, 0
+cforest1, 0
+sea, 0
+sea1, 0
+deep_sea, 0
+shallow_sea, 0
+lava, 0
+permanent_lava, 0
+# Mountain caves are technically exits.
+# We shouldn't obscure them without
+# an appropriate weather effect for them
+mountain_cave, 0
+mountain_cave2, 0

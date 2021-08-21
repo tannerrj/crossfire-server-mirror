@@ -30,6 +30,11 @@
 extern unsigned long todtick;
 weathermap_t **weathermap;
 
+/********************************************************************************************
+ * Section -- weather structures
+ * Structures to handle various aspects of the weather system.
+ ********************************************************************************************/
+
 /**
  * Structure to hold density data entries.
  * It is used for both forestry data and for
@@ -49,8 +54,24 @@ typedef struct density {
     struct density *next;
 } DensityConfig;
 
+/**
+ * Defines a tile the weather system should avoid.
+ */
+typedef struct _weather_avoids {
+    sstring name;                    /**< Tile archetype name. It is always arch name, not object name. */
+    int snow;                        /**< Is this a long-term weather effect, like snow or a puddle?
+                                          Used for various tests. */
+    struct _weather_avoids *next;    /**< The next item in the avoid list. */
+} weather_avoids_t;
+
+/********************************************************************************************
+ * Section END -- weather structures
+ ********************************************************************************************/
+
 DensityConfig *forest_list = NULL;
 DensityConfig *water_list = NULL;
+weather_avoids_t *weather_avoids = NULL;
+weather_avoids_t *growth_avoids = NULL;
 
 /**
  * Gulf stream variables.
@@ -74,81 +95,6 @@ static int wmperformstarty;
  * @todo
  * The following static tables should probably be defined by files.
  */
-
-/**
- * The table below is used to set which tiles the weather will avoid
- * processing.  This keeps it from putting snow on snow, and putting snow
- * on the ocean, and other things like that.
- */
-static weather_avoids_t weather_avoids[] = {
-    {"snow", 1, NULL},
-    {"snow2", 1, NULL},
-    {"snow3", 1, NULL},
-    {"snow4", 1, NULL},
-    {"snow5", 1, NULL},
-    {"mountain1_snow", 1, NULL},
-    {"mountain2_snow", 1, NULL},
-    {"rain1", 1, NULL},
-    {"rain1_weather", 1, NULL},
-    {"rain2", 1, NULL},
-    {"rain2_weather", 1, NULL},
-    {"rain3", 1, NULL},
-    {"rain3_weather", 1, NULL},
-    {"rain4", 1, NULL},
-    {"rain4_weather", 1, NULL},
-    {"rain5", 1, NULL},
-    {"rain5_weather", 1, NULL},
-    {"mountain1_rivlets", 1, NULL},
-    {"mountain2_rivlets", 1, NULL},
-    {"mountain1_rivlets_weather", 1, NULL},
-    {"mountain2_rivlets_weather", 1, NULL},
-    {"ipond", 1, NULL},
-    {"biglake_4", 0, NULL},
-    {"biglake_center", 0 , NULL},
-    {"drifts", 0, NULL},
-    {"glacier", 0, NULL},
-    {"cforest1", 0, NULL},
-    {"sea", 0, NULL},
-    {"sea1", 0, NULL},
-    {"deep_sea", 0, NULL},
-    {"shallow_sea", 0, NULL},
-    {"lava", 0, NULL},
-    {"permanent_lava", 0, NULL},
-    /* Mountain cave are weird archetypes: floor, but exit. So we shouldn't cover them. */
-    {"mountain_cave", 0, NULL},
-    {"mountain_cave2", 0, NULL},
-    {NULL, 0, NULL}
-};
-
-/**
- * This table is identical to ::weather_avoids, except these are tiles to avoid
- * when processing growth. IE, don't grow herbs in the ocean.  The second
- * field is unused.
- */
-static weather_avoids_t growth_avoids[] = {
-    {"cobblestones", 0, NULL},
-    {"cobblestones2", 0, NULL},
-    {"flagstone", 0, NULL},
-    {"stonefloor2", 0, NULL},
-    {"lava", 0, NULL},
-    {"permanent_lava", 0, NULL},
-    {"sea", 0, NULL},
-    {"sea1", 0, NULL},
-    {"deep_sea", 0, NULL},
-    {"shallow_sea", 0, NULL},
-    {"farmland", 0, NULL},
-    {"dungeon_magic", 0, NULL},
-    {"dungeon_floor", 0, NULL},
-    {"lake", 0, NULL},
-    {"grasspond", 0, NULL},
-    /* Mountain cave are weird archetypes: floor, but exit. So we shouldn't cover them. */
-    {"mountain_cave", 0, NULL},
-    {"mountain_cave2", 0, NULL},
-    /* Avoid growing things on the rivers. Its janky-looking */
-    //{"river", 1, NULL},
-    //{"river junction", 1, NULL},
-    {NULL, 0, NULL}
-};
 
 /**
  * The table below is used in let_it_snow() and singing_in_the_rain() to
@@ -486,18 +432,6 @@ int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct* m) {
 }
 
 /**
- * Link fields to their archetypes.
- *
- * @param wa
- * structure to link archetypes of.
- */
-static void init_weatheravoid(weather_avoids_t wa[]) {
-    for (int i = 0; wa[i].name != NULL; i++) {
-        wa[i].what = find_archetype(wa[i].name);
-    }
-}
-
-/**
  * Check the current square to see if we should avoid this one for
  * weather processing.
  *
@@ -518,6 +452,7 @@ static void init_weatheravoid(weather_avoids_t wa[]) {
 static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int grow) {
     int avoid, gotsnow, i;
     object *tmp, *snow;
+    weather_avoids_t *cur;
 
     avoid = 0;
     gotsnow = 0;
@@ -528,15 +463,12 @@ static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int g
                 gotsnow++;
                 snow = tmp;
             }
-            for (i = 0; growth_avoids[i].name != NULL; i++) {
-                if (tmp->arch == growth_avoids[i].what) {
+            for (cur = growth_avoids; cur; cur = cur->next) {
+                // Due to the use of shared strings, we can do pointer comparison here.
+                if (tmp->arch->name == cur->name) {
                     avoid++;
                     break;
                 }
-            }
-            if (!strncmp(tmp->arch->name, "biglake_", 8)) {
-                avoid++;
-                break;
             }
             if (avoid && gotsnow) {
                 break;
@@ -544,12 +476,11 @@ static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int g
         }
     } else {
         for (tmp = GET_MAP_OB(m, x, y); tmp; tmp = tmp->above) {
-            for (i = 0; weather_avoids[i].name != NULL; i++) {
-                /*if (!strcmp(tmp->arch->name, weather_avoids[i].name)) {*/
-                if (tmp->arch == weather_avoids[i].what) {
+            for (cur = weather_avoids; cur; cur = cur->next) {
+                if (tmp->arch->name == cur->name) {
                     // We clear FLAG_IS_FLOOR for our snow. The map's default snow does not.
                     // Avoid weirdness on the pathway to Brest and at the south pole by checking for non-floor snow
-                    if (!QUERY_FLAG(tmp, FLAG_IS_FLOOR) && weather_avoids[i].snow == 1) {
+                    if (!QUERY_FLAG(tmp, FLAG_IS_FLOOR) && cur->snow == 1) {
                         gotsnow++;
                         snow = tmp;
                     } else {
@@ -2403,6 +2334,97 @@ static int init_config_vals(const Settings *settings, const char *conf_filename,
         return 0;
     }
     return 1;
+}
+
+/**
+ * Link fields to their archetypes.
+ *
+ * @param settings
+ * The settings structure we wish to use for install paths.
+ * We want confdir specifically for this one.
+ *
+ * @param conf_filename
+ * The name of the file we are loading.
+ *
+ * @param wa
+ * pointer to a list to link elements of the weatheravoid to.
+ *
+ * @return
+ * 0 if successful, 1 if failure.
+ */
+static int init_weatheravoid(const Settings *settings, const char *conf_filename, weather_avoids_t **wa) {
+    char filename[MAX_BUF], *line, *name;
+    BufferReader *bfr;
+    FILE *fp;
+    int found, is_effect;
+
+    snprintf(filename, sizeof(filename), "%s/%s", settings->confdir, conf_filename);
+    // Open the file, then pass it off to the buffer reader.
+    fp = fopen(filename, "r");
+    if (fp == NULL) {
+        LOG(llevError, "init_weatheravoid: Could not open file %s. No weatheravoid data is defined.\n", filename);
+        return 1;
+    }
+    bfr = bufferreader_create();
+    bufferreader_init_from_file(bfr, fp);
+    fclose(fp);
+    // Now we read in from the buffer.
+    while ((line = bufferreader_next_line(bfr)) != NULL) {
+        // Now we parse the line
+        // Start by examining the first character.
+        switch (*line) {
+            // Ignore empty lines and comment lines (denoted by # at front)
+            case '\0':
+            case '#':
+            // Handling \r means Windows should work right, too.
+            case '\r':
+            case '\n':
+                break;
+            default:
+                // Actually parse the line
+                // Format is like this:
+                // name, (1 if weather effect, 0 if regular tile)
+                // [spaces are expected after commas]
+
+                // sscanf on strings is wonky (it always reads to whitespace),
+                // so I'm gonna do it by just nabbing part of the buffer.
+                name = line; // Each line starts with name
+                line = strchr(line, ',');
+                if (line == NULL) {
+                    LOG(llevError, "init_weatheravoid: Malformed avoid entry in %s, line %d:\n%s\n",
+                        filename, bufferreader_current_line(bfr), line);
+                    // Move on to the next line and hope it is fine.
+                    continue;
+                }
+                // Null terminate the end of the name, and move to the next space.
+                *(line++) = '\0';
+                // Move past whitespace.
+                while (*line == ',' || *line == ' ')
+                    ++line;
+
+                found = sscanf(line, "%d\n", &is_effect);
+                if (found != 1) {
+                    // Print an error for the malformed line
+                    LOG(llevError, "init_weatheravoid: Malformed avoid entry in %s, line %d:\n%s\n",
+                        filename, bufferreader_current_line(bfr), line);
+                }
+                else {
+                    // Add a struct to the list.
+                    weather_avoids_t *frst = (weather_avoids_t *)malloc(sizeof(weather_avoids_t));
+                    if (!frst) {
+                        fatal(OUT_OF_MEMORY);
+                    }
+                    // Shared strings are friend, not food
+                    frst->name = add_string(name);
+                    frst->snow = is_effect;
+                    // Attach to front of list, since order doesn't matter much, if at all.
+                    frst->next = *wa;
+                    *wa = frst;
+                }
+        }
+    }
+    bufferreader_destroy(bfr);
+    return 0;
 }
 
 /**
@@ -4290,8 +4312,8 @@ void cfweather_init(Settings *settings) {
     init_config_vals(settings, "waterdefs", &water_list);
 
     /*prepare structures used for avoidance*/
-    init_weatheravoid (weather_avoids);
-    init_weatheravoid (growth_avoids);
+    init_weatheravoid(settings, "wavoiddefs", &weather_avoids);
+    init_weatheravoid(settings, "gavoiddefs", &growth_avoids);
 
     // Set up weathermap grid. This is needed for just about everything
     LOG(llevDebug, "Initializing the weathermap...\n");
