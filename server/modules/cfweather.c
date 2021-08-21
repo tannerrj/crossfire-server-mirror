@@ -2868,15 +2868,11 @@ static int weather_clock_listener(int *type, ...) {
     switch (code) {
         case EVENT_CLOCK:
             if (!(pticks%PTICKS_PER_CLOCK)) {
-                // We need the time of day for handling of process_rain()
-                timeofday_t tod;
-                get_tod(&tod);
                 /* call the weather calculators, here, in order */
                 tick_weather();
                 // At every hour, measure the rainfall.
-                if (tod.minute == 0) {
-                    process_rain();
-                }
+                // pticks%PTICKS_PER_CLOCK is already triggering every hour.
+                process_rain();
                 /* perform_weather must follow calculators */
                 perform_weather();
             }
