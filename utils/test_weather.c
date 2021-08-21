@@ -20,14 +20,10 @@ int main(int argc, char *argv[]) {
     init_modules(); // Abunch of weather code lives in the modules now.
     LOG(llevInfo, "Simulating weather for %d ticks: ", num);
     for (int i = 0; i < num; i++) {
-        timeofday_t tod;
         todtick++;
-        get_tod(&tod);
         tick_weather();
         compute_sky();
-        if (tod.minute == 0) {
-            process_rain();
-        }
+        process_rain();
         write_weather_images();
         char filename[MAX_BUF];
         char filename2[MAX_BUF];
