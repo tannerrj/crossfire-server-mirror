@@ -1220,7 +1220,7 @@ static void help(void) {
  * Called before the server starts listening to connections, processes various
  * dump-related options.
  */
-static void init_beforeplay(void) {
+void init_beforeplay(void) {
     init_archetype_pointers(); /* Setup global pointers to archetypes */
     finish_races();    /* overwrite race designations using entries in lib/races file */
     assets_finish_archetypes_for_play();

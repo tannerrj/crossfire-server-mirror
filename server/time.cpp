@@ -807,44 +807,6 @@ void process_object(object *op) {
         return;
     }
 
-    // Have weather affect the position of the object. Do not blow the floors, though -- that is bad.
-    if (op->map && !QUERY_FLAG(op, FLAG_IS_FLOOR)) {
-        uint8_t dir = wind_blow_object(op->map, op->x, op->y, op->move_type, op->weight+op->carrying, &op->stats);
-        mapstruct *m;
-        int16_t x, y;
-        // By checking only the head space, we can actually caue sailing galleons to irrecoverably crash ashore.
-        // This is deliberate behavior.
-        if (dir &&
-               // We will avoid pushing empty transports. Assume they are anchored/parked.
-               !(op->type == TRANSPORT && op->inv == NULL) &&
-               // If our player is in a transport, do not push the player
-               !(op->type == PLAYER && op->contr && op->contr->transport) &&
-               !(get_map_flags(op->map, &m, op->x+freearr_x[dir], op->y+freearr_y[dir], &x, &y)&P_OUT_OF_MAP) &&
-               !blocked_link(op, m, x, y)) {
-            object_remove(op);
-            object_insert_in_map_at(op, m, op, 0, x, y);
-
-            // Make sure to update the player view
-            if (op->type == PLAYER) {
-                esrv_map_scroll(op->contr->socket, freearr_x[dir], freearr_y[dir]);
-                op->contr->socket->update_look = 1;
-                op->contr->socket->look_position = 0;
-            } else if (op->type == TRANSPORT) {
-                FOR_INV_PREPARE(op, pl)
-                    if (pl->type == PLAYER) {
-                        pl->contr->do_los = 1;
-                        pl->map = op->map;
-                        pl->x = op->x;
-                        pl->y = op->y;
-                        esrv_map_scroll(pl->contr->socket, freearr_x[dir], freearr_y[dir]);
-                        pl->contr->socket->update_look = 1;
-                        pl->contr->socket->look_position = 0;
-                    }
-                FOR_INV_FINISH();
-            }
-        }
-    }
-
     if (QUERY_FLAG(op, FLAG_MONSTER))
         if (monster_move(op) || QUERY_FLAG(op, FLAG_FREED))
             return;

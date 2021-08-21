@@ -1,6 +1,12 @@
 #include <stdio.h>
 
 #include "global.h"
+#include "sproto.h"
+
+void init_beforeplay(void);
+void init_modules();
+void load_settings();
+void process_rain();
 
 extern unsigned long todtick;
 
