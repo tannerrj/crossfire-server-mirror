@@ -620,7 +620,6 @@ void set_darkness_map(mapstruct *m);
 void tick_the_clock(void);
 void tick_weather(void);
 void init_weather(void);
-void free_weather(void);
 int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct *m);
 int real_world_temperature(int x, int y, mapstruct *m);
 void do_map_precipitation(mapstruct *m);

@@ -2918,10 +2918,24 @@ static event_registration global_map_handler = 0, global_clock_handler = 0;
  * @param settings server settings.
  */
 void cfweather_init(Settings *settings) {
-    int tx, ty;
+    int x, tx, ty;
     // Initialize the forestry information from file.
     init_config_vals(settings, "treedefs", &forest_list);
     init_config_vals(settings, "waterdefs", &water_list);
+
+    // Set up weathermap grid. This is needed for just about everything
+    LOG(llevDebug, "Initializing the weathermap...\n");
+
+    weathermap = (weathermap_t **)malloc(sizeof(weathermap_t *)*WEATHERMAPTILESX);
+    if (weathermap == NULL) {
+        fatal(OUT_OF_MEMORY);
+    }
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        weathermap[x] = (weathermap_t *)calloc(WEATHERMAPTILESY, sizeof(weathermap_t));
+        if (weathermap[x] == NULL) {
+            fatal(OUT_OF_MEMORY);
+        }
+    }
     /* Unless you know what you're doing, do not re-order these
      * I think I got all the dependencies noted, but it works this way
      * and I'd advise against changing the order unless you have a good reason.
@@ -2988,6 +3002,11 @@ void cfweather_close() {
         events_unregister_global_handler(EVENT_MAPENTER, global_map_handler);
     if (global_clock_handler != 0)
         events_unregister_global_handler(EVENT_CLOCK, global_clock_handler);
+    // Free the weathermap
+    for (int x = 0; x < WEATHERMAPTILESX; x++) {
+        FREE_AND_CLEAR(weathermap[x]);
+    }
+    FREE_AND_CLEAR(weathermap);
     // Deallocate our linked list of forest entries.
     while (forest_list != NULL) {
         cur = forest_list;
