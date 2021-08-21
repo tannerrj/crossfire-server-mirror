@@ -30,8 +30,6 @@ extern unsigned long todtick;
 weathermap_t **weathermap;
 
 static void dawn_to_dusk(const timeofday_t *tod);
-static void read_pressuremap(void);
-static void init_pressure(void);
 static void init_weatheravoid (weather_avoids_t wa[]);
 static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int grow);
 static void calculate_temperature(mapstruct *m);
@@ -407,7 +405,6 @@ static int wmperformstarty;
  * at game startup only.
  */
 void init_weather(void) {
-    int x;
     char filename[MAX_BUF];
     FILE *fp;
 
@@ -427,19 +424,6 @@ void init_weather(void) {
     /*prepare structures used for avoidance*/
     init_weatheravoid (weather_avoids);
     init_weatheravoid (growth_avoids);
-
-    LOG(llevDebug, "Initializing the weathermap...\n");
-
-    weathermap = (weathermap_t **)malloc(sizeof(weathermap_t *)*WEATHERMAPTILESX);
-    if (weathermap == NULL) {
-        fatal(OUT_OF_MEMORY);
-    }
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        weathermap[x] = (weathermap_t *)calloc(WEATHERMAPTILESY, sizeof(weathermap_t));
-        if (weathermap[x] == NULL) {
-            fatal(OUT_OF_MEMORY);
-        }
-    }
     /* The rest have been migrated over to the weather module. */
     // Get current map position
     snprintf(filename, sizeof(filename), "%s/wmapcurpos", settings.localdir);
@@ -459,16 +443,6 @@ void init_weather(void) {
     if (wmperformstarty > settings.worldmaptilesy) {
         wmperformstarty = 0;
     }
-}
-
-/**
- * Frees all memory allocated by the weather system.
- */
-void free_weather(void) {
-    for (int x = 0; x < WEATHERMAPTILESX; x++) {
-        FREE_AND_CLEAR(weathermap[x]);
-    }
-    FREE_AND_CLEAR(weathermap);
 }
 
 /**
