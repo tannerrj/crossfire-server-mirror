@@ -1441,6 +1441,11 @@ static void calculate_temperature(mapstruct *m) {
     }
 }
 
+/**
+ * Do the weather calculations in order.
+ *
+ * Re-ordering these will probably produce unintended side effects.
+ */
 void tick_weather() {
     assert(settings.dynamiclevel > 0);
     update_humid();         /* Run the humidity updates based on prior pressure, temperature, and wind */
