@@ -668,7 +668,7 @@ static void do_weather_insert(mapstruct *m, int x, int y, archetype *at, int8_t 
  * @return
  * The direction to push (1-8), or 0 if push does not occur
  */
-uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t wt, living *stats) {
+static uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t wt, living *stats) {
     // If we're inside, the weather can't get us :P
     if (!m || !m->outdoor)
         return 0;
@@ -4246,12 +4246,76 @@ static int weather_clock_listener(int *type, ...) {
     return 0;
 }
 
+/**
+ * Global object-process handling for weather.
+ * @param type
+ * The event type.
+ * @param op
+ * The object being processed.
+ * @return
+ * 0.
+ */
+static int weather_object_listener(int *type, ...) {
+    va_list args;
+    int code;
+    object *op;
+
+    va_start(args, type);
+    code = va_arg(args, int);
+    // At this point, we don't need the entering object for this.
+    // but it is passed as an arg, so just skip it.
+    op = va_arg(args, object *);
+
+    va_end(args);
+
+    switch (code) {
+        case EVENT_TIME:
+            // Have weather affect the position of the object. Do not blow the floors, though -- that is bad.
+            if (op->map && !QUERY_FLAG(op, FLAG_IS_FLOOR)) {
+                uint8_t dir = wind_blow_object(op->map, op->x, op->y, op->move_type, op->weight+op->carrying, &op->stats);
+                mapstruct *m;
+                int16_t x, y;
+                // By checking only the head space, we can actually caue sailing galleons to irrecoverably crash ashore.
+                // This is deliberate behavior.
+                if (dir &&
+                       // We will avoid pushing empty transports. Assume they are anchored/parked.
+                       !(op->type == TRANSPORT && op->inv == NULL) &&
+                       // If our player is in a transport, do not push the player
+                       !(op->type == PLAYER && op->contr && op->contr->transport) &&
+                       !(get_map_flags(op->map, &m, op->x+freearr_x[dir], op->y+freearr_y[dir], &x, &y)&P_OUT_OF_MAP) &&
+                       !blocked_link(op, m, x, y)) {
+                    object_remove(op);
+                    object_insert_in_map_at(op, m, op, 0, x, y);
+
+                    // Make sure to update the player view
+                    if (op->type == PLAYER) {
+                        esrv_map_scroll(&op->contr->socket, freearr_x[dir], freearr_y[dir]);
+                        op->contr->socket.update_look = 1;
+                        op->contr->socket.look_position = 0;
+                    } else if (op->type == TRANSPORT) {
+                        FOR_INV_PREPARE(op, pl)
+                            if (pl->type == PLAYER) {
+                                pl->contr->do_los = 1;
+                                pl->map = op->map;
+                                pl->x = op->x;
+                                pl->y = op->y;
+                                esrv_map_scroll(&pl->contr->socket, freearr_x[dir], freearr_y[dir]);
+                                pl->contr->socket.update_look = 1;
+                                pl->contr->socket.look_position = 0;
+                            }
+                        FOR_INV_FINISH();
+                    }
+                }
+            }
+    }
+    return 0;
+}
 /********************************************************************************************
  * Section END -- weather event listeners
  ********************************************************************************************/
 
 // Event handler ids start at 1, so 0 is an unset flag.
-static event_registration global_map_handler = 0, global_clock_handler = 0;
+static event_registration global_map_handler = 0, global_clock_handler = 0, global_object_handler = 0;
 
 /**
  * Weather module initialisation.
@@ -4349,6 +4413,7 @@ void cfweather_init(Settings *settings) {
     // precipitation when we're initializing.
     global_map_handler = events_register_global_handler(EVENT_MAPENTER, weather_listener);
     global_clock_handler = events_register_global_handler(EVENT_CLOCK, weather_clock_listener);
+    global_object_handler = events_register_global_handler(EVENT_TIME, weather_object_listener);
     /* Disable the plugin in case it's still there */
     linked_char *disable = (linked_char *)calloc(1, sizeof(linked_char));
     disable->next = settings->disabled_plugins;
@@ -4362,6 +4427,8 @@ void cfweather_close() {
         events_unregister_global_handler(EVENT_MAPENTER, global_map_handler);
     if (global_clock_handler != 0)
         events_unregister_global_handler(EVENT_CLOCK, global_clock_handler);
+    if (global_object_handler != 0)
+        events_unregister_global_handler(EVENT_TIME, global_object_handler);
     // Free the weathermap
     for (int x = 0; x < WEATHERMAPTILESX; x++) {
         FREE_AND_CLEAR(weathermap[x]);
