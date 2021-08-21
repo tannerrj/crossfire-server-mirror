@@ -616,13 +616,14 @@ void cftimer_init(void);
 /* weather.c */
 void set_darkness_map(mapstruct *m);
 void tick_the_clock(void);
+int get_world_darkness(void);
+/* modules/cfweather.c */
 void tick_weather(void);
-void init_weather(void);
 int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct *m);
 int real_world_temperature(int x, int y, mapstruct *m);
 void do_map_precipitation(mapstruct *m);
 int write_rainfallmap(const Settings *settings);
-void write_skymap(void);
+int write_skymap(void);
 int write_gulfstreammap(const Settings *settings);
 int write_temperaturemap(const Settings *settings);
 int write_humidmap(const Settings *settings);
@@ -632,8 +633,6 @@ int write_pressuremap(const Settings *settings);
 int write_weather_images(void);
 void compute_sky(void);
 uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t wt, living *stats);
-/* Functions that are temporarily un-static-ized to make converting into a module easier.*/
-void perform_weather(void);
 /* server.c */
 char const* newhash(char const *password);
 bool check_password(const char *typed, const char *crypted);

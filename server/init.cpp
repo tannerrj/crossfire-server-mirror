@@ -1115,7 +1115,6 @@ void init(int argc, char **argv) {
     parse_args(argc, argv, 1);
 
     add_server_collect_hooks();
-    init_modules();
 
     init_library();     /* Must be called early */
     load_settings();    /* Load the settings file */
@@ -1136,7 +1135,9 @@ void init(int argc, char **argv) {
     parse_args(argc, argv, 3);
 
     init_beforeplay();
-    init_weather();
+    // The weather module needs a lot of stuff already loaded.
+    // So initialize modules out here so that the info is there
+    init_modules();
     init_server();
     metaserver2_init();
     accounts_load();
