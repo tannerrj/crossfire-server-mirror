@@ -383,99 +383,6 @@ void write_skymap(void) {
     fclose(fp);
 }
 
-/**
- * Save pressure information.
- */
-void write_pressuremap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/pressuremap", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
-        LOG(llevError, "Cannot open %s for writing\n", filename);
-        return;
-    }
-    LOG(llevDebug, "Writing pressure map to file.\n");
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            fprintf(fp, "%d ", weathermap[x][y].pressure);
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-}
-
-/**
- * Read the pressure information from disk. If it doesn't exist, initialize pressure.
- */
-static void read_pressuremap(void) {
-    char filename[MAX_BUF];
-    FILE *fp;
-    int x, y;
-
-    snprintf(filename, sizeof(filename), "%s/pressuremap", settings.localdir);
-    LOG(llevDebug, "Reading pressure data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
-        LOG(llevInfo, "Initializing pressure maps...\n");
-        init_pressure();
-        write_pressuremap();
-        LOG(llevDebug, "Done\n");
-        return;
-    }
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            (void)fscanf(fp, "%hd ", &weathermap[x][y].pressure);
-            if (weathermap[x][y].pressure < PRESSURE_MIN ||
-                weathermap[x][y].pressure > PRESSURE_MAX) {
-                weathermap[x][y].pressure = rndm(PRESSURE_MIN, PRESSURE_MAX);
-            }
-        }
-        (void)fscanf(fp, "\n");
-    }
-    LOG(llevDebug, "Done.\n");
-    fclose(fp);
-}
-
-/**
- * Reset pressure map.
- */
-static void init_pressure(void) {
-    int x, y;
-    int l, n, k, r;
-
-    for (x = 0; x < WEATHERMAPTILESX; x++) {
-        for (y = 0; y < WEATHERMAPTILESY; y++) {
-            weathermap[x][y].pressure = 1000;
-        }
-    }
-
-    for (l = 0; l < PRESSURE_ITERATIONS; l++) {
-        x = rndm(0, WEATHERMAPTILESX-1);
-        y = rndm(0, WEATHERMAPTILESY-1);
-        n = rndm(PRESSURE_MIN, PRESSURE_MAX);
-        for (k = 1; k < PRESSURE_AREA; k++) {
-            r = rndm(0, 3);
-            switch (r) {
-            case 0: if (x < WEATHERMAPTILESX-1) x++; break;
-            case 1: if (y < WEATHERMAPTILESY-1) y++; break;
-            case 2: if (x) x--; break;
-            case 3: if (y) y--; break;
-            }
-            weathermap[x][y].pressure = (weathermap[x][y].pressure+n)/2;
-        }
-    }
-    /* create random spikes in the pressure */
-    for (l = 0; l < PRESSURE_SPIKES; l++) {
-        x = rndm(0, WEATHERMAPTILESX-1);
-        y = rndm(0, WEATHERMAPTILESY-1);
-        n = rndm(500, 2000);
-        weathermap[x][y].pressure = n;
-    }
-    smooth_pressure();
-}
-
 /* END of read/write/init */
 
 /**
@@ -533,10 +440,6 @@ void init_weather(void) {
             fatal(OUT_OF_MEMORY);
         }
     }
-
-    /* now we load the values in the big worldmap weather array */
-    /* do not re-order these */
-    read_pressuremap();
     /* The rest have been migrated over to the weather module. */
     // Get current map position
     snprintf(filename, sizeof(filename), "%s/wmapcurpos", settings.localdir);

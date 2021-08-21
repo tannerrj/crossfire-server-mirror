@@ -426,7 +426,7 @@ static void smooth_wind() {
  * This code simply smooths the pressure map.
  * It also does clipping to ensure we are within acceptable bounds.
  */
-void smooth_pressure() {
+static void smooth_pressure() {
     int x, y;
     int k;
 
@@ -1477,6 +1477,49 @@ static void init_wind(void) {
     }
 }
 
+/**
+ * Reset pressure map.
+ *
+ * Sets the whole map to 1013 mbar,
+ * then adds some disturbances in two different ways.
+ */
+static void init_pressure(void) {
+    int x, y;
+    int l, n, k;
+
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            weathermap[x][y].pressure = 1013;
+        }
+    }
+    // Add medium patches of low noise.
+    for (l = 0; l < PRESSURE_ITERATIONS; l++) {
+        x = rndm(0, WEATHERMAPTILESX-1);
+        y = rndm(0, WEATHERMAPTILESY-1);
+        n = rndm(PRESSURE_MIN, PRESSURE_MAX);
+        for (k = 1; k < PRESSURE_AREA; k++) {
+            switch (rndm(0, 3)) {
+            case 0: if (x < WEATHERMAPTILESX-1) x++; break;
+            case 1: if (y < WEATHERMAPTILESY-1) y++; break;
+            case 2: if (x) x--; break;
+            case 3: if (y) y--; break;
+            }
+            weathermap[x][y].pressure = (weathermap[x][y].pressure+n)/2;
+        }
+    }
+    /* create random spikes in the pressure
+     * These go way beyond the bounds of allowed pressure, but smooth_pressure
+     * turns that into a sizable pressure blob.
+     */
+    for (l = 0; l < PRESSURE_SPIKES; l++) {
+        x = rndm(0, WEATHERMAPTILESX-1);
+        y = rndm(0, WEATHERMAPTILESY-1);
+        n = rndm(500, 2000);
+        weathermap[x][y].pressure = n;
+    }
+    smooth_pressure();
+}
+
 /********************************************************************************************
  * Section END -- initializations
  ********************************************************************************************/
@@ -1798,6 +1841,40 @@ int write_winddirmap(const Settings *settings) {
         fprintf(fp, "\n");
     }
     of_close(&of);
+    return 0;
+}
+
+/**
+ * Save pressure information to localdir
+ *
+ * @param settings
+ * The settings structure we are using to find localdir.
+ * Pretty sure it's the same one as the global settings, but oh well.
+ *
+ * @return
+ * 0 if successful, 1 if failure.
+ */
+int write_pressuremap(const Settings *settings) {
+    char filename[MAX_BUF];
+    FILE *fp;
+    OutputFile of;
+    int x, y;
+
+    snprintf(filename, sizeof(filename), "%s/pressuremap", settings->localdir);
+    fp = of_open(&of, filename);
+    if (fp == NULL) {
+        LOG(llevError, "Cannot open %s for writing\n", filename);
+        return 1;
+    }
+    LOG(llevDebug, "Writing pressure map to file.\n");
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            fprintf(fp, "%d ", weathermap[x][y].pressure);
+        }
+        fprintf(fp, "\n");
+    }
+    of_close(&of);
+    return 0;
 }
 
 /* This stuff is for creating the images,
@@ -2665,6 +2742,68 @@ static int read_winddirmap(const Settings *settings) {
     return 0;
 }
 
+/**
+ * Read the pressure information from disk. If it doesn't exist, initialize pressure.
+ *
+ * @param settings
+ * Pointer to the settings structure so we can reach localdir
+ *
+ * @return
+ * 0 if successful without initialization, 1 if successful with initialization
+ * Returns -1 on failure.
+ */
+static int read_pressuremap(const Settings *settings) {
+    char filename[MAX_BUF], *data, *tmp;
+    FILE *fp;
+    BufferReader *bfr;
+    int x, y, res;
+    int16_t press;
+
+    snprintf(filename, sizeof(filename), "%s/pressuremap", settings->localdir);
+    LOG(llevDebug, "Reading pressure data from %s...\n", filename);
+    if ((fp = fopen(filename, "r")) == NULL) {
+        LOG(llevError, "Cannot open %s for reading\n", filename);
+        LOG(llevInfo, "Initializing pressure maps...\n");
+        init_pressure();
+        res = write_pressuremap(settings);
+        LOG(llevDebug, "Done\n");
+        if (res == 0)
+            return 1;
+        return -1;
+    }
+    bfr = bufferreader_create();
+    bufferreader_init_from_file(bfr, fp);
+    fclose(fp);
+    data = bufferreader_data(bfr);
+    for (x = 0; x < WEATHERMAPTILESX; x++) {
+        for (y = 0; y < WEATHERMAPTILESY; y++) {
+            res = sscanf(data, "%hd ", &press);
+            if (res != 1) {
+                LOG(llevError, "Pressure map is malformed. Could not load pressure.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Apply clipping to the pressure.
+            weathermap[x][y].pressure = MIN(PRESSURE_MAX, MAX(PRESSURE_MIN, press));
+            // Now we update the pointer to data to move to the next item.
+            tmp = strpbrk(data, " \n");
+            if (tmp == NULL) {
+                LOG(llevError, "Unexpected end of file in pressure map.\n");
+                bufferreader_destroy(bfr);
+                return -1;
+            }
+            // Okay, so we want the first character after the space/newline.
+            data = tmp + 1;
+        }
+        // Make sure we don't leave a newline in the event of a trailing space on a given line.
+        if (*data == '\n')
+            ++data;
+    }
+    bufferreader_destroy(bfr);
+    LOG(llevDebug, "Done.\n");
+    return 0;
+}
+
 /********************************************************************************************
  * Section END -- weather data readers
  ********************************************************************************************/
@@ -2750,7 +2889,7 @@ static int weather_clock_listener(int *type, ...) {
             if (!(pticks%1511))
                 write_weather_images();
             if (!(pticks%31511))
-                write_pressuremap();
+                write_pressuremap(&settings);
             if (!(pticks%33013))
                 write_winddirmap(&settings);
             if (!(pticks%34501))
@@ -2787,6 +2926,11 @@ void cfweather_init(Settings *settings) {
     // Initialize the forestry information from file.
     init_config_vals(settings, "treedefs", &forest_list);
     init_config_vals(settings, "waterdefs", &water_list);
+    /* Unless you know what you're doing, do not re-order these
+     * I think I got all the dependencies noted, but it works this way
+     * and I'd advise against changing the order unless you have a good reason.
+     */
+    read_pressuremap(settings);
     // Begin to initialize the various data pieces for the weather
     // If wind direction did initialization, we don't need to read the wind speed from file.
     if (read_winddirmap(settings) == 0)
