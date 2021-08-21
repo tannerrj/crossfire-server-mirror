@@ -3137,17 +3137,16 @@ int write_pressuremap(const Settings *settings) {
  *
  * @return
  * 0 if successful, 1 otherwise
- *
- * @todo
- * use atomic output file writing like all the others do
  */
 int write_skymap(void) {
     char filename[MAX_BUF];
     FILE *fp;
+    OutputFile of;
     int x, y;
 
     snprintf(filename, sizeof(filename), "%s/skymap", settings.localdir);
-    if ((fp = fopen(filename, "w")) == NULL) {
+    fp = of_open(&of, filename);
+    if (fp == NULL) {
         LOG(llevError, "Cannot open %s for writing\n", filename);
         return 1;
     }
@@ -3158,7 +3157,7 @@ int write_skymap(void) {
         }
         fprintf(fp, "\n");
     }
-    fclose(fp);
+    of_close(&of);
     return 0;
 }
 
