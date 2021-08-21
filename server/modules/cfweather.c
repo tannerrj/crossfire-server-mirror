@@ -792,28 +792,38 @@ void compute_sky() {
  * The equator is diagonal, and the poles are 45 degrees from north /south.
  * What the hell, lets spin the planet backwards.
  *
- * @todo
- * Make the wraparound make more sense for the polar layout.
- * Current implementation does naive tiling, which will roll the equator onto the poles and vice versa.
+ * Due to the polar layout, the weather moves from northeast to southwest.
+ * This does, however, make storms come from polar-east (in-game northeast).
+ * So the world is spinning backwards, even if it looks odd.
  */
 static void spin_globe() {
-    int x, y;
+    int x, xy, xy_eff;
     int buffer_humid;
     int buffer_sky;
     int buffer_pressure;
 
-    for (y = 0; y < WEATHERMAPTILESY; y++) {
-        buffer_humid = weathermap[0][y].humid;
-        buffer_sky = weathermap[0][y].sky;
-        buffer_pressure = weathermap[0][y].pressure;
-        for (x = 0; x < (WEATHERMAPTILESX-1); x++) {
-            weathermap[x][y].humid = weathermap[x+1][y].humid;
-            weathermap[x][y].sky = weathermap[x+1][y].sky;
-            weathermap[x][y].pressure = weathermap[x+1][y].pressure;
+    // On each pass, x + y is a constant. We shift down and to the left, and wraparound to the upper right.
+    // The cornermost tiles by the poles to not move as a result, so we can skip them.
+    for (xy = 1; xy < WEATHERMAPTILESX + WEATHERMAPTILESY - 1; ++xy) {
+        // Effective xy is essentially clipped to the end.
+        // xy-xy_eff is thus the bounds on the other side of the map to care about for wraparound.
+        xy_eff = MIN(xy, WEATHERMAPTILESX-1);
+        buffer_humid = weathermap[xy-xy_eff][xy_eff].humid;
+        buffer_sky = weathermap[xy-xy_eff][xy_eff].sky;
+        buffer_pressure = weathermap[xy-xy_eff][xy_eff].pressure;
+        for (x = xy-xy_eff; x < xy_eff; ++x) {
+            /* Using xy directly here *looks* wrong, but is actually not,
+             * since x = xy-xy_eff+c, where c is one less than the loop count;
+             * thus, xy-x = xy-xy+xy_eff-c = xy_eff-c.
+             * This is within the bounds of the map at all times.
+             */
+            weathermap[x][xy-x].humid = weathermap[x+1][xy-x-1].humid;
+            weathermap[x][xy-x].sky = weathermap[x+1][xy-x-1].sky;
+            weathermap[x][xy-x].pressure = weathermap[x+1][xy-x-1].pressure;
         }
-        weathermap[WEATHERMAPTILESX-1][y].humid = buffer_humid;
-        weathermap[WEATHERMAPTILESX-1][y].sky = buffer_sky;
-        weathermap[WEATHERMAPTILESX-1][y].pressure = buffer_pressure;
+        weathermap[xy_eff][xy-xy_eff].humid = buffer_humid;
+        weathermap[xy_eff][xy-xy_eff].sky = buffer_sky;
+        weathermap[xy_eff][xy-xy_eff].pressure = buffer_pressure;
     }
 }
 
