@@ -84,6 +84,7 @@ DensityConfig *water_list = NULL;
 weather_avoids_t *weather_avoids = NULL;
 weather_avoids_t *growth_avoids = NULL;
 weather_replace_t *weather_replace = NULL;
+weather_replace_t *weather_evaporate = NULL;
 
 /**
  * Gulf stream variables.
@@ -1813,46 +1814,45 @@ static void singing_in_the_rain(mapstruct *m) {
             if (GET_MAP_OB(m, x, y) && temp > 8 && sky < SKY_OVERCAST && rndm(temp, 60) > 50) {
                 /* evaporate */
                 for (tmp = GET_MAP_OB(m, x, y)->above; tmp; tmp = tmp->above) {
-                    avoid = 0;
-                    if (!strcmp(tmp->arch->name, "rain1_weather")) {
-                        avoid++;
-                    } else if (!strcmp(tmp->arch->name, "rain2_weather")) {
-                        avoid++;
-                    } else if (!strcmp(tmp->arch->name, "rain3_weather")) {
-                        avoid++;
-                    } else if (!strcmp(tmp->arch->name, "rain4_weather")) {
-                        avoid++;
-                    } else if (!strcmp(tmp->arch->name, "rain5_weather")) {
-                        avoid++;
-                    } else if (!strcmp(tmp->arch->name, "mountain1_rivlets_weather")) {
-                        avoid++;
-                    } else if (!strcmp(tmp->arch->name, "mountain2_rivlets_weather")) {
-                        avoid++;
+                    // Find a tile to evaporate
+                    weather_replace_t *evap;
+                    for (evap = weather_evaporate; evap; evap = evap->next) {
+                        if (tmp->arch->name == evap->tile)
+                            break;
                     }
-                    if (avoid) {
+                    // If we found it, then evaporate it
+                    if (evap) {
                         object_remove(tmp);
                         object_free(tmp,0);
                         if (weathermap[wx][wy].humid < 100 && rndm(0, 50) == 0) {
                             weathermap[wx][wy].humid++;
                         }
-                        tmp = GET_MAP_OB(m, x, y);
-                        /* clean up the trees we put over the rain */
-                        doublestack2 = NULL;
-                        for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
-                            if (repl->doublestack_arch == NULL) {
-                                continue;
+                        // If the evaporation is done, clean up the doublestack on this tile.
+                        if (evap->special_snow == NULL) {
+                            tmp = GET_MAP_OB(m, x, y);
+                            /* clean up the trees we put over the rain */
+                            doublestack2 = NULL;
+                            for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
+                                if (repl->doublestack_arch == NULL) {
+                                    continue;
+                                }
+                                if (check_replace_match(tmp, repl)) {
+                                    tmp = tmp->above;
+                                    doublestack2 = repl->doublestack_arch;
+                                    break;
+                                }
                             }
-                            if (check_replace_match(tmp, repl)) {
-                                tmp = tmp->above;
-                                doublestack2 = repl->doublestack_arch;
-                                break;
+                            if (tmp != NULL && doublestack2 != NULL) {
+                                if (tmp->arch == doublestack2) {
+                                    object_remove(tmp);
+                                    object_free(tmp,0);
+                                }
                             }
                         }
-                        if (tmp != NULL && doublestack2 != NULL) {
-                            if (tmp->arch == doublestack2) {
-                                object_remove(tmp);
-                                object_free(tmp,0);
-                            }
+                        else {
+                            // Apply the replacement puddle
+                            at = find_archetype(evap->special_snow);
+                            do_weather_insert(m, x, y, at, WEATHER_OVERLAY, M_LIQUID, INS_NO_MERGE|INS_NO_WALK_ON|INS_ABOVE_FLOOR_ONLY);
                         }
                         break;
                     }
@@ -2534,7 +2534,11 @@ static int init_weather_replace(const Settings *settings, const char *conf_filen
                     }
                     // Shared strings are friend, not food
                     frst->tile = add_string(name);
-                    frst->special_snow = add_string(repl);
+                    // Some replcement definitions can have NONE here to denote removal
+                    if (strcmp(repl, "NONE") == 0)
+                        frst->special_snow = NULL;
+                    else
+                        frst->special_snow = add_string(repl);
                     // if doublestack is NONE, then set the arch to NULL
                     if (strcmp(doublestack, "NONE") == 0)
                         frst->doublestack_arch = NULL;
@@ -4484,6 +4488,7 @@ void cfweather_init(Settings *settings) {
     init_weatheravoid(settings, "gavoiddefs", &growth_avoids);
 
     init_weather_replace(settings, "wreplacedefs", &weather_replace);
+    init_weather_replace(settings, "wevapdefs", &weather_evaporate);
 
     // Set up weathermap grid. This is needed for just about everything
     LOG(llevDebug, "Initializing the weathermap...\n");
@@ -4611,7 +4616,16 @@ void cfweather_close() {
         rpcur = weather_replace;
         weather_replace = weather_replace->next;
         free_string(rpcur->tile);
-        free_string(rpcur->special_snow);
+        if (rpcur->special_snow != NULL)
+            free_string(rpcur->special_snow);
+        free(rpcur);
+    }
+    while (weather_evaporate != NULL) {
+        rpcur = weather_evaporate;
+        weather_evaporate = weather_evaporate->next;
+        free_string(rpcur->tile);
+        if (rpcur->special_snow != NULL)
+            free_string(rpcur->special_snow);
         free(rpcur);
     }
 }
