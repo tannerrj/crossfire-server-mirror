@@ -1450,7 +1450,7 @@ static void do_precipitation(mapstruct * const m, const int x, const int y, cons
  * @param m
  * The map we wish to process.
  */
-void do_map_precipitation(mapstruct * const m) {
+static void do_map_precipitation(mapstruct * const m) {
     if (!m)
         return;
     // Make sure it has a weather map.

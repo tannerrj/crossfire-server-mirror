@@ -623,7 +623,6 @@ int get_world_darkness(void);
 void tick_weather(void);
 int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct *m);
 int real_world_temperature(int x, int y, mapstruct *m);
-void do_map_precipitation(mapstruct *m);
 int write_rainfallmap(const Settings *settings);
 int write_skymap(void);
 int write_gulfstreammap(const Settings *settings);
