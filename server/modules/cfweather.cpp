@@ -1441,7 +1441,7 @@ static void do_precipitation(mapstruct * const m, const int x, const int y, cons
             tmp = GET_MAP_OB(m, x, y);
             avoid = 0;
             while (tmp) {
-                if (!strcmp(tmp->arch->name, at->name)) {
+                if (tmp->arch == at) {
                     avoid++;
                     break;
                 }
@@ -1579,7 +1579,7 @@ static void let_it_snow(mapstruct * const m) {
                     }
                 }
                 if (gotsnow && at) {
-                    if (!strcmp(oldsnow->arch->name, at->name)) {
+                    if (oldsnow->arch == at) {
                         at = NULL;
                     } else {
                         object_remove(oldsnow);
@@ -1796,7 +1796,7 @@ static void singing_in_the_rain(mapstruct * const m) {
                     }
                 }
                 if (gotsnow && at) {
-                    if (!strcmp(oldsnow->arch->name, at->name)) {
+                    if (oldsnow->arch == at) {
                         at = NULL;
                     } else {
                         tmp = GET_MAP_OB(m, x, y);
