@@ -70,7 +70,7 @@ typedef struct _weather_avoids {
 typedef struct _weather_replace {
     sstring tile;                  /**< Tile archetype or object name. */
     sstring special_snow;          /**< The archetype name of the tile to place over specified tile. */
-    sstring doublestack_arch;      /**< If set, this other archetype will be added atop special_snow. */
+    archetype *doublestack_arch;      /**< If set, this other archetype will be added atop special_snow. */
     int arch_or_name;              /**< If set, tile matches the archetype name, else the object's name. */
     struct _weather_replace *next; /**< The next item in the replace list. */
 } weather_replace_t;
@@ -1477,9 +1477,8 @@ static void let_it_snow(mapstruct *m) {
     int x, y, i, wx, wy;
     int nx, ny, j, d;
     int avoid, two, temp, sky, gotsnow, found, nodstk;
-    const char *doublestack, *doublestack2;
     object *ob, *tmp, *oldsnow, *topfloor;
-    archetype *at;
+    archetype *at, *doublestack, *doublestack2;
 
     for (nx = 0; nx < settings.worldmaptilesizex; nx++) {
         for (ny = 0; ny < settings.worldmaptilesizey; ny++) {
@@ -1576,7 +1575,7 @@ static void let_it_snow(mapstruct *m) {
                             }
                         }
                         if (tmp != NULL && doublestack2 != NULL) {
-                            if (tmp->arch->name == doublestack2) {
+                            if (tmp->arch == doublestack2) {
                                 object_remove(tmp);
                                 object_free(tmp,0);
                             }
@@ -1586,10 +1585,8 @@ static void let_it_snow(mapstruct *m) {
                 if (at != NULL) {
                     do_weather_insert(m, x, y, at, WEATHER_OVERLAY|WEATHER_NO_FLOOR, M_ICE, INS_NO_MERGE|INS_NO_WALK_ON|INS_ABOVE_FLOOR_ONLY);
                     if (two) {
-                        at = NULL;
-                        at = find_archetype(doublestack);
-                        if (at != NULL) {
-                            do_weather_insert(m, x, y, at, 0, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ON_TOP);
+                        if (doublestack != NULL) {
+                            do_weather_insert(m, x, y, doublestack, 0, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ON_TOP);
                         }
                     }
                 }
@@ -1680,8 +1677,7 @@ static void singing_in_the_rain(mapstruct *m) {
     int nx, ny, d, j;
     int avoid, two, temp, sky, gotsnow, /*found,*/ nodstk;
     object *ob, *tmp, *oldsnow, *topfloor;
-    const char *doublestack, *doublestack2;
-    archetype *at;
+    archetype *at, *doublestack, *doublestack2;
 
     for (nx = 0; nx < settings.worldmaptilesizex; nx++) {
         for (ny = 0; ny < settings.worldmaptilesizey; ny++) {
@@ -1797,7 +1793,7 @@ static void singing_in_the_rain(mapstruct *m) {
                         }
                         object_free(oldsnow,0);
                         if (tmp != NULL && doublestack2 != NULL) {
-                            if (tmp->arch->name == doublestack2) {
+                            if (tmp->arch == doublestack2) {
                                 object_remove(tmp);
                                 object_free(tmp,0);
                             }
@@ -1807,9 +1803,8 @@ static void singing_in_the_rain(mapstruct *m) {
                 if (at != NULL) {
                     do_weather_insert(m, x, y, at, WEATHER_OVERLAY, M_LIQUID, INS_NO_MERGE|INS_NO_WALK_ON|INS_ABOVE_FLOOR_ONLY);
                     if (two) {
-                        at = find_archetype(doublestack);
-                        if (at != NULL) {
-                            do_weather_insert(m, x, y, at, 0, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ON_TOP);
+                        if (doublestack != NULL) {
+                            do_weather_insert(m, x, y, doublestack, 0, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ON_TOP);
                         }
                     }
                 }
@@ -1854,7 +1849,7 @@ static void singing_in_the_rain(mapstruct *m) {
                             }
                         }
                         if (tmp != NULL && doublestack2 != NULL) {
-                            if (tmp->arch->name == doublestack2) {
+                            if (tmp->arch == doublestack2) {
                                 object_remove(tmp);
                                 object_free(tmp,0);
                             }
@@ -2534,11 +2529,11 @@ static int init_weather_replace(const Settings *settings, const char *conf_filen
                     // Shared strings are friend, not food
                     frst->tile = add_string(name);
                     frst->special_snow = add_string(repl);
-                    // if doublestack is NONE, then set the string to NULL
+                    // if doublestack is NONE, then set the arch to NULL
                     if (strcmp(doublestack, "NONE") == 0)
                         frst->doublestack_arch = NULL;
                     else
-                        frst->doublestack_arch = add_string(doublestack);
+                        frst->doublestack_arch = find_archetype(doublestack);
                     frst->arch_or_name = is_arch;
                     // Attach to front of list, since order doesn't matter much, if at all.
                     frst->next = *list;
@@ -4564,8 +4559,6 @@ void cfweather_close() {
         weather_replace = weather_replace->next;
         free_string(rpcur->tile);
         free_string(rpcur->special_snow);
-        if (rpcur->doublestack_arch)
-            free_string(rpcur->doublestack_arch);
         free(rpcur);
     }
 }
