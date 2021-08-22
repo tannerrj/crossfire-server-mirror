@@ -109,20 +109,6 @@ static int wmperformstarty;
  * The following static tables should probably be defined by files.
  */
 
-/**
- * The table below is used in let_it_snow() and singing_in_the_rain() to
- * decide what type of snow/rain/etc arch to put down.  The first field is the
- * name of the arch we want to match.  The second field is the special snow
- * type we use to cover that arch.  The third field is the doublestack arch,
- * NULL if none, used to stack over the snow after covering the tile.
- * The fourth field is 1 if you want to match arch->name, 0 to match ob->name.
- */
-static weather_replace_t weather_replace_legacy[] = {
-    {"impossible_match", "snow5", NULL, 0, NULL},
-    {"impossible_match2", "snow4", NULL, 0, NULL}, /* placeholders */
-    {"impossible_match3", "snow3", NULL, 0, NULL}
-};
-
 // Table to do snow melt when temp is warm enough or it is getting rained on.
 static weather_replace_t weather_snowmelt[] = {
     {"mountain", "mountain1_rivlets_weather", NULL, 0, NULL},
@@ -1517,10 +1503,10 @@ static void let_it_snow(mapstruct * const m) {
             oldsnow = avoid_weather(&avoid, m, x, y, &gotsnow, 0);
             if (!avoid) {
                 if (sky >= SKY_LIGHT_SNOW && sky < SKY_HEAVY_SNOW) {
-                    at = find_archetype(weather_replace_legacy[0].special_snow);
+                    at = find_archetype("snow5");
                 }
                 if (sky >= SKY_HEAVY_SNOW) {
-                    at = find_archetype(weather_replace_legacy[1].special_snow);
+                    at = find_archetype("snow4");
                 }
                 if (sky >= SKY_LIGHT_SNOW) {
                     /* the bottom floor of scorn is not IS_FLOOR */
