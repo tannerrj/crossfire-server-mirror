@@ -1477,7 +1477,7 @@ void do_map_precipitation(mapstruct *m) {
 static void let_it_snow(mapstruct *m) {
     int x, y, i, wx, wy;
     int nx, ny, j, d;
-    int avoid, two, temp, sky, gotsnow, found, nodstk;
+    int avoid, temp, sky, gotsnow, found, nodstk;
     object *ob, *tmp, *oldsnow, *topfloor;
     archetype *at, *doublestack, *doublestack2;
 
@@ -1504,9 +1504,9 @@ static void let_it_snow(mapstruct *m) {
             (void)worldmap_to_weathermap(nx, ny, &wx, &wy, m);
             ob = NULL;
             at = NULL;
+            doublestack = NULL;
             /* this will definately need tuning */
             avoid = 0;
-            two = 0;
             gotsnow = 0;
             nodstk = 0;
             /*temp = real_world_temperature(x, y, m);*/
@@ -1547,7 +1547,6 @@ static void let_it_snow(mapstruct *m) {
                                 at = find_archetype(repl->special_snow);
                             }
                             if (repl->doublestack_arch != NULL && !nodstk) {
-                                two++;
                                 doublestack = repl->doublestack_arch;
                             }
                             break;
@@ -1585,10 +1584,8 @@ static void let_it_snow(mapstruct *m) {
                 }
                 if (at != NULL) {
                     do_weather_insert(m, x, y, at, WEATHER_OVERLAY|WEATHER_NO_FLOOR, M_ICE, INS_NO_MERGE|INS_NO_WALK_ON|INS_ABOVE_FLOOR_ONLY);
-                    if (two) {
-                        if (doublestack != NULL) {
-                            do_weather_insert(m, x, y, doublestack, 0, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ON_TOP);
-                        }
+                    if (doublestack != NULL) {
+                        do_weather_insert(m, x, y, doublestack, 0, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ON_TOP);
                     }
                 }
             }
@@ -1676,7 +1673,7 @@ static void let_it_snow(mapstruct *m) {
 static void singing_in_the_rain(mapstruct *m) {
     int x, y, i, wx, wy;
     int nx, ny, d, j;
-    int avoid, two, temp, sky, gotsnow, /*found,*/ nodstk;
+    int avoid, temp, sky, gotsnow, /*found,*/ nodstk;
     object *ob, *tmp, *oldsnow, *topfloor;
     archetype *at, *doublestack, *doublestack2;
 
@@ -1705,8 +1702,8 @@ static void singing_in_the_rain(mapstruct *m) {
             (void)worldmap_to_weathermap(nx, ny, &wx, &wy, m);
             ob = NULL;
             at = NULL;
+            doublestack = NULL;
             avoid = 0;
-            two = 0;
             gotsnow = 0;
             nodstk = 0;
             /*temp = real_world_temperature(x, y, m);*/
@@ -1768,7 +1765,6 @@ static void singing_in_the_rain(mapstruct *m) {
                 for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
                     if (check_replace_match(topfloor, repl)) {
                         if (repl->doublestack_arch != NULL && !nodstk) {
-                            two++;
                             doublestack = repl->doublestack_arch;
                         }
                         break;
@@ -1803,10 +1799,8 @@ static void singing_in_the_rain(mapstruct *m) {
                 }
                 if (at != NULL) {
                     do_weather_insert(m, x, y, at, WEATHER_OVERLAY, M_LIQUID, INS_NO_MERGE|INS_NO_WALK_ON|INS_ABOVE_FLOOR_ONLY);
-                    if (two) {
-                        if (doublestack != NULL) {
-                            do_weather_insert(m, x, y, doublestack, 0, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ON_TOP);
-                        }
+                    if (doublestack != NULL) {
+                        do_weather_insert(m, x, y, doublestack, 0, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ON_TOP);
                     }
                 }
             }
