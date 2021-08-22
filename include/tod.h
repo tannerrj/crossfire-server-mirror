@@ -98,16 +98,6 @@ extern void get_tod(timeofday_t *tod);
 #define SKY_BLIZZARD      16
 
 /**
- * Defines a tile the weather system can change to another tile.
- */
-typedef struct _weather_replace {
-	const char *tile;               /**< Tile archetype name. */
-	const char *special_snow;       /**< If set, this is some special snow. */
-	const char *doublestack_arch;   /**< If set, this other archetype will be added. */
-	int arch_or_name;               /**< If set, tile matches the archetype name, else the object's name. */
-} weather_replace_t;
-
-/**
  * Defines a tile where something can grow.
  */
 typedef struct _weather_grow {
