@@ -243,12 +243,11 @@ static const weather_grow_t weather_tile[] = {
  * @return
  * buffer containing the path to the world map we want.
  */
-static char *weathermap_to_worldmap_corner(int wx, int wy, int *x, int *y, int dir, char* buffer, int bufsize) {
-    int spwtx, spwty;
+static char *weathermap_to_worldmap_corner(int wx, int wy, int * const x, int * const y, const int dir, char * const buffer, const int bufsize) {
+    const int spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX,
+              spwty= (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
     int tx, ty, nx, ny;
 
-    spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX;
-    spwty = (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
     switch (dir) {
     case 2: wx++; break;
     case 4: wx++; wy++; break;
@@ -286,7 +285,7 @@ static char *weathermap_to_worldmap_corner(int wx, int wy, int *x, int *y, int d
  * @return
  * distance as an int.
  */
-static int polar_distance(int x, int y, int equator) {
+static int polar_distance(int x, int y, const int equator) {
     if ((x+y) > equator) { /* south pole */
         x = WEATHERMAPTILESX - x;
         y = WEATHERMAPTILESY - y;
@@ -318,12 +317,12 @@ static int polar_distance(int x, int y, int equator) {
  * The associated value of the bottommost config-specified tile at this location,
  * or 0 if there are no matches here.
  */
-static int get_config_tile(const int x, const int y, const mapstruct *m, DensityConfig *list) {
+static int get_config_tile(const int x, const int y, const mapstruct *m, const DensityConfig *list) {
     // If no list specified, shortcut the exit.
     if (list == NULL)
         return 0;
     object *ob = GET_MAP_OB(m, x, y);
-    DensityConfig *tmp;
+    const DensityConfig *tmp;
     // Our trees are not always the floor. Look higher if need be.
     // Even for types that are floor, check anyway. This ensures
     // that no-magic tiles hiding underneath floor don't cause problems.
@@ -360,7 +359,7 @@ static int get_config_tile(const int x, const int y, const mapstruct *m, Density
  * @return
  * -1 if you give it something it can't figure out. 0 normally.
  */
-int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct* m) {
+int worldmap_to_weathermap(const int x, const int y, int * const wx, int * const wy, mapstruct * const m) {
     int spwtx, spwty;
     int fx, fy;
     int nx, ny;
@@ -437,10 +436,10 @@ int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct* m) {
  * @return
  * object pointer for any snow item it found, so you can destroy/melt it.
  */
-static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int grow) {
+static object *avoid_weather(int * const av, const mapstruct *m, const int x, const int y, int * const gs, const int grow) {
     int avoid, gotsnow, i;
     object *tmp, *snow;
-    weather_avoids_t *cur;
+    const weather_avoids_t *cur;
 
     avoid = 0;
     gotsnow = 0;
@@ -505,7 +504,7 @@ static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int g
  * @return
  * 1 if a match occurred, 0 otherwise.
  */
-static int check_replace_match(object *ob, weather_replace_t *rep_struct) {
+static int check_replace_match(const object *ob, const weather_replace_t *rep_struct) {
     if (rep_struct->arch_or_name == 1) {
         if (ob->arch->name == rep_struct->tile) {
             return 1;
@@ -551,7 +550,7 @@ static int check_replace_match(object *ob, weather_replace_t *rep_struct) {
  * @param insert_flags
  * The flags to pass to object_insert_in_map
  */
-static void do_weather_insert(mapstruct *m, int x, int y, archetype *at, int8_t object_flags, uint16_t material, int insert_flags) {
+static void do_weather_insert(mapstruct * const m, int x, int y, const archetype *at, const int8_t object_flags, uint16_t material, int insert_flags) {
     if (at != NULL) {
         object *ob = object_new();
         object_copy(&at->clone, ob);
@@ -940,7 +939,7 @@ int real_world_temperature(int x, int y, mapstruct *m) {
  * @param tod
  * time of day.
  */
-static void temperature_calc(int x, int y, const timeofday_t *tod) {
+static void temperature_calc(const int x, const int y, const timeofday_t *tod) {
     int dist, equator, elev, n, trees;
     float diff, tdiff;
 
@@ -1113,7 +1112,7 @@ static void spin_globe() {
  * @return
  * the humidity of the weathermap square, trimmed to the range [0, 100]
  */
-static int humid_tile(int x, int y, int dark) {
+static int humid_tile(const int x, const int y, const int dark) {
     // ox and oy denote the neighbor that is influencing us (due to winds from there)
     int ox = x, oy = y, humid, evap, tempeffect, lightness;
 
@@ -1376,9 +1375,9 @@ void tick_weather() {
  * @param sky
  * The current sky conditions.
  */
-static void do_precipitation(mapstruct *m, int x, int y, int temp, int sky) {
+static void do_precipitation(mapstruct * const m, const int x, const int y, const int temp, const int sky) {
     // Do falling rain/snow here
-    archetype *at = NULL;
+    const archetype *at = NULL;
     object *tmp = NULL;
     int avoid = 0;
     int pct_precip = 0; // 0-100: percent tiles with precipitation
@@ -1451,7 +1450,7 @@ static void do_precipitation(mapstruct *m, int x, int y, int temp, int sky) {
  * @param m
  * The map we wish to process.
  */
-void do_map_precipitation(mapstruct *m) {
+void do_map_precipitation(mapstruct * const m) {
     if (!m)
         return;
     // Make sure it has a weather map.
@@ -1474,7 +1473,7 @@ void do_map_precipitation(mapstruct *m) {
  * @param m
  * map we are currently processing. Must be a world map.
  */
-static void let_it_snow(mapstruct *m) {
+static void let_it_snow(mapstruct * const m) {
     int x, y, i, wx, wy;
     int nx, ny, j, d;
     int avoid, temp, sky, gotsnow, found, nodstk;
@@ -1670,7 +1669,7 @@ static void let_it_snow(mapstruct *m) {
  * @param m
  * map we are currently processing.
  */
-static void singing_in_the_rain(mapstruct *m) {
+static void singing_in_the_rain(mapstruct * const m) {
     int x, y, i, wx, wy;
     int nx, ny, d, j;
     int avoid, temp, sky, gotsnow, /*found,*/ nodstk;
@@ -1862,7 +1861,7 @@ static void singing_in_the_rain(mapstruct *m) {
  * @param m
  * map we are currently processing.
  */
-static void plant_a_garden(mapstruct *m) {
+static void plant_a_garden(mapstruct *const m) {
     int x, y, i, wx, wy;
     int avoid, two, temp, sky, gotsnow, found, days;
     object *ob, *tmp;
@@ -1961,7 +1960,7 @@ static void plant_a_garden(mapstruct *m) {
  * @param m
  * map we are currently processing.
  */
-static void change_the_world(mapstruct *m) {
+static void change_the_world(mapstruct * const m) {
     int x, y, i, wx, wy;
     int nx, ny, j, d;
     int avoid, two, temp, sky, gotsnow, found, days;
@@ -2095,7 +2094,7 @@ static void change_the_world(mapstruct *m) {
  * @param m
  * map to alter.
  */
-static void weather_effect(mapstruct *m) {
+static void weather_effect(mapstruct * const m) {
     int wx, wy, x, y;
 
     /* if the dm shut off weather, go home */
@@ -2207,7 +2206,7 @@ static void perform_weather(void) {
  * @return
  * The direction to push (1-8), or 0 if push does not occur
  */
-static uint8_t wind_blow_object(mapstruct *m, int x, int y, MoveType move_type, int32_t wt, living *stats) {
+static uint8_t wind_blow_object(mapstruct * const m, const int x, const int y, const MoveType move_type, int32_t wt, const living *stats) {
     // If we're inside, the weather can't get us :P
     if (!m || !m->outdoor)
         return 0;
@@ -2568,7 +2567,7 @@ static int init_weather_replace(const Settings *settings, const char *conf_filen
  * @return
  * 0 if successful, -1 on failure.
  */
-static int load_humidity_map_part(mapstruct **m, int dir, int x, int y, int *tx, int *ty) {
+static int load_humidity_map_part(mapstruct **m, const int dir, const int x, const int y, int * const tx, int * const ty) {
     char mapname[MAX_BUF];
     if (!m || !tx || !ty)
         return -1;
@@ -2611,7 +2610,7 @@ static int load_humidity_map_part(mapstruct **m, int dir, int x, int y, int *tx,
  * @return
  * 0 if successful, -1 if failure
  */
-static int do_water_elev_calc(mapstruct *m, int x, int y, int *water, int64_t *elev, int *trees) {
+static int do_water_elev_calc(mapstruct * const m, const int x, const int y, int * const water, int64_t * const elev, int * const trees) {
     if (!m || !water || !elev || !trees)
         return -1;
     object *ob = GET_MAP_OB(m, x, y), *obtmp;
@@ -2859,7 +2858,7 @@ static void init_gulfstreammap() {
  * Values for speed are fairly low -- the calculations for wind
  * are built in a way where this is not a problem.
  */
-static void init_wind(void) {
+static void init_wind() {
     int x, y;
 
     for (x = 0; x < WEATHERMAPTILESX; x++) {
@@ -2876,7 +2875,7 @@ static void init_wind(void) {
  * Sets the whole map to 1013 mbar,
  * then adds some disturbances in two different ways.
  */
-static void init_pressure(void) {
+static void init_pressure() {
     int x, y;
     int l, n, k;
 
