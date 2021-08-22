@@ -99,8 +99,8 @@ typedef struct _weather_avoids {
  */
 typedef struct _weather_replace {
     sstring tile;                  /**< Tile archetype or object name. */
-    sstring special_snow;          /**< The archetype name of the tile to place over specified tile. */
-    archetype *doublestack_arch;      /**< If set, this other archetype will be added atop special_snow. */
+    archetype *special_snow;       /**< The archetype name of the tile to place over specified tile. */
+    archetype *doublestack_arch;   /**< If set, this other archetype will be added atop special_snow. */
     int arch_or_name;              /**< If set, tile matches the archetype name, else the object's name. */
     struct _weather_replace *next; /**< The next item in the replace list. */
 } weather_replace_t;
@@ -1569,7 +1569,7 @@ static void let_it_snow(mapstruct * const m) {
                     for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
                         if (check_replace_match(topfloor, repl)) {
                             if (repl->special_snow != NULL) {
-                                at = find_archetype(repl->special_snow);
+                                at = repl->special_snow;
                             }
                             if (repl->doublestack_arch != NULL && !nodstk) {
                                 doublestack = repl->doublestack_arch;
@@ -1623,7 +1623,7 @@ static void let_it_snow(mapstruct * const m) {
                             continue;
                         }
 
-                        if (tmp->arch->name == repl->special_snow) {
+                        if (tmp->arch == repl->special_snow) {
                             avoid++;
                         }
                         if (avoid) {
@@ -1648,7 +1648,7 @@ static void let_it_snow(mapstruct * const m) {
                             // Put the snowmelt into a data list so it isn't hardcoded mid-code anymore
                             for (weather_replace_t *melt = weather_snowmelt; melt; melt = melt->next) {
                                 if (tmp->arch->name == melt->tile) {
-                                    at = find_archetype(melt->special_snow);
+                                    at = melt->special_snow;
                                 }
                             }
                         }
@@ -1749,7 +1749,7 @@ static void singing_in_the_rain(mapstruct * const m) {
                     // Put the snowmelt into a data list so it isn't hardcoded mid-code anymore
                     for (weather_replace_t *melt = weather_snowmelt; melt; melt = melt->next) {
                         if (tmp->arch->name == melt->tile) {
-                            at = find_archetype(melt->special_snow);
+                            at = melt->special_snow;
                         }
                     }
                     if (at)
@@ -1870,8 +1870,7 @@ static void singing_in_the_rain(mapstruct * const m) {
                         }
                         else {
                             // Apply the replacement puddle
-                            at = find_archetype(evap->special_snow);
-                            do_weather_insert(m, x, y, at, WEATHER_OVERLAY, M_LIQUID, INS_NO_MERGE|INS_NO_WALK_ON|INS_ABOVE_FLOOR_ONLY);
+                            do_weather_insert(m, x, y, evap->special_snow, WEATHER_OVERLAY, M_LIQUID, INS_NO_MERGE|INS_NO_WALK_ON|INS_ABOVE_FLOOR_ONLY);
                         }
                         break;
                     }
@@ -2557,7 +2556,7 @@ static int init_weather_replace(const Settings *settings, const char *conf_filen
                     if (strcmp(repl, "NONE") == 0)
                         frst->special_snow = NULL;
                     else
-                        frst->special_snow = add_string(repl);
+                        frst->special_snow = find_archetype(repl);
                     // if doublestack is NONE, then set the arch to NULL
                     if (strcmp(doublestack, "NONE") == 0)
                         frst->doublestack_arch = NULL;
@@ -4636,24 +4635,18 @@ void cfweather_close() {
         rpcur = weather_replace;
         weather_replace = weather_replace->next;
         free_string(rpcur->tile);
-        if (rpcur->special_snow != NULL)
-            free_string(rpcur->special_snow);
         free(rpcur);
     }
     while (weather_evaporate != NULL) {
         rpcur = weather_evaporate;
         weather_evaporate = weather_evaporate->next;
         free_string(rpcur->tile);
-        if (rpcur->special_snow != NULL)
-            free_string(rpcur->special_snow);
         free(rpcur);
     }
     while (weather_snowmelt != NULL) {
         rpcur = weather_snowmelt;
         weather_snowmelt = weather_snowmelt->next;
         free_string(rpcur->tile);
-        if (rpcur->special_snow != NULL)
-            free_string(rpcur->special_snow);
         free(rpcur);
     }
 }
