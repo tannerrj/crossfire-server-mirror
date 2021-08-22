@@ -64,6 +64,17 @@ typedef struct _weather_avoids {
     struct _weather_avoids *next;    /**< The next item in the avoid list. */
 } weather_avoids_t;
 
+/**
+ * Defines a tile the weather system can change to another tile.
+ */
+typedef struct _weather_replace {
+    sstring tile;                  /**< Tile archetype or object name. */
+    sstring special_snow;          /**< The archetype name of the tile to place over specified tile. */
+    sstring doublestack_arch;      /**< If set, this other archetype will be added atop special_snow. */
+    int arch_or_name;              /**< If set, tile matches the archetype name, else the object's name. */
+    struct _weather_replace *next; /**< The next item in the replace list. */
+} weather_replace_t;
+
 /********************************************************************************************
  * Section END -- weather structures
  ********************************************************************************************/
@@ -72,6 +83,7 @@ DensityConfig *forest_list = NULL;
 DensityConfig *water_list = NULL;
 weather_avoids_t *weather_avoids = NULL;
 weather_avoids_t *growth_avoids = NULL;
+weather_replace_t *weather_replace = NULL;
 
 /**
  * Gulf stream variables.
@@ -104,42 +116,17 @@ static int wmperformstarty;
  * NULL if none, used to stack over the snow after covering the tile.
  * The fourth field is 1 if you want to match arch->name, 0 to match ob->name.
  */
-static weather_replace_t weather_replace[] = {
-    {"impossible_match", "snow5", NULL, 0},
-    {"impossible_match2", "snow4", NULL, 0}, /* placeholders */
-    {"impossible_match3", "snow3", NULL, 0},
-    {"hills", "drifts", NULL, 0},
-    {"treed_hills", "drifts", "woods5", 1},
-    {"grass", "snow", NULL, 0},
-    {"sand", "snow", NULL, 0},
-    {"stones", "snow2", NULL, 0},
-    {"steppe", "snow2", NULL, 0},
-    {"blackrock", "snow2", NULL, 1},
-    {"brush", "snow2", NULL, 0},
-    {"cyanbrush", "snow2", NULL, 1},
-    {"farmland", "snow3", NULL, 0},
-    {"wasteland", "glacier", NULL, 0},
-    {"mountain5", "glacier", NULL, 1},
-    {"mountain", "mountain1_snow", NULL, 1},
-    {"mountain2", "mountain2_snow", NULL, 1},
-    {"mountain4", "mountain2_snow", NULL, 1},
-    {"s_mountain", "mountain1_snow", NULL, 1},
-    {"grasspond", "ipond", NULL, 1},
-    {"cyangrasspond", "ipond", NULL, 1},
-    {"evergreens", "snow", "evergreens2", 1},
-    {"evergreen","snow", "tree5", 1},
-    {"tree", "snow", "tree3", 0},
-    {"woods", "snow3", "woods4", 1},
-    {"woods_3", "snow", "woods5", 1},
-    {"darkforest", "snow3", "woods4", 1},
-    {NULL, NULL, NULL, 0},
+static weather_replace_t weather_replace_legacy[] = {
+    {"impossible_match", "snow5", NULL, 0, NULL},
+    {"impossible_match2", "snow4", NULL, 0, NULL}, /* placeholders */
+    {"impossible_match3", "snow3", NULL, 0, NULL}
 };
 
 // Table to do snow melt when temp is warm enough or it is getting rained on.
 static weather_replace_t weather_snowmelt[] = {
-    {"mountain", "mountain1_rivlets_weather", NULL, 0},
-    {"mountain2", "mountain2_rivlets_weather", NULL, 0},
-    {"mountain4", "mountain2_rivlets_weather", NULL, 0},
+    {"mountain", "mountain1_rivlets_weather", NULL, 0, NULL},
+    {"mountain2", "mountain2_rivlets_weather", NULL, 0, NULL},
+    {"mountain4", "mountain2_rivlets_weather", NULL, 0, NULL},
     {NULL, NULL, NULL, 0},
 };
 
@@ -503,6 +490,9 @@ static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int g
 /**
  * Refactor the code to look for arch or object name as it's own code
  *
+ * Since we are using shared strings to store our arch/object names,
+ * we can simply use pointer arithmetic in order to compare.
+ *
  * @param ob
  * The external object we are checking
  * Should not be NULL
@@ -516,11 +506,11 @@ static object *avoid_weather(int *av, mapstruct *m, int x, int y, int *gs, int g
  */
 static int check_replace_match(object *ob, weather_replace_t *rep_struct) {
     if (rep_struct->arch_or_name == 1) {
-        if (!strcmp(ob->arch->name, rep_struct->tile)) {
+        if (ob->arch->name == rep_struct->tile) {
             return 1;
         }
     } else {
-        if (!strcmp(ob->name, rep_struct->tile)) {
+        if (ob->name == rep_struct->tile) {
             return 1;
         }
     }
@@ -576,6 +566,35 @@ static void do_weather_insert(mapstruct *m, int x, int y, archetype *at, int8_t 
             ob->material = material;
         object_insert_in_map(ob, m, ob, insert_flags);
     }
+}
+
+/**
+ * Finds the start of the next field in the provided string
+ * Skips past interceding commas and spaces.
+ *
+ * Used in all the config initializations, but not
+ * the weathermap initializations
+ *
+ * @param line
+ * The line to process. We will null terminate the end of the current field
+ * directly here, so we must pass as non-const.
+ *
+ * @return
+ * NULL if no next field could be found,
+ * or the address of the start of that field if found
+ */
+static char *get_next_field(char *line) {
+    // The comma is the end of the field
+    line = strchr(line, ',');
+    if (line == NULL)
+        return NULL;
+    // Move past the known field seperator, but null terminate over it for the previous field.
+    *(line++) = '\0';
+    // While spaces or commas, skip the character
+    while (*line == ' ' || *line == ',')
+        ++line;
+    // Next field begins here.
+    return line;
 }
 
 /**
@@ -1557,10 +1576,10 @@ static void let_it_snow(mapstruct *m) {
             oldsnow = avoid_weather(&avoid, m, x, y, &gotsnow, 0);
             if (!avoid) {
                 if (sky >= SKY_LIGHT_SNOW && sky < SKY_HEAVY_SNOW) {
-                    at = find_archetype(weather_replace[0].special_snow);
+                    at = find_archetype(weather_replace_legacy[0].special_snow);
                 }
                 if (sky >= SKY_HEAVY_SNOW) {
-                    at = find_archetype(weather_replace[1].special_snow);
+                    at = find_archetype(weather_replace_legacy[1].special_snow);
                 }
                 if (sky >= SKY_LIGHT_SNOW) {
                     /* the bottom floor of scorn is not IS_FLOOR */
@@ -1580,14 +1599,14 @@ static void let_it_snow(mapstruct *m) {
                         nodstk++;
                     }
                     /* something is wrong with that sector. just skip it */
-                    for (i = 0; weather_replace[i].tile != NULL; i++) {
-                        if (check_replace_match(topfloor, &weather_replace[i])) {
-                            if (weather_replace[i].special_snow != NULL) {
-                                at = find_archetype(weather_replace[i].special_snow);
+                    for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
+                        if (check_replace_match(topfloor, repl)) {
+                            if (repl->special_snow != NULL) {
+                                at = find_archetype(repl->special_snow);
                             }
-                            if (weather_replace[i].doublestack_arch != NULL && !nodstk) {
+                            if (repl->doublestack_arch != NULL && !nodstk) {
                                 two++;
-                                doublestack = weather_replace[i].doublestack_arch;
+                                doublestack = repl->doublestack_arch;
                             }
                             break;
                         }
@@ -1603,19 +1622,19 @@ static void let_it_snow(mapstruct *m) {
                         /* clean up the trees we put over the snow */
                         doublestack2 = NULL;
                         if (tmp) {
-                            for (i = 0; weather_replace[i].tile != NULL; i++) {
-                                if (weather_replace[i].doublestack_arch == NULL) {
+                            for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
+                                if (repl->doublestack_arch == NULL) {
                                     continue;
                                 }
-                                if (check_replace_match(tmp, &weather_replace[i])) {
+                                if (check_replace_match(tmp, repl)) {
                                     tmp = tmp->above;
-                                    doublestack2 = weather_replace[i].doublestack_arch;
+                                    doublestack2 = repl->doublestack_arch;
                                     break;
                                 }
                             }
                         }
                         if (tmp != NULL && doublestack2 != NULL) {
-                            if (strcmp(tmp->arch->name, doublestack2) == 0) {
+                            if (tmp->arch->name == doublestack2) {
                                 object_remove(tmp);
                                 object_free(tmp,0);
                             }
@@ -1637,12 +1656,12 @@ static void let_it_snow(mapstruct *m) {
                 /* melt some snow */
                 for (tmp = GET_MAP_OB(m, x, y)->above; tmp; tmp = tmp->above) {
                     avoid = 0;
-                    for (i = 0; weather_replace[i].tile != NULL; i++) {
-                        if (weather_replace[i].special_snow == NULL) {
+                    for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
+                        if (repl->special_snow == NULL) {
                             continue;
                         }
 
-                        if (!strcmp(tmp->arch->name, weather_replace[i].special_snow)) {
+                        if (tmp->arch->name == repl->special_snow) {
                             avoid++;
                         }
                         if (avoid) {
@@ -1807,11 +1826,11 @@ static void singing_in_the_rain(mapstruct *m) {
                     nodstk++;
                 }
                 /* something is wrong with that sector. just skip it */
-                for (i = 0; weather_replace[i].tile != NULL; i++) {
-                    if (check_replace_match(topfloor, &weather_replace[i])) {
-                        if (weather_replace[i].doublestack_arch != NULL && !nodstk) {
+                for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
+                    if (check_replace_match(topfloor, repl)) {
+                        if (repl->doublestack_arch != NULL && !nodstk) {
                             two++;
-                            doublestack = weather_replace[i].doublestack_arch;
+                            doublestack = repl->doublestack_arch;
                         }
                         break;
                     }
@@ -1824,19 +1843,19 @@ static void singing_in_the_rain(mapstruct *m) {
                         object_remove(oldsnow);
                         /* clean up the trees we put over the snow */
                         doublestack2 = NULL;
-                        for (i = 0; weather_replace[i].tile != NULL; i++) {
-                            if (weather_replace[i].doublestack_arch == NULL) {
+                        for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
+                            if (repl->doublestack_arch == NULL) {
                                 continue;
                             }
-                            if (check_replace_match(tmp, &weather_replace[i])) {
+                            if (check_replace_match(tmp, repl)) {
                                 tmp = tmp->above;
-                                doublestack2 = weather_replace[i].doublestack_arch;
+                                doublestack2 = repl->doublestack_arch;
                                 break;
                             }
                         }
                         object_free(oldsnow,0);
                         if (tmp != NULL && doublestack2 != NULL) {
-                            if (strcmp(tmp->arch->name, doublestack2) == 0) {
+                            if (tmp->arch->name == doublestack2) {
                                 object_remove(tmp);
                                 object_free(tmp,0);
                             }
@@ -1882,18 +1901,18 @@ static void singing_in_the_rain(mapstruct *m) {
                         tmp = GET_MAP_OB(m, x, y);
                         /* clean up the trees we put over the rain */
                         doublestack2 = NULL;
-                        for (i = 0; weather_replace[i].tile != NULL; i++) {
-                            if (weather_replace[i].doublestack_arch == NULL) {
+                        for (weather_replace_t *repl = weather_replace; repl; repl = repl->next) {
+                            if (repl->doublestack_arch == NULL) {
                                 continue;
                             }
-                            if (check_replace_match(tmp, &weather_replace[i])) {
+                            if (check_replace_match(tmp, repl)) {
                                 tmp = tmp->above;
-                                doublestack2 = weather_replace[i].doublestack_arch;
+                                doublestack2 = repl->doublestack_arch;
                                 break;
                             }
                         }
                         if (tmp != NULL && doublestack2 != NULL) {
-                            if (strcmp(tmp->arch->name, doublestack2) == 0) {
+                            if (tmp->arch->name == doublestack2) {
                                 object_remove(tmp);
                                 object_free(tmp,0);
                             }
@@ -2296,23 +2315,19 @@ static int init_config_vals(const Settings *settings, const char *conf_filename,
                     // sscanf on strings is wonky (it always reads to whitespace),
                     // so I'm gonna do it by just nabbing part of the buffer.
                     name = line; // Each line starts with name
-                    line = strchr(line, ',');
+                    line = get_next_field(line);
                     if (line == NULL) {
-                        LOG(llevError, "init_config_vals: Malformed forestry entry in %s, line %d:\n%s\n",
-                            filename, bufferreader_current_line(bfr), line);
+                        LOG(llevError, "init_config_vals: Malformed name entry in %s, line %d.\n",
+                            filename, bufferreader_current_line(bfr));
                         // Move on to the next line and hope it is fine.
                         continue;
                     }
-                    // Null terminate the end of the name, and move to the next space.
-                    *(line++) = '\0';
-                    // Move past whitespace.
-                    while (*line == ',' || *line == ' ')
-                        ++line;
+
                     found = sscanf(line, "%d, %d\n", &is_obj_name, &tree_count);
                     if (found != 2) {
                         // Print an error for the malformed line
-                        LOG(llevError, "init_config_vals: Malformed forestry entry in %s, line %d:\n%s\n",
-                            filename, bufferreader_current_line(bfr), line);
+                        LOG(llevError, "init_config_vals: Malformed forestry entry in %s, line %d.\n",
+                            filename, bufferreader_current_line(bfr));
                     }
                     else {
                         // Add a struct to the list.
@@ -2337,7 +2352,7 @@ static int init_config_vals(const Settings *settings, const char *conf_filename,
 }
 
 /**
- * Link fields to their archetypes.
+ * Load the weather/growth avoid defintions from file.
  *
  * @param settings
  * The settings structure we wish to use for install paths.
@@ -2389,24 +2404,19 @@ static int init_weatheravoid(const Settings *settings, const char *conf_filename
                 // sscanf on strings is wonky (it always reads to whitespace),
                 // so I'm gonna do it by just nabbing part of the buffer.
                 name = line; // Each line starts with name
-                line = strchr(line, ',');
+                line = get_next_field(line);
                 if (line == NULL) {
-                    LOG(llevError, "init_weatheravoid: Malformed avoid entry in %s, line %d:\n%s\n",
-                        filename, bufferreader_current_line(bfr), line);
+                    LOG(llevError, "init_weatheravoid: Malformed name entry in %s, line %d.\n",
+                        filename, bufferreader_current_line(bfr));
                     // Move on to the next line and hope it is fine.
                     continue;
                 }
-                // Null terminate the end of the name, and move to the next space.
-                *(line++) = '\0';
-                // Move past whitespace.
-                while (*line == ',' || *line == ' ')
-                    ++line;
 
                 found = sscanf(line, "%d\n", &is_effect);
                 if (found != 1) {
                     // Print an error for the malformed line
-                    LOG(llevError, "init_weatheravoid: Malformed avoid entry in %s, line %d:\n%s\n",
-                        filename, bufferreader_current_line(bfr), line);
+                    LOG(llevError, "init_weatheravoid: Malformed effect flag entry in %s, line %d.\n",
+                        filename, bufferreader_current_line(bfr));
                 }
                 else {
                     // Add a struct to the list.
@@ -2420,6 +2430,119 @@ static int init_weatheravoid(const Settings *settings, const char *conf_filename
                     // Attach to front of list, since order doesn't matter much, if at all.
                     frst->next = *wa;
                     *wa = frst;
+                }
+        }
+    }
+    bufferreader_destroy(bfr);
+    return 0;
+}
+
+/**
+ * Load the weather replacement definitions from file
+ *
+ * @param settings
+ * The settings structure we wish to use for install paths.
+ * We want confdir specifically for this one.
+ *
+ * @param conf_filename
+ * The name of the file we are loading.
+ *
+ * @param list
+ * pointer to a list to link elements of the weatheravoid to.
+ *
+ * @return
+ * 0 if successful, 1 if failure.
+ */
+static int init_weather_replace(const Settings *settings, const char *conf_filename, weather_replace_t **list) {
+    char filename[MAX_BUF], *line, *name, *repl, *doublestack;
+    BufferReader *bfr;
+    FILE *fp;
+    int found, is_arch;
+
+    snprintf(filename, sizeof(filename), "%s/%s", settings->confdir, conf_filename);
+    // Open the file, then pass it off to the buffer reader.
+    fp = fopen(filename, "r");
+    if (fp == NULL) {
+        LOG(llevError, "init_weather_replace: Could not open file %s. No weather replace data is defined.\n", filename);
+        return 1;
+    }
+    bfr = bufferreader_create();
+    bufferreader_init_from_file(bfr, fp);
+    fclose(fp);
+    // Now we read in from the buffer.
+    while ((line = bufferreader_next_line(bfr)) != NULL) {
+        // Now we parse the line
+        // Start by examining the first character.
+        switch (*line) {
+            // Ignore empty lines and comment lines (denoted by # at front)
+            case '\0':
+            case '#':
+            // Handling \r means Windows should work right, too.
+            case '\r':
+            case '\n':
+                break;
+            default:
+                // Actually parse the line
+                // Format is like this:
+                // name, replacement tile arch name, additional tile arch name (or NONE if not), (1 if arch name, 0 if object name)
+                // [spaces are expected after commas]
+
+                // sscanf on strings is wonky (it always reads to whitespace),
+                // so I'm gonna do it by just nabbing part of the buffer.
+                name = line; // Each line starts with name
+                line = get_next_field(line);
+                if (line == NULL) {
+                    // Since we end up tokenizing the line strings, we can't reliably print it in the output.
+                    LOG(llevError, "init_weather_replace: Malformed name entry in %s, line %d.\n",
+                        filename, bufferreader_current_line(bfr));
+                    // Move on to the next line and hope it is fine.
+                    continue;
+                }
+
+                repl = line; // Each line starts with name
+                line = get_next_field(line);
+                if (line == NULL) {
+                    // Since we end up tokenizing the line strings, we can't reliably print it in the output.
+                    LOG(llevError, "init_weather_replace: Malformed replacement entry in %s, line %d.\n",
+                        filename, bufferreader_current_line(bfr));
+                    // Move on to the next line and hope it is fine.
+                    continue;
+                }
+
+                doublestack = line; // Each line starts with name
+                line = get_next_field(line);
+                if (line == NULL) {
+                    // Since we end up tokenizing the line strings, we can't reliably print it in the output.
+                    LOG(llevError, "init_weather_replace: Malformed doublestack entry in %s, line %d.\n",
+                        filename, bufferreader_current_line(bfr));
+                    // Move on to the next line and hope it is fine.
+                    continue;
+                }
+
+                found = sscanf(line, "%d\n", &is_arch);
+                if (found != 1) {
+                    // Print an error for the malformed line
+                    LOG(llevError, "init_weatheravoid: Malformed archetype/object flag entry in %s, line %d.\n",
+                        filename, bufferreader_current_line(bfr), line);
+                }
+                else {
+                    // Add a struct to the list.
+                    weather_replace_t *frst = (weather_replace_t *)malloc(sizeof(weather_replace_t));
+                    if (!frst) {
+                        fatal(OUT_OF_MEMORY);
+                    }
+                    // Shared strings are friend, not food
+                    frst->tile = add_string(name);
+                    frst->special_snow = add_string(repl);
+                    // if doublestack is NONE, then set the string to NULL
+                    if (strcmp(doublestack, "NONE") == 0)
+                        frst->doublestack_arch = NULL;
+                    else
+                        frst->doublestack_arch = add_string(doublestack);
+                    frst->arch_or_name = is_arch;
+                    // Attach to front of list, since order doesn't matter much, if at all.
+                    frst->next = *list;
+                    *list = frst;
                 }
         }
     }
@@ -4315,6 +4438,8 @@ void cfweather_init(Settings *settings) {
     init_weatheravoid(settings, "wavoiddefs", &weather_avoids);
     init_weatheravoid(settings, "gavoiddefs", &growth_avoids);
 
+    init_weather_replace(settings, "wreplacedefs", &weather_replace);
+
     // Set up weathermap grid. This is needed for just about everything
     LOG(llevDebug, "Initializing the weathermap...\n");
 
@@ -4390,7 +4515,11 @@ void cfweather_init(Settings *settings) {
 }
 
 void cfweather_close() {
+    // Define temp pointers for clearing up the linked lists
     DensityConfig *cur;
+    weather_avoids_t *avcur;
+    weather_replace_t *rpcur;
+    // Unregister handlers.
     if (global_map_handler != 0)
         events_unregister_global_handler(EVENT_MAPENTER, global_map_handler);
     if (global_clock_handler != 0)
@@ -4415,6 +4544,29 @@ void cfweather_close() {
         water_list = water_list->next;
         free_string(cur->name);
         free(cur);
+    }
+    // Free our avoid lists
+    while (weather_avoids != NULL) {
+        avcur = weather_avoids;
+        weather_avoids = weather_avoids->next;
+        free_string(avcur->name);
+        free(avcur);
+    }
+    while (growth_avoids != NULL) {
+        avcur = growth_avoids;
+        growth_avoids = growth_avoids->next;
+        free_string(avcur->name);
+        free(avcur);
+    }
+    // Free our replacement lists
+    while (weather_replace != NULL) {
+        rpcur = weather_replace;
+        weather_replace = weather_replace->next;
+        free_string(rpcur->tile);
+        free_string(rpcur->special_snow);
+        if (rpcur->doublestack_arch)
+            free_string(rpcur->doublestack_arch);
+        free(rpcur);
     }
 }
 

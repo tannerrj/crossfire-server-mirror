@@ -30,7 +30,8 @@ CONF_FILES = \
 	config/stat_bonus \
 	config/treedefs \
 	config/waterdefs \
-	config/wavoiddefs
+	config/wavoiddefs \
+	config/wreplacedefs
 
 VAR_FILES = highscore banish_file bookarch temp.maps clockdata
 EXTRA_DIST = README .collect-stamp $(CONF_FILES)
