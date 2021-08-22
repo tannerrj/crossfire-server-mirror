@@ -32,6 +32,7 @@ CONF_FILES = \
 	config/waterdefs \
 	config/wavoiddefs \
 	config/wevapdefs \
+	config/wmeltdefs \
 	config/wreplacedefs
 
 VAR_FILES = highscore banish_file bookarch temp.maps clockdata
