@@ -1,0 +1,23 @@
+# Config file for weather module
+# Here we define the list of weather replacement effects
+# used for melting snow from a map.
+#
+# Currently only special cases are defined. The default if it is not found here
+# is to use rain5_weather.
+#
+# File format is as follows:
+# - name of arch or object to find
+# - name of arch to place over the found tile
+#   Can be NONE to denote when the object is removed.
+# - name of arch to place atop both,
+#   or NONE if there is not a second object to place
+#   for this substitution. For melting, this
+#   is likely NONE.
+# - 1 if the first field refers to an archetype name,
+#   0 if that field refers to an object name.
+#   Current handling of this in the code assumes melting
+#   is always set to handle the archetype name.
+
+mountain, mountain1_rivlets_weather, NONE, 1
+mountain2, mountain2_rivlets_weather, NONE, 1
+mountain4, mountain2_rivlets_weather, NONE, 1

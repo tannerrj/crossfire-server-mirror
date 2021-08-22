@@ -133,6 +133,7 @@ weather_avoids_t *weather_avoids = NULL;
 weather_avoids_t *growth_avoids = NULL;
 weather_replace_t *weather_replace = NULL;
 weather_replace_t *weather_evaporate = NULL;
+weather_replace_t *weather_snowmelt = NULL;
 
 /**
  * Gulf stream variables.
@@ -156,15 +157,6 @@ static int wmperformstarty;
  * @todo
  * The following static tables should probably be defined by files.
  */
-
-// Table to do snow melt when temp is warm enough or it is getting rained on.
-static weather_replace_t weather_snowmelt[] = {
-    {"mountain", "mountain1_rivlets_weather", NULL, 0, NULL},
-    {"mountain2", "mountain2_rivlets_weather", NULL, 0, NULL},
-    {"mountain4", "mountain2_rivlets_weather", NULL, 0, NULL},
-    {NULL, NULL, NULL, 0},
-};
-
 /**
  * The table below is used to grow things on the map. See include/tod.h for
  * the meanings of all of the fields.
@@ -1654,9 +1646,9 @@ static void let_it_snow(mapstruct * const m) {
                         at = NULL; // Reset what arch we are looking at
                         if (tmp) {
                             // Put the snowmelt into a data list so it isn't hardcoded mid-code anymore
-                            for (i = 0; weather_snowmelt[i].tile != NULL; ++i) {
-                                if (!strcmp(tmp->arch->name, weather_snowmelt[i].tile)) {
-                                    at = find_archetype(weather_snowmelt[i].special_snow);
+                            for (weather_replace_t *melt = weather_snowmelt; melt; melt = melt->next) {
+                                if (tmp->arch->name == melt->tile) {
+                                    at = find_archetype(melt->special_snow);
                                 }
                             }
                         }
@@ -1755,9 +1747,9 @@ static void singing_in_the_rain(mapstruct * const m) {
                 tmp = GET_MAP_OB(m, x, y);
                 if (tmp) {
                     // Put the snowmelt into a data list so it isn't hardcoded mid-code anymore
-                    for (i = 0; weather_snowmelt[i].tile != NULL; ++i) {
-                        if (!strcmp(tmp->arch->name, weather_snowmelt[i].tile)) {
-                            at = find_archetype(weather_snowmelt[i].special_snow);
+                    for (weather_replace_t *melt = weather_snowmelt; melt; melt = melt->next) {
+                        if (tmp->arch->name == melt->tile) {
+                            at = find_archetype(melt->special_snow);
                         }
                     }
                     if (at)
@@ -4466,6 +4458,7 @@ void cfweather_init(Settings *settings) {
 
     init_weather_replace(settings, "wreplacedefs", &weather_replace);
     init_weather_replace(settings, "wevapdefs", &weather_evaporate);
+    init_weather_replace(settings, "wmeltdefs", &weather_snowmelt);
 
     // Set up weathermap grid. This is needed for just about everything
     LOG(llevDebug, "Initializing the weathermap...\n");
@@ -4597,6 +4590,14 @@ void cfweather_close() {
     while (weather_evaporate != NULL) {
         rpcur = weather_evaporate;
         weather_evaporate = weather_evaporate->next;
+        free_string(rpcur->tile);
+        if (rpcur->special_snow != NULL)
+            free_string(rpcur->special_snow);
+        free(rpcur);
+    }
+    while (weather_snowmelt != NULL) {
+        rpcur = weather_snowmelt;
+        weather_snowmelt = weather_snowmelt->next;
         free_string(rpcur->tile);
         if (rpcur->special_snow != NULL)
             free_string(rpcur->special_snow);
