@@ -1,0 +1,24 @@
+# Config file for weather module
+# Here we define the list of weather replacement effects
+# used for evaporating puddles from a map.
+#
+# File format is as follows:
+# - name of arch or object to find
+# - name of arch to place over the found tile
+#   Can be NONE to denote when the object is removed.
+# - name of arch to place atop both,
+#   or NONE if there is not a second object to place
+#   for this substitution. For evaporation, this
+#   is likely NONE.
+# - 1 if the first field refers to an archetype name,
+#   0 if that field refers to an object name.
+#   Current handling of this in the code assumes evaporation
+#   is always set to handle the archetype name.
+
+rain1_weather, NONE, NONE, 1
+rain2_weather, rain1_weather, NONE, 1
+rain3_weather, rain2_weather, NONE, 1
+rain4_weather, rain3_weather, NONE, 1
+rain5_weather, rain4_weather, NONE, 1
+mountain1_rivlets_weather, NONE, NONE, 1
+mountain2_rivlets_weather, NONE, NONE, 1
