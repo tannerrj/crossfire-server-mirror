@@ -30,6 +30,36 @@
 extern unsigned long todtick;
 weathermap_t **weathermap;
 
+/* weather constants */
+
+#define POLAR_BASE_TEMP		0	/* C */
+#define EQUATOR_BASE_TEMP	30	/* C */
+#define SEASONAL_ADJUST		10	/* polar distance */
+#define GULF_STREAM_WIDTH       3       /* width of gulf stream */
+#define GULF_STREAM_BASE_SPEED  40      /* base speed of gulf stream */
+
+/* don't muck with these unless you are sure you know what they do */
+#define PRESSURE_ITERATIONS		30
+#define PRESSURE_AREA			180
+#define PRESSURE_ROUNDING_FACTOR	2
+#define PRESSURE_ROUNDING_ITER		1
+#define PRESSURE_SPIKES			3
+#define PRESSURE_MAX			1040
+#define PRESSURE_MIN			960
+
+/**
+ * This is a multiplier for the wind caused by pressure differences.
+ * The type of overal climate you get depends on this.
+ * Too little wind, and the rain hugs the coast.
+ * Too much wind, and there are hurricanes and blizzards everywhere.
+ * 1 is too little.
+ */
+#define WIND_FACTOR  4.0
+
+/* editing the below might require actual changes to code */
+#define WEATHERMAPTILESX		100
+#define WEATHERMAPTILESY		100
+
 /********************************************************************************************
  * Section -- weather structures
  * Structures to handle various aspects of the weather system.
@@ -74,6 +104,24 @@ typedef struct _weather_replace {
     int arch_or_name;              /**< If set, tile matches the archetype name, else the object's name. */
     struct _weather_replace *next; /**< The next item in the replace list. */
 } weather_replace_t;
+
+/**
+ * Defines a tile where something can grow.
+ */
+typedef struct _weather_grow {
+	const char *herb;   /**< Arch name of item to grow. */
+	const char *tile;   /**< Arch tile to grow on, NULL if anything. */
+	int random;         /**< Random apparition factor. Min 1, higher = lower chance of appearance. */
+	float rfmin;        /**< Minimum rainfall for herb to grow (inches/day). */
+	float rfmax;        /**< Maximum rainfall for herb to grow (inches/day). */
+	int humin;          /**< Minimum humidity for herb to grow. */
+	int humax;          /**< Maximum humidity for herb to grow. */
+	int tempmin;        /**< Minimum temperature for herb to grow. */
+	int tempmax;        /**< Maximum temperature for herb to grow. */
+	int elevmin;        /**< Minimum elevation for herb to grow. */
+	int elevmax;        /**< Maximum elevation for herb to grow. */
+	int season;         /**< Season the herb can grow. 0=any or 1-5. */
+} weather_grow_t;
 
 /********************************************************************************************
  * Section END -- weather structures
