@@ -1,0 +1,37 @@
+# Config file for weather module
+# Here we define the list of weather replacement effects
+# used when adding weather effects to a map.
+#
+# File format is as follows:
+# - name of arch or object to find
+# - name of arch to place over the found tile
+# - name of arch to place atop both,
+#   or NONE if there is not a second object to place
+#   for this substitution
+# - 1 if the first field refers to an archetype name,
+#   0 if that field refers to an object name.
+
+hills, drifts, NONE, 0
+treed_hills, drifts, woods5, 1
+grass, snow, NONE, 0
+sand, snow, NONE, 0
+stones, snow2, NONE, 0
+steppe, snow2, NONE, 0
+blackrock, snow2, NONE, 1
+brush, snow2, NONE, 0
+cyanbrush, snow2, NONE, 1
+farmland, snow3, NONE, 0
+wasteland, glacier, NONE, 0
+mountain5, glacier, NONE, 1
+mountain, mountain1_snow, NONE, 1
+mountain2, mountain2_snow, NONE, 1
+mountain4, mountain2_snow, NONE, 1
+s_mountain, mountain1_snow, NONE, 1
+grasspond, ipond, NONE, 1
+cyangrasspond, ipond, NONE, 1
+evergreens, snow, evergreens2, 1
+evergreen, snow, tree5, 1
+tree, snow, tree3, 0
+woods, snow3, woods4, 1
+woods_3, snow, woods5, 1
+darkforest, snow3, woods4, 1
