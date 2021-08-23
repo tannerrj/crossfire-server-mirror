@@ -793,7 +793,7 @@ void command_quest(object *op, const char *params) {
         return;
     }
 
-    /* 
+    /*
      * Quest display for clients using the quest system, similar to 'info' above
      * but using the (shared) quest's client_code instead of the (player unique) index.
      */
@@ -969,5 +969,19 @@ void quest_first_player_save(player *pl) {
     quest_player *qp = get_quest(pl);
     if (qp != NULL && qp->quests != NULL) {
         quest_write_player_data(qp);
+    }
+}
+
+/**
+ * Iterate over all quests.
+ * @param op function to call for each quest.
+ * @param user extra parameter to give the function.
+ */
+void quest_for_each(quest_op op, void *user) {
+    quest_load_definitions();
+    quest_definition *cur = quests;
+    while (cur) {
+        op(cur, user);
+        cur = cur->next;
     }
 }
