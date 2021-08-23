@@ -971,3 +971,17 @@ void quest_first_player_save(player *pl) {
         quest_write_player_data(qp);
     }
 }
+
+/**
+ * Iterate over all quests.
+ * @param op function to call for each quest.
+ * @param user extra parameter to give the function.
+ */
+void quest_for_each(quest_op op, void *user) {
+    quest_load_definitions();
+    quest_definition *cur = quests;
+    while (cur) {
+        op(cur, user);
+        cur = cur->next;
+    }
+}
