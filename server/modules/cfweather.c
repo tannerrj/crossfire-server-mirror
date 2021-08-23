@@ -3418,6 +3418,7 @@ int write_weather_images() {
     min[1] = 0;            max[1] = 0;
     min[2] = 0;            max[2] = 0;
     min[3] = PRESSURE_MIN; max[3] = PRESSURE_MAX;
+    // Minimum wind speed is always 0. Don't track it. We just define it so scale[4] is valid
     min[4] = 0;            max[4] = 0;
     // The 6th tile is raw wind direction, and thus does not need limits
     min[6] = 0;            max[6] = 100;
@@ -3429,7 +3430,7 @@ int write_weather_images() {
             min[1] = MIN(min[1], weathermap[x][y].avgelev);
             min[2] = MIN(min[2], weathermap[x][y].rainfall);
 /*          min[3] = MIN(min[3], weathermap[x][y].pressure); */
-            min[4] = MIN(min[4], weathermap[x][y].windspeed);
+/*          min[4] = MIN(min[4], weathermap[x][y].windspeed); */
 /*          min[6] = MIN(min[6], weathermap[x][y].humid); */
 /*          min[7] = MIN(min[7], real_temp[x][y]); */
 
@@ -3447,9 +3448,9 @@ int write_weather_images() {
     // Twiddle the data on total rainfall, since they have a different color for above/below average
     // This allows us to have the full scale of color range on each above average and below average.
     avgrain = total_rainfall/(WEATHERMAPTILESX*WEATHERMAPTILESY);
-    avgwind = (total_wind   /((WEATHERMAPTILESX*WEATHERMAPTILESY)*3/2));
+    avgwind = (total_wind   /(WEATHERMAPTILESX*WEATHERMAPTILESY));
     max[2] = avgrain-1;
-    realscalewind = 255.0l/(max[4]-min[4]);
+    realscalewind = 255.0l/(max[4]);
     realmaxwind = max[4];
     max[4] = avgwind-1;
     for (x = 0; x < 8; x++) {
@@ -3511,17 +3512,17 @@ int write_weather_images() {
             pixels[3*x+(0*WEATHERMAPTILESX*3+GREEN)] = pressure;
             pixels[3*x+(0*WEATHERMAPTILESX*3+BLUE)] = pressure;
             // Wind speed -- second map of row
-            // very high wind = red, else light = high wind, dark = low wind
+            // very high wind = red, else grey = average wind, dark = low wind
             if (speed < avgwind) {
-                speed = (speed-min[4])*scale[4];
+                speed = (speed)*scale[4]/2;
                 pixels[3*x+(1*WEATHERMAPTILESX*3+RED)] = speed;
                 pixels[3*x+(1*WEATHERMAPTILESX*3+GREEN)] = speed;
                 pixels[3*x+(1*WEATHERMAPTILESX*3+BLUE)] = speed;
             } else {
-                speed = (speed-realmaxwind)*realscalewind;
-                pixels[3*x+(1*WEATHERMAPTILESX*3+RED)] = speed;
-                pixels[3*x+(1*WEATHERMAPTILESX*3+GREEN)] = 0;
-                pixels[3*x+(1*WEATHERMAPTILESX*3+BLUE)] = 0;
+                speed = (speed-avgwind)*realscalewind/2;
+                pixels[3*x+(1*WEATHERMAPTILESX*3+RED)] = (uint8_t)((avgwind)*scale[4]/2+speed);
+                pixels[3*x+(1*WEATHERMAPTILESX*3+GREEN)] = (avgwind)*scale[4]/2 - speed;
+                pixels[3*x+(1*WEATHERMAPTILESX*3+BLUE)] = (avgwind)*scale[4]/2 - speed;
             }
             // Wind direction -- third map of row
             // red = northeast, yellow = east, green = southeast, cyan = south,
