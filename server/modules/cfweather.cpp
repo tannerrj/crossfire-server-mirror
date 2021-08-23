@@ -3513,7 +3513,6 @@ int write_weather_images() {
                 pixels[3*x+(1*WEATHERMAPTILESX*3+GREEN)] = speed;
                 pixels[3*x+(1*WEATHERMAPTILESX*3+BLUE)] = speed;
             } else {
-                // FIXME: Should I be using realmaxwind? Or avgwind?
                 speed = (speed-avgwind)*realscalewind/2;
                 pixels[3*x+(1*WEATHERMAPTILESX*3+RED)] = (uint8_t)((avgwind)*scale[4]/2+speed);
                 pixels[3*x+(1*WEATHERMAPTILESX*3+GREEN)] = (avgwind)*scale[4]/2 - speed;
