@@ -3195,6 +3195,8 @@ int write_gulfstreammap(const Settings *settings) {
         }
         fprintf(fp, "\n");
     }
+    // And the last line is the starting position, so we don't always have to initialize it.
+    fprintf(fp, "%d\n", gulf_stream_start);
     of_close(&of);
     return 0;
 }
@@ -4034,6 +4036,16 @@ static int read_gulfstreammap(const Settings *settings) {
         if (*data == '\n')
             ++data;
     }
+    // Then we read in the start point, if it exists
+    // For backward compatability, we randomly initialize this if we can't read it.
+    res = sscanf(data, "%d\n", &in);
+    if (res != 1) {
+        LOG(llevInfo, "Gulf stream file lacks start position, and is assumed to be old; initializing it randomly.\n");
+        in = rndm(GULF_STREAM_WIDTH, WEATHERMAPTILESY-GULF_STREAM_WIDTH);
+    }
+    gulf_stream_start = MAX(0, MIN(WEATHERMAPTILESY-GULF_STREAM_WIDTH, in));
+    // If we add any more parsing here, we'll need to affect the data pointer.
+    // But, since we don't, leave it stale until it falls out of scope.
     bufferreader_destroy(bfr);
     LOG(llevDebug, "Done.\n");
     return 0;
@@ -4512,8 +4524,6 @@ void cfweather_init(Settings *settings) {
             }
         }
     }
-
-    gulf_stream_start = rndm(GULF_STREAM_WIDTH, WEATHERMAPTILESY-GULF_STREAM_WIDTH);
     // Trees help stabilize local temperature and evaporate water from deeper underground.
     // This is calculated at the same time as elevation and humidity.
     int result = read_humidmap(settings);
