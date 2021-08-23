@@ -1240,7 +1240,7 @@ static void update_humid() {
  * to avoid the windsmoothing scrambling the jet stream.
  */
 static void plot_gulfstream() {
-    int x, y, tx, diroffset, dirdiff;
+    int x, y, tx, diroffset, dirdiff, ystart, ydiff, ylimup, ylimlow;
 
     x = gulf_stream_start;
 
@@ -1249,12 +1249,22 @@ static void plot_gulfstream() {
     if (gulf_stream_direction) {
         diroffset = 0;
         dirdiff = -1;
+        // We go from WEATHERMAPTILESY-1 down to 1 for the loop
+        ystart = WEATHERMAPTILESY-1;
+        ydiff = -1;
+        ylimup = WEATHERMAPTILESY;
+        ylimlow = 0;
     }
     else {
         diroffset = 10;
         dirdiff = 1;
+        // We go from 0 to WEATHERMAPTILESY-2 for the loop
+        ystart = 0;
+        ydiff = 1;
+        ylimup = WEATHERMAPTILESY-1;
+        ylimlow = -1;
     }
-    for (y = WEATHERMAPTILESY-1; y > 0; y--) {
+    for (y = ystart; y > ylimlow && y < ylimup; y += ydiff) {
         for (tx = 0; tx < GULF_STREAM_WIDTH && x+tx < WEATHERMAPTILESX; tx++) {
             if (similar_direction(weathermap[x+tx][y].winddir, gulf_stream_dir[tx][y]) && weathermap[x+tx][y].windspeed < GULF_STREAM_BASE_SPEED-5) {
                 weathermap[x+tx][y].windspeed += gulf_stream_speed[tx][y];
