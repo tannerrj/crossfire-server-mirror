@@ -2171,7 +2171,7 @@ static void weather_effect(mapstruct * const m) {
  * The main point of this is stuff like growing herbs, soil, decaying crap,
  * etc etc etc.  Not actual *weather*, but weather *effects*.
  */
-static void perform_weather(void) {
+void perform_weather() {
     mapstruct *m;
     char filename[MAX_BUF];
     FILE *fp;
@@ -3516,7 +3516,7 @@ int write_weather_images() {
                 pixels[3*x+(1*WEATHERMAPTILESX*3+BLUE)] = speed;
             } else {
                 speed = (speed-avgwind)*realscalewind/2;
-                pixels[3*x+(1*WEATHERMAPTILESX*3+RED)] = (uint8_t)((avgwind)*scale[4]/2+speed);
+                pixels[3*x+(1*WEATHERMAPTILESX*3+RED)] = (uint8_t)(MIN(255,(avgwind)*scale[4]/2+speed));
                 pixels[3*x+(1*WEATHERMAPTILESX*3+GREEN)] = (avgwind)*scale[4]/2 - speed;
                 pixels[3*x+(1*WEATHERMAPTILESX*3+BLUE)] = (avgwind)*scale[4]/2 - speed;
             }

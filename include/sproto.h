@@ -631,6 +631,7 @@ int write_winddirmap(const Settings *settings);
 int write_pressuremap(const Settings *settings);
 int write_weather_images(void);
 void compute_sky(void);
+void perform_weather(void);
 /* server.c */
 char const* newhash(char const *password);
 bool check_password(const char *typed, const char *crypted);
