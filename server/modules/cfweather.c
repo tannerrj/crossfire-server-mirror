@@ -860,7 +860,7 @@ static int real_temperature(int x, int y, const timeofday_t *tod) {
         temp += season_tempchange[i];
         /* high amounts of water has a buffering effect on the temp */
         if (weathermap[x][y].water > 33) {
-            i++;
+            i += weathermap[x][y].water/33;
         }
         // Cloudy skies will have a buffering effect on the temperature
         if (adj >= 1)
@@ -873,7 +873,7 @@ static int real_temperature(int x, int y, const timeofday_t *tod) {
     for (i = 0; i <= tod->hour; i++) {
         temp += season_tempchange[i];
         if (weathermap[x][y].water > 33) {
-            i++;
+            i += weathermap[x][y].water/33;
         }
         // Cloudy skies will have a buffering effect on the temperature
         if (adj >= 1)
