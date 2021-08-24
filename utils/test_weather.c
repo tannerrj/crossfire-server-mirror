@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "global.h"
+#include "sproto.h"
 
 extern unsigned long todtick;
 
@@ -21,8 +22,17 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < num; i++) {
         todtick++;
         tick_weather();
-        compute_sky();
         process_rain();
+// Swap this toggle to have it perform weather effects as well.
+// When on, it will run *much* slower, but will be the most accurate,
+// Since a few things like evaporation of puddles does affect the weather.
+#if 0
+        perform_weather();
+#else
+        // If we call compute_weather(), it calls compute_sky() already, so we only need to call
+        // it if we aren't calling compute_weather.
+        compute_sky();
+#endif
         write_weather_images();
         char filename[MAX_BUF];
         char filename2[MAX_BUF];
