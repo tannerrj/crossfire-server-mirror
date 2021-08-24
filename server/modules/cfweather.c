@@ -267,28 +267,37 @@ static const weather_grow_t weather_tile[] = {
  * length of buffer
  *
  * @return
- * buffer containing the path to the world map we want.
+ * buffer containing the path to the world map we want, or NULL if were weren't given a corner direction.
  */
 static char *weathermap_to_worldmap_corner(int wx, int wy, int * const x, int * const y, const int dir, char * const buffer, const int bufsize) {
     const int spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX,
               spwty= (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
     int tx, ty, nx, ny;
 
+    // Load the position on the map the corner of the weathermap takes.
+    // Since each map is larger than each weathermap, there can be no more than four
+    // map existing in a weathermap.
     switch (dir) {
-    case 2: wx++; break;
-    case 4: wx++; wy++; break;
-    case 6: wy++; break;
-    case 8: break;
-    }
-    if (wx > 0) {
-        tx = (wx*spwtx)-1;
-    } else {
-        tx = wx;
-    }
-    if (wy > 0) {
-        ty = (wy*spwty)-1;
-    } else {
-        ty = wy;
+    case 2:
+        tx = (wx+1)*spwtx-1;
+        ty = wy*spwty;
+        break;
+    case 4:
+        tx = (wx+1)*spwtx-1;
+        ty = (wy+1)*spwty-1;
+        break;
+    case 6:
+        tx = wx*spwtx;
+        ty = (wy+1)*spwty-1;
+        break;
+    case 8:
+        tx = wx*spwtx;
+        ty = wy*spwty;
+        break;
+    // If an incorrect direction is given, bail.
+    default:
+        LOG(llevError, "weathermap_to_worldmap_corner: Invalid direction %d given, should be in set {2,4,6,8}.\n", dir);
+        return NULL;
     }
 
     nx = (tx/settings.worldmaptilesizex)+settings.worldmapstartx;
