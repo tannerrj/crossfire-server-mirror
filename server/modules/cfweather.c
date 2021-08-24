@@ -2687,7 +2687,8 @@ static int do_water_elev_calc(mapstruct * const m, const int x, const int y, int
  */
 static void init_humid_elev(const Settings *settings) {
     int x, y, tx, ty, nx, ny, ax, ay, j;
-    int spwtx, spwty;
+    const int spwtx = (settings->worldmaptilesx*settings->worldmaptilesizex)/WEATHERMAPTILESX,
+              spwty = (settings->worldmaptilesy*settings->worldmaptilesizey)/WEATHERMAPTILESY;
     int64_t elev;
     int water, space, trees;
     mapstruct *m;
@@ -2698,8 +2699,6 @@ static void init_humid_elev(const Settings *settings) {
      * want to maintain two of these nightmares.
      */
 
-    spwtx = (settings->worldmaptilesx*settings->worldmaptilesizex)/WEATHERMAPTILESX;
-    spwty = (settings->worldmaptilesy*settings->worldmaptilesizey)/WEATHERMAPTILESY;
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
             water = space = trees = 0;
@@ -2717,39 +2716,49 @@ static void init_humid_elev(const Settings *settings) {
             }
             delete_map(m);
 
-            /* bottom left */
-            if (load_humidity_map_part(&m, 6, x, y, &tx, &ty) == -1)
-                continue;
 
-            j = ny;
-            for (nx = 0, ax = tx; nx < spwtx && ax < settings->worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
-                for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
-                    do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+            // Sanely skip some processing if the entire weathermap fit on one world map.
+            // Since we are the same size for x/y direction on both weathermaps and on world maps,
+            // we will either need to load one map or four maps. There is no middle ground.
+            // If we didn't assume same size x/y for both, we could load 2 maps as well, but I'm
+            // gonna just make that be handled like it would if it were symmetric.
+            if (space < spwtx*spwty) {
+
+                /* bottom left */
+                if (load_humidity_map_part(&m, 6, x, y, &tx, &ty) == -1)
+                    continue;
+
+                j = ny;
+                for (nx = 0, ax = tx; nx < spwtx && ax < settings->worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
+                    for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
+                        do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                    }
                 }
-            }
-            delete_map(m);
+                delete_map(m);
 
-            /* top right */
-            if (load_humidity_map_part(&m, 2, x, y, &tx, &ty) == -1)
-                continue;
+                /* top right */
+                if (load_humidity_map_part(&m, 2, x, y, &tx, &ty) == -1)
+                    continue;
 
-            for (ax = MAX(0, tx-(spwtx-1)); nx < spwtx && ax < tx && space < spwtx*spwty; ax++, nx++) {
-                for (ny = 0, ay = ty; ny < spwty && ay < settings->worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
-                    do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                for (ax = MAX(0, tx-(spwtx-1)); nx < spwtx && ax < tx && space < spwtx*spwty; ax++, nx++) {
+                    for (ny = 0, ay = ty; ny < spwty && ay < settings->worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
+                        do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                    }
                 }
-            }
-            delete_map(m);
+                delete_map(m);
 
-            /* bottom left */
-            if (load_humidity_map_part(&m, 4, x, y, &tx, &ty) == -1)
-                continue;
+                /* bottom left */
+                if (load_humidity_map_part(&m, 4, x, y, &tx, &ty) == -1)
+                    continue;
 
-            for (nx = 0, ax = MAX(0, tx - (spwtx-1)); nx < spwtx && ax < tx && space < spwtx*spwty; ax++, nx++) {
-                for (ny = 0, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
-                    do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                for (nx = 0, ax = MAX(0, tx - (spwtx-1)); nx < spwtx && ax < tx && space < spwtx*spwty; ax++, nx++) {
+                    for (ny = 0, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
+                        do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                    }
                 }
+                delete_map(m);
+
             }
-            delete_map(m);
 
             /* jesus thats confusing as all hell */
             // Per meteorology, full ocean usually only gets to 80% humidity at the standard height it is measured.
