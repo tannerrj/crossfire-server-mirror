@@ -2393,19 +2393,13 @@ static int init_config_vals(const Settings *settings, const char *conf_filename,
 static int init_weatheravoid(const Settings *settings, const char *conf_filename, weather_avoids_t **wa) {
     char filename[MAX_BUF], *line, *name;
     BufferReader *bfr;
-    FILE *fp;
     int found, is_effect;
 
     snprintf(filename, sizeof(filename), "%s/%s", settings->confdir, conf_filename);
-    // Open the file, then pass it off to the buffer reader.
-    fp = fopen(filename, "r");
-    if (fp == NULL) {
-        LOG(llevError, "init_weatheravoid: Could not open file %s. No weatheravoid data is defined.\n", filename);
+    bfr = bufferreader_init_from_file(bfr, filename, "init_weatheravoid: Could not open file %s. No weatheravoid data is defined.\n", llevError);
+    if (bfr == NULL) {
         return 1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     // Now we read in from the buffer.
     while ((line = bufferreader_next_line(bfr)) != NULL) {
         // Now we parse the line
@@ -2479,19 +2473,13 @@ static int init_weatheravoid(const Settings *settings, const char *conf_filename
 static int init_weather_replace(const Settings *settings, const char *conf_filename, weather_replace_t **list) {
     char filename[MAX_BUF], *line, *name, *repl, *doublestack;
     BufferReader *bfr;
-    FILE *fp;
     int found, is_arch;
 
     snprintf(filename, sizeof(filename), "%s/%s", settings->confdir, conf_filename);
-    // Open the file, then pass it off to the buffer reader.
-    fp = fopen(filename, "r");
-    if (fp == NULL) {
-        LOG(llevError, "init_weather_replace: Could not open file %s. No weather replace data is defined.\n", filename);
+    bfr = bufferreader_init_from_file(nullptr, filename, "init_weather_replace: Could not open file %s: %s. No weather replace data is defined.\n", llevError);
+    if (bfr == NULL) {
         return 1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     // Now we read in from the buffer.
     while ((line = bufferreader_next_line(bfr)) != NULL) {
         // Now we parse the line
