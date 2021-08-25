@@ -1303,6 +1303,8 @@ static void plot_gulfstream() {
      * So, if we make the outer effect 1 in 1000, we cover both.
      */
     if (rndm(1, 1000) == 1) {
+        // Reverse the stream direction.
+        gulf_stream_direction = 1-gulf_stream_direction;
         for (tx = 0; tx < GULF_STREAM_WIDTH; tx++) {
             for (y = 0; y < WEATHERMAPTILESY-1; y++) {
                 // The direction changes here are dir + 4 mod 8, but 8 instead of 0 on those ones.
