@@ -1051,7 +1051,7 @@ void compute_sky() {
     int x, y;
     int temp;
     int calc, inv_pressure;
-    float press_root;
+    float press_root, max_root = sqrt(PRESSURE_MAX-PRESSURE_MIN);
     timeofday_t tod;
 
     // Before we begin the loops, we get the time of day for real_temperature()
@@ -1061,15 +1061,16 @@ void compute_sky() {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
             temp = real_temperature(x, y, &tod);
             // Make sure we clip to the allowed pressure range.
-            inv_pressure = MAX(0, MIN(80, (PRESSURE_MAX - weathermap[x][y].pressure)));
+            inv_pressure = MAX(0, MIN(PRESSURE_MAX-PRESSURE_MIN, (PRESSURE_MAX - weathermap[x][y].pressure)));
             // Take the square root. This allows us to have values weighted toward
-            // producing rain. Also the resultant value is <9, since our limit is 80.
+            // producing rain. max_root holds the maximum value this could be.
             press_root = sqrt(inv_pressure);
-            calc = MAX(0, MIN(900, (int)(press_root * weathermap[x][y].humid)));
-            // 900 / 7 = 129-ish. So as long as we divide by a number greater than that, we're good.
+            calc = MAX(0, MIN((int)(max_root*100), (int)(press_root * weathermap[x][y].humid)));
+            // max_root*100 / 7 is the smallest we can feasibly divide by without side effects
+            // So as long as we divide by a number greater than that, we're good.
             // If we divide by smaller, we overrun the sequential weather numbers, and reach FOG and HAIL
             // when not encountering their special cases.
-            calc /= 130;
+            calc /= (int)(max_root*100 / 7) + 1;
 
             // If wind speed is high enough and we have rain, we can add one.
             if (calc >= SKY_LIGHT_RAIN && calc < SKY_HURRICANE && weathermap[x][y].windspeed > 30)
