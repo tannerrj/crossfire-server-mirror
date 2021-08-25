@@ -269,7 +269,7 @@ static const weather_grow_t weather_tile[] = {
  * @return
  * buffer containing the path to the world map we want, or NULL if were weren't given a corner direction.
  */
-static char *weathermap_to_worldmap_corner(int wx, int wy, int * const x, int * const y, const int dir, char * const buffer, const int bufsize) {
+static char *weathermap_to_worldmap_corner(const int wx, const int wy, int * const x, int * const y, const int dir, char * const buffer, const int bufsize) {
     const int spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX,
               spwty= (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
     int tx, ty, nx, ny;
