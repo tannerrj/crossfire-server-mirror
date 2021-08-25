@@ -686,8 +686,8 @@ static void smooth_wind() {
                 weathermap[x][y].windspeed = 0;
             }
             // The wind moves some of the higher pressure to the lower pressure.
-            weathermap[x][y].pressure -= (int)(weathermap[x][y].windspeed/(WIND_FACTOR*2));
-            weathermap[x+dx][y+dy].pressure += (int)(weathermap[x][y].windspeed/(WIND_FACTOR*2));
+            weathermap[x][y].pressure -= (int)(weathermap[x][y].windspeed/(WIND_FACTOR*3));
+            weathermap[x+dx][y+dy].pressure += (int)(weathermap[x][y].windspeed/(WIND_FACTOR*3));
         }
 
     /*  now, lets crank on the speed.  When surrounding tiles all have
@@ -1202,7 +1202,7 @@ static int humid_tile(const int x, const int y, const int dark) {
     // Determine the evaporative component contributing to the humidity.
     // The amount of water, the temperature, the wind, the pressure, the time of day, the cloudcover, and the previous humidity all affect the evaporation.
     // The exact formula is arbitrary, but it gives values that make some sense.
-    evap = (weathermap[x][y].water/2+20+tempeffect)*(weathermap[x][y].temp+tempeffect)*weathermap[x][y].windspeed*weathermap[x][y].windspeed*(100-weathermap[x][y].humid)/(weathermap[x][y].pressure*weathermap[x][y].humid+1);
+    evap = (weathermap[x][y].water/2+20+tempeffect)*(weathermap[x][y].temp+tempeffect)*weathermap[x][y].windspeed*10*(100-weathermap[x][y].humid)/(weathermap[x][y].pressure*weathermap[x][y].humid+1);
     // Don't go negative if temperature gets too low.
     evap = MAX(0, evap);
     // This is where the magic happens
