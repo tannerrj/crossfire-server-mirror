@@ -1186,6 +1186,7 @@ static int humid_tile(const int x, const int y, const int dark) {
         case SKY_RAIN:
         case SKY_SNOW:
             tempeffect = light/2;
+            break;
         case SKY_HEAVY_RAIN:
         case SKY_HEAVY_SNOW:
             tempeffect = light/3;
