@@ -1288,12 +1288,12 @@ static void plot_gulfstream() {
                     case 7: break;
                     case 8: x++; break;
                 }
-            }
-            if (x < 0) {
-                x++;
-            }
-            if (x >= WEATHERMAPTILESX-GULF_STREAM_WIDTH) {
-                x--;
+                if (x < 0) {
+                    x++;
+                }
+                if (x >= WEATHERMAPTILESX-GULF_STREAM_WIDTH) {
+                    x--;
+                }
             }
         }
     }
