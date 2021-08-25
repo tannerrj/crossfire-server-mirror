@@ -655,10 +655,6 @@ static void smooth_wind() {
     int tx, ty, dx, dy;
     int minp;
 
-    // Grab the old wind speed.
-    // Moving air is lower pressure than stationary air.
-    int oldwind = weathermap[x][y].windspeed;
-
     /* skip the outer squares.. it makes handling alot easier */
     dx = 0;
     dy = 0;
@@ -723,10 +719,6 @@ static void smooth_wind() {
             }
         }
     }
-
-    // Apply a difference to the pressure equal to our change in wind.
-    // Higher wind speed is lower pressure.
-    weathermap[x][y].pressure -= weathermap[x][y].windspeed - oldwind;
 }
 
 /**
