@@ -2731,48 +2731,56 @@ static void init_humid_elev(const Settings *settings) {
             // will be one of bottom left or top right, since bottom right only is relevant when we intersect maps
             // in both x and y directions.
             if (space < spwtx*spwty) {
+                // If we got all the way to the bottom on one map, don't even bother to load the map again.
+                if (ny < spwty) {
+                   /* bottom left */
+                   if (load_humidity_map_part(&m, 6, x, y, &tx, &ty) == -1)
+                        continue;
 
-                /* bottom left */
-                if (load_humidity_map_part(&m, 6, x, y, &tx, &ty) == -1)
-                    continue;
+                    // If we get here, then we didn't have the whole weathermap reside on one map.
+                    // Since we are continuing from top left, maintaining our position in the y direction
+                    // allows us to correctly check when we reach the end of the weathermap bounds.
+                    j = ny;
+                    for (nx = 0, ax = tx; nx < spwtx && ax < settings->worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
+                        for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
+                            do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                            //LOG(llevInfo, "%s %d %d (6)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
+                        }
+                    }
+                    delete_map(m);
+                }
 
-                // If we get here, then we didn't have the whole weathermap reside on one map.
-                // Since we are continuing from top left, maintaining our position in the y direction
-                // allows us to correctly check when we reach the end of the weathermap bounds.
-                j = ny;
-                for (nx = 0, ax = tx; nx < spwtx && ax < settings->worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
-                    for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
-                        do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
-                        //LOG(llevInfo, "%s %d %d (6)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
+                // If we gotall the way to the right on the left calculations, skip both right-side calculations.
+                if (nx < spwtx) {
+                    /* top right */
+                    if (load_humidity_map_part(&m, 2, x, y, &tx, &ty) == -1)
+                        continue;
+
+                    for (ax = MAX(0, tx-(spwtx-1)); nx < spwtx && ax <= tx && space < spwtx*spwty; ax++, nx++) {
+                        for (ny = 0, ay = ty; ny < spwty && ay < settings->worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
+                            do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                            //LOG(llevInfo, "%s %d %d (2)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
+                        }
+                    }
+                    delete_map(m);
+
+                    // If we got all the way to the bottom on one map, don't even bother to load the map again.
+                    if (ny < spwty) {
+                       /* bottom right */
+                        if (load_humidity_map_part(&m, 4, x, y, &tx, &ty) == -1)
+                            continue;
+
+                        // Moving from top to bottom should behave the same on both right and left.
+                        j = ny;
+                        for (nx = 0, ax = MAX(0, tx - (spwtx-1)); nx < spwtx && ax <= tx && space < spwtx*spwty; ax++, nx++) {
+                            for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
+                                do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                                //LOG(llevInfo, "%s %d %d (4)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
+                            }
+                        }
+                        delete_map(m);
                     }
                 }
-                delete_map(m);
-
-                /* top right */
-                if (load_humidity_map_part(&m, 2, x, y, &tx, &ty) == -1)
-                    continue;
-
-                for (ax = MAX(0, tx-(spwtx-1)); nx < spwtx && ax <= tx && space < spwtx*spwty; ax++, nx++) {
-                    for (ny = 0, ay = ty; ny < spwty && ay < settings->worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
-                        do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
-                        //LOG(llevInfo, "%s %d %d (2)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
-                    }
-                }
-                delete_map(m);
-
-                /* bottom right */
-                if (load_humidity_map_part(&m, 4, x, y, &tx, &ty) == -1)
-                    continue;
-
-                // Moving from top to bottom should behave the same on both right and left.
-                j = ny;
-                for (nx = 0, ax = MAX(0, tx - (spwtx-1)); nx < spwtx && ax <= tx && space < spwtx*spwty; ax++, nx++) {
-                    for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
-                        do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
-                        //LOG(llevInfo, "%s %d %d (4)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
-                    }
-                }
-                delete_map(m);
             }
 
             /* jesus thats confusing as all hell */
