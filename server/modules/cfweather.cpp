@@ -2668,7 +2668,14 @@ static int do_water_elev_calc(mapstruct * const m, const int x, const int y, int
  * We use multiple values from it.
  */
 static void init_humid_elev(const Settings *settings) {
+    // Variable uses:
+    // x, y: weathermap tile being affected
+    // tx, ty: the in-map coordinates of the corner of the weathermap we are calculating.
+    // nx, ny: coordinates within the weathermap
+    // ax, ay: the location on the map we are examining
+    // j: temporary variable for when a specific ny needs to be initialized from within a loop.
     int x, y, tx, ty, nx, ny, ax, ay, j;
+    // spwtx, spwty: The number of tiles in a single weathermap in the associated (x or y) direction
     const int spwtx = (settings->worldmaptilesx*settings->worldmaptilesizex)/WEATHERMAPTILESX,
               spwty = (settings->worldmaptilesy*settings->worldmaptilesizey)/WEATHERMAPTILESY;
     int64_t elev;
