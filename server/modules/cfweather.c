@@ -3546,7 +3546,10 @@ int write_weather_images() {
         for (x = 0; x < WEATHERMAPTILESX; x++) {
             uint32_t dir = directions[weathermap[x][y].winddir-1];
             uint32_t speed = weathermap[x][y].windspeed;
-            uint8_t pressure = (weathermap[x][y].pressure-min[3])*scale[3];
+            int16_t pressure = (weathermap[x][y].pressure-PRESSURE_MIN)*scale[3];
+            // Make sure we don't get artifacting from Post-smoothing pressure adjustments.
+            // or round-off error in the above calculation.
+            pressure = MIN(255, MAX(0, pressure));
             // Pressure -- first map of row
             // light = high pressure, dark = low pressure
             pixels[3*x+(0*WEATHERMAPTILESX*3+RED)] = pressure;
