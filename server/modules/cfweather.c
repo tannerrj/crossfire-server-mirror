@@ -1278,10 +1278,13 @@ static void plot_gulfstream() {
         for (tx = 0; tx < GULF_STREAM_WIDTH && x+tx < WEATHERMAPTILESX; tx++) {
             if (similar_direction(weathermap[x+tx][y].winddir, gulf_stream_dir[tx][y]) && weathermap[x+tx][y].windspeed < GULF_STREAM_BASE_SPEED-5) {
                 weathermap[x+tx][y].windspeed += gulf_stream_speed[tx][y];
-            } else{
+                weathermap[x+tx][y].winddir = gulf_stream_dir[tx][y];
+            } else if (gulf_stream_speed[tx][y] > weathermap[x+tx][y].windspeed) {
+                // Preserve the wind speed of things with a higher speed that the gulf stream itself.
                 weathermap[x+tx][y].windspeed = gulf_stream_speed[tx][y];
-            }
-            weathermap[x+tx][y].winddir = gulf_stream_dir[tx][y];
+                weathermap[x+tx][y].winddir = gulf_stream_dir[tx][y];
+            } // If a storm moves through the gulf stream, it supercedes it with its own high winds.
+
             if (tx == GULF_STREAM_WIDTH-1) {
                 switch ((diroffset-gulf_stream_dir[tx][y])*dirdiff) {
                     case 6: x--; break;
