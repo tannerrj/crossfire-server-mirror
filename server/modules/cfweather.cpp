@@ -1079,7 +1079,7 @@ void compute_sky() {
                 calc += 10;
 
             // Keep the old fog/hail generation for now
-            if (weathermap[x][y].pressure < 980 && weathermap[x][y].pressure < 1000) {
+            if (weathermap[x][y].pressure >= 980 && weathermap[x][y].pressure < 1000) {
                 if (temp > 0 && temp < 5 && weathermap[x][y].humid > 95 &&
                     weathermap[x][y].windspeed < 3) {
                     calc = SKY_FOG; /* rare */
