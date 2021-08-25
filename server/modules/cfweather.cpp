@@ -785,7 +785,7 @@ static void perform_pressure() {
         n = rndm(600, 1300);
         weathermap[x][y].pressure = n;
         // Get close to the edge. But, to make things cleaner, don't go off the edge.
-        if (x > 3 && y > 3 && x < WEATHERMAPTILESX-3 && y < WEATHERMAPTILESY-3) {
+        if (x >= 2 && y >= 2 && x < WEATHERMAPTILESX-2 && y < WEATHERMAPTILESY-2) {
             /* occasionally add a storm
              * and make sure the whole pressure spot is a storm, not just pieces of it
              *
