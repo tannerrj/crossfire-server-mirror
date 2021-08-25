@@ -2712,6 +2712,7 @@ static void init_humid_elev(const Settings *settings) {
             for (nx = 0, ax = tx; nx < spwtx && ax < settings->worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
                 for (ny = 0, ay = ty; ny < spwty && ay < settings->worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
                     do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                    //LOG(llevInfo, "%s %d %d (8)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
                 }
             }
             delete_map(m);
@@ -2719,19 +2720,23 @@ static void init_humid_elev(const Settings *settings) {
 
             // Sanely skip some processing if the entire weathermap fit on one world map.
             // Since we are the same size for x/y direction on both weathermaps and on world maps,
-            // we will either need to load one map or four maps. There is no middle ground.
-            // If we didn't assume same size x/y for both, we could load 2 maps as well, but I'm
-            // gonna just make that be handled like it would if it were symmetric.
+            // we will either need to load one map, two maps, or four maps. When two maps are loaded, it
+            // will be one of bottom left or top right, since bottom right only is relevant when we intersect maps
+            // in both x and y directions.
             if (space < spwtx*spwty) {
 
                 /* bottom left */
                 if (load_humidity_map_part(&m, 6, x, y, &tx, &ty) == -1)
                     continue;
 
+                // If we get here, then we didn't have the whole weathermap reside on one map.
+                // Since we are continuing from top left, maintaining our position in the y direction
+                // allows us to correctly check when we reach the end of the weathermap bounds.
                 j = ny;
                 for (nx = 0, ax = tx; nx < spwtx && ax < settings->worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
                     for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
                         do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                        //LOG(llevInfo, "%s %d %d (6)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
                     }
                 }
                 delete_map(m);
@@ -2740,24 +2745,27 @@ static void init_humid_elev(const Settings *settings) {
                 if (load_humidity_map_part(&m, 2, x, y, &tx, &ty) == -1)
                     continue;
 
-                for (ax = MAX(0, tx-(spwtx-1)); nx < spwtx && ax < tx && space < spwtx*spwty; ax++, nx++) {
+                for (ax = MAX(0, tx-(spwtx-1)); nx < spwtx && ax <= tx && space < spwtx*spwty; ax++, nx++) {
                     for (ny = 0, ay = ty; ny < spwty && ay < settings->worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
                         do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                        //LOG(llevInfo, "%s %d %d (2)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
                     }
                 }
                 delete_map(m);
 
-                /* bottom left */
+                /* bottom right */
                 if (load_humidity_map_part(&m, 4, x, y, &tx, &ty) == -1)
                     continue;
 
-                for (nx = 0, ax = MAX(0, tx - (spwtx-1)); nx < spwtx && ax < tx && space < spwtx*spwty; ax++, nx++) {
-                    for (ny = 0, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
+                // Moving from top to bottom should behave the same on both right and left.
+                j = ny;
+                for (nx = 0, ax = MAX(0, tx - (spwtx-1)); nx < spwtx && ax <= tx && space < spwtx*spwty; ax++, nx++) {
+                    for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
                         do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
+                        //LOG(llevInfo, "%s %d %d (4)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
                     }
                 }
                 delete_map(m);
-
             }
 
             /* jesus thats confusing as all hell */
