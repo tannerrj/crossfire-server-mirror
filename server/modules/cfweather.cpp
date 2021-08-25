@@ -690,8 +690,8 @@ static void smooth_wind() {
                 weathermap[x][y].windspeed = 0;
             }
             // The wind moves some of the higher pressure to the lower pressure.
-            weathermap[x][y].pressure -= weathermap[x][y].windspeed/8;
-            weathermap[x+dx][y+dy].pressure += weathermap[x][y].windspeed/8;
+            weathermap[x][y].pressure -= weathermap[x][y].windspeed/(WIND_FACTOR*2);
+            weathermap[x+dx][y+dy].pressure += weathermap[x][y].windspeed/(WIND_FACTOR*2);
         }
 
     /*  now, lets crank on the speed.  When surrounding tiles all have
