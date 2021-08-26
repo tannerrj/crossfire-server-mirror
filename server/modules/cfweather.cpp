@@ -4339,10 +4339,7 @@ static int weather_listener(int *type, ...) {
             // At this point, we don't need the entering object for this.
             // but it is passed as an arg, so just skip it.
             va_arg(args, object *);
-            m = va_arg(args, mapstruct *);
-            if (m->outdoor)
-                do_map_precipitation(m);
-            break;
+            /* FALLTHROUGH */
         case EVENT_MAPLOAD:
             m = va_arg(args, mapstruct *);
             if (m->outdoor)
