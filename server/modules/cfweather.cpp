@@ -4605,60 +4605,55 @@ void command_weather (object *op, const char *params) {
     else if (temp > 0 && sky >= SKY_LIGHT_SNOW)
         sky -= 10;
 
+    // Recycle buf for printing the various sky conditions strings.
+    // This way we can cleanly call draw_ext_info once and not have
+    // a bajillion calls with the same parameters other than the text.
     switch (sky) {
         case SKY_CLEAR:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "There isn't a cloud in the sky.");
+            buf = "There isn't a cloud in the sky.";
             break;
         case SKY_LIGHTCLOUD:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "There are a few light clouds in the sky");
+            buf = "There are a few light clouds in the sky";
             break;
         case SKY_OVERCAST:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                           "The sky is cloudy and dreary.");
+            buf = "The sky is cloudy and dreary.";
             break;
         case SKY_LIGHT_RAIN:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "It is raining softly.");
+            buf = "It is raining softly.";
             break;
         case SKY_RAIN:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "It is raining.");
+            buf = "It is raining.";
             break;
         case SKY_HEAVY_RAIN:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "It is raining heavily.");
+            buf = "It is raining heavily.";
             break;
         case SKY_HURRICANE:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "There is a heavy storm!  You should go inside!");
+            buf = "There is a heavy storm!  You should go inside!";
             break;
         case SKY_FOG:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                           "It's foggy and miserable.");
+            buf = "It's foggy and miserable.";
             break;
         case SKY_HAIL:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "It's hailing out!  Take cover!");
+            buf = "It's hailing out!  Take cover!";
             break;
         case SKY_LIGHT_SNOW:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "Snow is gently falling from the sky.");
+            buf = "Snow is gently falling from the sky.";
             break;
         case SKY_SNOW:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "It is snowing out.");
+            buf = "It is snowing out.";
             break;
         case SKY_HEAVY_SNOW:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "Snow is falling very heavily.");
+            buf = "Snow is falling very heavily.";
             break;
         case SKY_BLIZZARD:
-            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                          "A full blown blizzard is in effect.  You might want to take cover!");
+            buf = "A full blown blizzard is in effect.  You might want to take cover!";
             break;
+        default:
+            buf = NULL;
     }
+    // If the sky is valid, then print the conditions.
+    if (buf != NULL)
+        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER, buf);
 }
 
 /********************************************************************************************
