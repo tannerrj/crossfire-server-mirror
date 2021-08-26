@@ -4643,9 +4643,13 @@ void command_weather (object *op, const char *params) {
         draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
              "The wind from the %s is incredibly strong!", buf);
 
+    // If the current tile is below freezing, refer to the tile as snowing, even if the weathermap says rain.
     sky = weathermap[wx][wy].sky;
     if (temp <= 0 && sky > SKY_OVERCAST && sky < SKY_FOG)
         sky += 10; /*let it snow*/
+    // Likewise, if the given tile is above freezing when the weathermap as a whole is below, say rain
+    else if (temp > 0 && sky >= SKY_LIGHT_SNOW)
+        sky -= 10;
 
     switch (sky) {
         case SKY_CLEAR:
