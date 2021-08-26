@@ -4854,10 +4854,14 @@ void cfweather_close() {
     if (command_handler != 0)
         command_unregister(command_handler);
     // Free the weathermap
-    for (int x = 0; x < WEATHERMAPTILESX; x++) {
-        FREE_AND_CLEAR(weathermap[x]);
+    // Turns out that asset collection reaches here with weathermap as NULL,
+    // so we need to make sure it is nonnull before trying to free it.
+    if (weathermap != NULL) {
+        for (int x = 0; x < WEATHERMAPTILESX; x++) {
+            FREE_AND_CLEAR(weathermap[x]);
+        }
+        FREE_AND_CLEAR(weathermap);
     }
-    FREE_AND_CLEAR(weathermap);
     // Deallocate our linked list of forest entries.
     while (forest_list != NULL) {
         cur = forest_list;
