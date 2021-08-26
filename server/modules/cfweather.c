@@ -4543,11 +4543,13 @@ static int weather_object_listener(int *type, ...) {
  * Section END -- weather event listeners
  ********************************************************************************************/
 
-// Event handler ids start at 1, so 0 is an unset flag.
+// Event/command handler ids start at 1, so 0 is an unset flag.
 static event_registration global_map_handler = 0,
                           global_clock_handler = 0,
                           global_object_handler = 0,
                           global_mapload_handler = 0;
+
+static command_registration command_handler = 0;
 
 /**
  * Weather module initialisation.
@@ -4649,6 +4651,8 @@ void cfweather_init(Settings *settings) {
     global_mapload_handler = events_register_global_handler(EVENT_MAPLOAD, weather_listener);
     global_clock_handler = events_register_global_handler(EVENT_CLOCK, weather_clock_listener);
     global_object_handler = events_register_global_handler(EVENT_TIME, weather_object_listener);
+    // Register the 'weather command
+    command_handler = command_register("weather", COMMAND_TYPE_NORMAL, command_weather, 0.0);
     /* Disable the plugin in case it's still there */
     linked_char *disable = (linked_char *)calloc(1, sizeof(linked_char));
     disable->next = settings->disabled_plugins;
@@ -4670,6 +4674,8 @@ void cfweather_close() {
         events_unregister_global_handler(EVENT_TIME, global_object_handler);
     if (global_mapload_handler != 0)
         events_unregister_global_handler(EVENT_MAPLOAD, global_mapload_handler);
+    if (command_handler != 0)
+        command_unregister(command_handler);
     // Free the weathermap
     for (int x = 0; x < WEATHERMAPTILESX; x++) {
         FREE_AND_CLEAR(weathermap[x]);
