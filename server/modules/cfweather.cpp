@@ -4540,11 +4540,11 @@ void command_weather (object *op, const char *params) {
         buf = "It is very dry.";
     else if (weathermap[wx][wy].humid < 40)
         buf = "It is rather dry.";
-    else if (weathermap[wx][wy].humid < 50)
+    else if (weathermap[wx][wy].humid < 60)
         buf = "It is very comfortable today.";
-    else if (weathermap[wx][wy].humid < 70)
+    else if (weathermap[wx][wy].humid < 75)
         buf = "It is a bit muggy.";
-    else if (weathermap[wx][wy].humid < 80)
+    else if (weathermap[wx][wy].humid < 85)
         buf = "It is muggy.";
     else
         buf = "It is uncomfortably muggy.";
