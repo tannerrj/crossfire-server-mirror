@@ -4548,7 +4548,7 @@ static int weather_object_listener(int *type, ...) {
  * @param params
  * unused.
  */
-void command_weather (object *op, const char *params) {
+static void command_weather (object *op, const char *params) {
     int wx, wy, temp, sky;
     char *buf;
 
