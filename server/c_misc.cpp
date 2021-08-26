@@ -41,8 +41,6 @@ static void display_who_entry(object *op, player *pl, const char *format);
 static void get_who_escape_code_value(char *return_val, int size, const char letter, player *pl);
 static int onoff_value(const char *line);
 
-extern weathermap_t **weathermap;
-
 /**
  * This is the 'maps' command.
  *

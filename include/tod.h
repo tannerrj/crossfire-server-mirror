@@ -47,23 +47,6 @@ struct timeofday_t {
     int periodofday;
 };
 
-/* sky conditions */
-#define SKY_CLEAR         0
-#define SKY_LIGHTCLOUD    1
-#define SKY_OVERCAST      2
-#define SKY_LIGHT_RAIN    3
-#define SKY_RAIN          4 /* rain -> storm has lightning */
-#define SKY_HEAVY_RAIN    5
-#define SKY_HURRICANE     6
-/* wierd weather 7-12 */
-#define SKY_FOG           7
-#define SKY_HAIL          8
-/* snow */
-#define SKY_LIGHT_SNOW    13 /* add 10 to rain to get snow */
-#define SKY_SNOW          14
-#define SKY_HEAVY_SNOW    15
-#define SKY_BLIZZARD      16
-
 /* from common/time.c */
 extern void get_tod(timeofday_t *tod);
 
