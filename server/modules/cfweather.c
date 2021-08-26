@@ -2360,72 +2360,70 @@ static uint8_t wind_blow_object(mapstruct * const m, const int x, const int y, c
 static int init_config_vals(const Settings *settings, const char *conf_filename, DensityConfig **list) {
     char filename[MAX_BUF], *line, *name;
     BufferReader *bfr;
-    FILE *fp;
     int found, is_obj_name, tree_count;
 
     snprintf(filename, sizeof(filename), "%s/%s", settings->confdir, conf_filename);
-    // Open the file, then pass it off to the buffer reader.
-    fp = fopen(filename, "r");
-    if (fp != NULL) {
-        bfr = bufferreader_create();
-        bufferreader_init_from_file(bfr, fp);
-        fclose(fp);
-        // Now we read in from the buffer.
-        while ((line = bufferreader_next_line(bfr)) != NULL) {
-            // Now we parse the line
-            // Start by examining the first character.
-            switch (*line) {
-                // Ignore empty lines and comment lines (denoted by # at front)
-                case '\0':
-                case '#':
-                // Handling \r means Windows should work right, too.
-                case '\r':
-                case '\n':
-                    break;
-                default:
-                    // Actually parse the line
-                    // Format is like this:
-                    // name, (0 if arch, 1 if object name), # trees
-                    // [spaces are expected after commas]
-
-                    // sscanf on strings is wonky (it always reads to whitespace),
-                    // so I'm gonna do it by just nabbing part of the buffer.
-                    name = line; // Each line starts with name
-                    line = get_next_field(line);
-                    if (line == NULL) {
-                        LOG(llevError, "init_config_vals: Malformed name entry in %s, line %d.\n",
-                            filename, bufferreader_current_line(bfr));
-                        // Move on to the next line and hope it is fine.
-                        continue;
-                    }
-
-                    found = sscanf(line, "%d, %d\n", &is_obj_name, &tree_count);
-                    if (found != 2) {
-                        // Print an error for the malformed line
-                        LOG(llevError, "init_config_vals: Malformed forestry entry in %s, line %d.\n",
-                            filename, bufferreader_current_line(bfr));
-                    }
-                    else {
-                        // Add a struct to the list.
-                        DensityConfig *frst = (DensityConfig *)malloc(sizeof(DensityConfig));
-                        if (!frst) {
-                            fatal(OUT_OF_MEMORY);
-                        }
-                        // Shared strings are friend, not food
-                        frst->name = add_string(name);
-                        frst->is_obj = is_obj_name;
-                        frst->value_density = tree_count;
-                        // Attach to front of list, since order doesn't matter much, if at all.
-                        frst->next = *list;
-                        *list = frst;
-                    }
-            }
-        }
-        bufferreader_destroy(bfr);
-        return 0;
+    // Open the file with the buffer reader.
+    bfr = bufferreader_init_from_file(NULL, filename,
+        "init_config_vals: Could not open file %s. No forestry data is defined. %s\n",
+        llevError);
+    if (bfr == NULL) {
+        // The error was printed by bufferreader_init_from_file already, so just bail.
+        return 1;
     }
-    LOG(llevError, "init_config_vals: Could not open file %s. No forestry data is defined.\n", filename);
-    return 1;
+    // Now we read in from the buffer.
+    while ((line = bufferreader_next_line(bfr)) != NULL) {
+        // Now we parse the line
+        // Start by examining the first character.
+        switch (*line) {
+            // Ignore empty lines and comment lines (denoted by # at front)
+            case '\0':
+            case '#':
+            // Handling \r means Windows should work right, too.
+            case '\r':
+            case '\n':
+                break;
+            default:
+                // Actually parse the line
+                // Format is like this:
+                // name, (0 if arch, 1 if object name), # trees
+                // [spaces are expected after commas]
+
+                // sscanf on strings is wonky (it always reads to whitespace),
+                // so I'm gonna do it by just nabbing part of the buffer.
+                name = line; // Each line starts with name
+                line = get_next_field(line);
+                if (line == NULL) {
+                    LOG(llevError, "init_config_vals: Malformed name entry in %s, line %d.\n",
+                        filename, bufferreader_current_line(bfr));
+                    // Move on to the next line and hope it is fine.
+                    continue;
+                }
+
+                found = sscanf(line, "%d, %d\n", &is_obj_name, &tree_count);
+                if (found != 2) {
+                    // Print an error for the malformed line
+                    LOG(llevError, "init_config_vals: Malformed forestry entry in %s, line %d.\n",
+                        filename, bufferreader_current_line(bfr));
+                }
+                else {
+                    // Add a struct to the list.
+                    DensityConfig *frst = (DensityConfig *)malloc(sizeof(DensityConfig));
+                    if (!frst) {
+                        fatal(OUT_OF_MEMORY);
+                    }
+                    // Shared strings are friend, not food
+                    frst->name = add_string(name);
+                    frst->is_obj = is_obj_name;
+                    frst->value_density = tree_count;
+                    // Attach to front of list, since order doesn't matter much, if at all.
+                    frst->next = *list;
+                    *list = frst;
+                }
+        }
+    }
+    bufferreader_destroy(bfr);
+    return 0;
 }
 
 /**
@@ -2447,19 +2445,15 @@ static int init_config_vals(const Settings *settings, const char *conf_filename,
 static int init_weatheravoid(const Settings *settings, const char *conf_filename, weather_avoids_t **wa) {
     char filename[MAX_BUF], *line, *name;
     BufferReader *bfr;
-    FILE *fp;
     int found, is_effect;
 
     snprintf(filename, sizeof(filename), "%s/%s", settings->confdir, conf_filename);
-    // Open the file, then pass it off to the buffer reader.
-    fp = fopen(filename, "r");
-    if (fp == NULL) {
-        LOG(llevError, "init_weatheravoid: Could not open file %s. No weatheravoid data is defined.\n", filename);
+    // Open the file with the buffer reader.
+    bfr = bufferreader_init_from_file(NULL, filename,
+         "init_weatheravoid: Could not open file %s. No weatheravoid data is defined. %s\n", llevError);
+    // If the bufferreader failed, it return NULL and printed an error, so just bail if failure.
+    if (bfr == NULL)
         return 1;
-    }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     // Now we read in from the buffer.
     while ((line = bufferreader_next_line(bfr)) != NULL) {
         // Now we parse the line
@@ -2533,19 +2527,14 @@ static int init_weatheravoid(const Settings *settings, const char *conf_filename
 static int init_weather_replace(const Settings *settings, const char *conf_filename, weather_replace_t **list) {
     char filename[MAX_BUF], *line, *name, *repl, *doublestack;
     BufferReader *bfr;
-    FILE *fp;
     int found, is_arch;
 
     snprintf(filename, sizeof(filename), "%s/%s", settings->confdir, conf_filename);
-    // Open the file, then pass it off to the buffer reader.
-    fp = fopen(filename, "r");
-    if (fp == NULL) {
-        LOG(llevError, "init_weather_replace: Could not open file %s. No weather replace data is defined.\n", filename);
+    // Open the file with the buffer reader.
+    bfr = bufferreader_init_from_file(NULL, filename, "init_weather_replace: Could not open file %s. No weather replace data is defined. %s\n", llevError);
+    // If failed, we already printed an error.
+    if (bfr == NULL)
         return 1;
-    }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     // Now we read in from the buffer.
     while ((line = bufferreader_next_line(bfr)) != NULL) {
         // Now we parse the line
@@ -3705,58 +3694,50 @@ int write_weather_images() {
 static int read_forestrymap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
     BufferReader *bfr;
-    FILE *fp;
     int trees, x, y, res;
 
     snprintf(filename, sizeof(filename), "%s/treemap", settings->localdir);
     LOG(llevDebug, "Reading forestry data from %s...\n", filename);
-    fp = fopen(filename, "r");
-    if (fp != NULL) {
-        // Set up the bufferreader and read in the file.
-        // We do it through the bufferreader so that we only dip into I/O once,
-        // and the rest is just parsing it in memory.
-        bfr = bufferreader_create();
-        bufferreader_init_from_file(bfr, fp);
-        fclose(fp);
-        // Parse the file. Since this is auto-generated by the weather system,
-        // just bail if the file is malformed.
-        data = bufferreader_data(bfr);
-        for (x = 0; x < WEATHERMAPTILESX; ++x) {
-            for (y = 0; y < WEATHERMAPTILESY; ++y) {
-                res = sscanf(data, "%d ", &trees);
-                if (res != 1) {
-                    LOG(llevError, "Forestry data is corrupted and should be regenerated.\n"
-                        "Please delete %s/humidmap and restart the server at your earliest convenience to regenerate the forestry map.\n", settings->localdir);
-                    bufferreader_destroy(bfr);
-                    return -1;
-                }
-                // Limit the range from 0 to 100
-                weathermap[x][y].forestry = MIN(100, MAX(0, trees));
-                // Now we move where we're looking, since we want to read more than just the first entry.
-                // Use strpbrk so that we can handle newlines more cleanly.
-                tmp = strpbrk(data, " \n");
-                if (tmp != NULL)
-                    data = tmp + 1;
-                else {
-                    LOG(llevError, "Unexpected end of forestry file. Forestry file may need to be regenerated.\n"
-                        "Please delete %s/humidmap and restart the server at your earliest convenience to regenerate the forestry map.\n", settings->localdir);
-                    bufferreader_destroy(bfr);
-                    return -1;
-                }
+    // Set up the bufferreader and read in the file.
+    // We do it through the bufferreader so that we only dip into I/O once,
+    // and the rest is just parsing it in memory.
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    // We already printed our error if we failed, so just bail in that case.
+    if (bfr == NULL)
+        return -1;
+    // Parse the file. Since this is auto-generated by the weather system,
+    // just bail if the file is malformed.
+    data = bufferreader_data(bfr);
+    for (x = 0; x < WEATHERMAPTILESX; ++x) {
+        for (y = 0; y < WEATHERMAPTILESY; ++y) {
+            res = sscanf(data, "%d ", &trees);
+            if (res != 1) {
+                LOG(llevError, "Forestry data is corrupted and should be regenerated.\n"
+                    "Please delete %s/humidmap and restart the server at your earliest convenience to regenerate the forestry map.\n", settings->localdir);
+                bufferreader_destroy(bfr);
+                return -1;
             }
-            // Due to the way the file is written, the end of the line should have a space and a newline.
-            // Handle the newline if it is the front of the string now.
-            if (*data == '\n')
-                ++data;
+            // Limit the range from 0 to 100
+            weathermap[x][y].forestry = MIN(100, MAX(0, trees));
+            // Now we move where we're looking, since we want to read more than just the first entry.
+            // Use strpbrk so that we can handle newlines more cleanly.
+            tmp = strpbrk(data, " \n");
+            if (tmp != NULL)
+                data = tmp + 1;
+            else {
+                LOG(llevError, "Unexpected end of forestry file. Forestry file may need to be regenerated.\n"
+                    "Please delete %s/humidmap and restart the server at your earliest convenience to regenerate the forestry map.\n", settings->localdir);
+                bufferreader_destroy(bfr);
+                return -1;
+            }
         }
-        bufferreader_destroy(bfr);
-        return 0;
+        // Due to the way the file is written, the end of the line should have a space and a newline.
+        // Handle the newline if it is the front of the string now.
+        if (*data == '\n')
+            ++data;
     }
-    // Otherwise, we could not load.
-    // Since this should be calculated and stored when humidity is calculated,
-    // and stored by the time we reach here, just fail if it does not exist.
-    LOG(llevError, "Cannot open %s for reading.\n", filename);
-    return -1;
+    bufferreader_destroy(bfr);
+    return 0;
 }
 
 /**
@@ -3775,14 +3756,15 @@ static int read_forestrymap(const Settings *settings) {
  */
 static int read_humidmap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
-    FILE *fp;
     BufferReader *bfr;
     int x, y, hmd, res;
 
     snprintf(filename, sizeof(filename), "%s/humidmap", settings->localdir);
     LOG(llevDebug, "Reading humidity data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
+    // Open and read in the file all at once
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    // If we fail, we do initializations instead.
+    if (bfr == NULL) {
         LOG(llevInfo, "Initializing humidity and elevation maps...\n");
         init_humid_elev(settings);
         write_elevmap(settings);
@@ -3792,9 +3774,6 @@ static int read_humidmap(const Settings *settings) {
         LOG(llevDebug, "Done\n");
         return 1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
@@ -3841,21 +3820,19 @@ static int read_humidmap(const Settings *settings) {
  */
 static int read_elevmap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
-    FILE *fp;
     BufferReader *bfr;
     int x, y, elev, res;
 
     snprintf(filename, sizeof(filename), "%s/elevmap", settings->localdir);
     LOG(llevDebug, "Reading elevation data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
+    // Read file into a buffer.
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    // If failed, we bail.
+    if (bfr == NULL) {
         /* initializing these is expensive, and should have been done
            by the humidity.  It's not worth the wait to do it twice. */
         return -1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
@@ -3902,21 +3879,19 @@ static int read_elevmap(const Settings *settings) {
  */
 static int read_watermap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
-    FILE *fp;
     BufferReader *bfr;
     int x, y, wtr, res;
 
     snprintf(filename, sizeof(filename), "%s/watermap", settings->localdir);
     LOG(llevDebug, "Reading water data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
+    // Read the file into a buffer.
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    // If failed, we bail
+    if (bfr == NULL) {
         /* initializing these is expensive, and should have been done
            by the humidity.  It's not worth the wait to do it twice. */
         return -1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
@@ -3962,15 +3937,16 @@ static int read_watermap(const Settings *settings) {
  */
 static int read_temperaturemap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
-    FILE *fp;
     BufferReader *bfr;
     int x, y, res;
     int16_t temperature;
 
     snprintf(filename, sizeof(filename), "%s/temperaturemap", settings->localdir);
     LOG(llevDebug, "Reading temperature data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
+    // Read the file into a buffer.
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    // If it fails, we initialize the temperature map and write it to a file.
+    if (bfr == NULL) {
         LOG(llevInfo, "Initializing temperature map.\n");
         init_temperature();
         // If writing was successful, then consider this a success.
@@ -3978,9 +3954,6 @@ static int read_temperaturemap(const Settings *settings) {
             return 1;
         return -1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
@@ -4026,14 +3999,15 @@ static int read_temperaturemap(const Settings *settings) {
  */
 static int read_rainfallmap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
-    FILE *fp;
     BufferReader *bfr;
     int x, y, res;
 
     snprintf(filename, sizeof(filename), "%s/rainfallmap", settings->localdir);
     LOG(llevDebug, "Reading rainfall data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
+    // Read file into a buffer.
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    // If it fails, we initialize and write to file.
+    if (bfr == NULL) {
         LOG(llevInfo, "Initializing rainfall map...\n");
         init_rainfall();
         // If we write to file successfully, consider initialization a success.
@@ -4041,9 +4015,6 @@ static int read_rainfallmap(const Settings *settings) {
             return -1;
         return 1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
@@ -4085,14 +4056,15 @@ static int read_rainfallmap(const Settings *settings) {
  */
 static int read_gulfstreammap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
-    FILE *fp;
     BufferReader *bfr;
     int x, y, in, res;
 
     snprintf(filename, sizeof(filename), "%s/gulfstreammap", settings->localdir);
     LOG(llevDebug, "Reading gulf stream data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
+    // Read the file into a buffer
+    bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    // If it fails, we initialize and write to file.
+    if (bfr == NULL) {
         LOG(llevInfo, "Initializing gulf stream maps...\n");
         init_gulfstreammap();
         res = write_gulfstreammap(settings);
@@ -4101,9 +4073,6 @@ static int read_gulfstreammap(const Settings *settings) {
             return 1;
         return -1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     // First we read in the speeds
     for (x = 0; x < GULF_STREAM_WIDTH; x++) {
@@ -4183,21 +4152,19 @@ static int read_gulfstreammap(const Settings *settings) {
  */
 static int read_windspeedmap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
-    FILE *fp;
     BufferReader *bfr;
     int x, y, res;
     int8_t spd;
 
     snprintf(filename, sizeof(filename), "%s/windspeedmap", settings->localdir);
     LOG(llevDebug, "Reading wind speed data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
+    // Read the file into a buffer
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    // If it fails, we bail
+    if (bfr == NULL) {
         // Wind direction is done before this, and should have initialized this already.
         return -1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
@@ -4240,14 +4207,15 @@ static int read_windspeedmap(const Settings *settings) {
  */
 static int read_winddirmap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
-    FILE *fp;
     BufferReader *bfr;
     int x, y, d, res;
 
     snprintf(filename, sizeof(filename), "%s/winddirmap", settings->localdir);
     LOG(llevDebug, "Reading wind direction data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
+    // Read the file into a buffer
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    // If it fails, initialize the wind
+    if (bfr == NULL) {
         LOG(llevInfo, "Initializing wind direction and speed maps...\n");
         init_wind();
         // If both of these succeed, the end result is 0.
@@ -4258,9 +4226,6 @@ static int read_winddirmap(const Settings *settings) {
             return 1;
         return -1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
@@ -4306,15 +4271,16 @@ static int read_winddirmap(const Settings *settings) {
  */
 static int read_pressuremap(const Settings *settings) {
     char filename[MAX_BUF], *data, *tmp;
-    FILE *fp;
     BufferReader *bfr;
     int x, y, res;
     int16_t press;
 
     snprintf(filename, sizeof(filename), "%s/pressuremap", settings->localdir);
     LOG(llevDebug, "Reading pressure data from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Cannot open %s for reading\n", filename);
+    // Read the file into a buffer.
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading\n", llevError);
+    // If it fails, we initialize the pressure.
+    if (bfr == NULL) {
         LOG(llevInfo, "Initializing pressure maps...\n");
         init_pressure();
         res = write_pressuremap(settings);
@@ -4323,9 +4289,6 @@ static int read_pressuremap(const Settings *settings) {
             return 1;
         return -1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     for (x = 0; x < WEATHERMAPTILESX; x++) {
         for (y = 0; y < WEATHERMAPTILESY; y++) {
@@ -4370,21 +4333,19 @@ static int read_pressuremap(const Settings *settings) {
  */
 static int read_weatherposition(const Settings *settings) {
     char filename[MAX_BUF], *data;
-    FILE *fp;
     BufferReader *bfr;
     int sx, sy, res;
 
     snprintf(filename, sizeof(filename), "%s/wmapcurpos", settings->localdir);
     LOG(llevDebug, "Reading current weather position from %s...\n", filename);
-    if ((fp = fopen(filename, "r")) == NULL) {
-        LOG(llevError, "Can't open %s.\n", filename);
+    // Read the file into a buffer.
+    bfr = bufferreader_init_from_file(NULL, filename, "Can't open %s: %s.\n", llevError);
+    // If we fail, set wmperformstartx/y to their default values.
+    if (bfr == NULL) {
         wmperformstartx = -1;
         wmperformstarty = 0;
         return 1;
     }
-    bfr = bufferreader_create();
-    bufferreader_init_from_file(bfr, fp);
-    fclose(fp);
     data = bufferreader_data(bfr);
     // Read from the buffer
     res = sscanf(data, "%d %d", &sx, &sy);
