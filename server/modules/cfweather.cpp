@@ -437,13 +437,11 @@ static int get_config_tile(const int x, const int y, const mapstruct *m, const D
  * -1 if you give it something it can't figure out. 0 normally.
  */
 int worldmap_to_weathermap(const int x, const int y, int * const wx, int * const wy, mapstruct * const m) {
-    int spwtx, spwty;
+    const int spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX,
+              spwty = (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
     int fx, fy;
     int nx, ny;
-    char* filename = m->path;
-
-    spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX;
-    spwty = (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
+    const char *filename = m->path;
 
     while (*filename == '/') {
         filename++;
