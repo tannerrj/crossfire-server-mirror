@@ -27,9 +27,6 @@
 #include <assert.h>
 #include <math.h>
 
-extern unsigned long todtick;
-weathermap_t **weathermap;
-
 /* weather constants */
 
 #define POLAR_BASE_TEMP		0	/* C */
@@ -46,6 +43,23 @@ weathermap_t **weathermap;
 #define PRESSURE_SPIKES			3
 #define PRESSURE_MAX			1040
 #define PRESSURE_MIN			960
+
+/* sky conditions */
+#define SKY_CLEAR         0
+#define SKY_LIGHTCLOUD    1
+#define SKY_OVERCAST      2
+#define SKY_LIGHT_RAIN    3
+#define SKY_RAIN          4 /* rain -> storm has lightning */
+#define SKY_HEAVY_RAIN    5
+#define SKY_HURRICANE     6
+/* wierd weather 7-12 */
+#define SKY_FOG           7
+#define SKY_HAIL          8
+/* snow */
+#define SKY_LIGHT_SNOW    13 /* add 10 to rain to get snow */
+#define SKY_SNOW          14
+#define SKY_HEAVY_SNOW    15
+#define SKY_BLIZZARD      16
 
 /**
  * This is a multiplier for the wind caused by pressure differences.
@@ -64,6 +78,31 @@ weathermap_t **weathermap;
  * Section -- weather structures
  * Structures to handle various aspects of the weather system.
  ********************************************************************************************/
+
+/**
+ * This is an overlay structure of the whole world.  It exists as a simple
+ * high level map, which doesn't contain the full data of the underlying map.
+ * in this map, only things such as weather are recorded.  By doing so, we
+ * can keep the entire world parameters in memory, and act as a whole on
+ * them at once.  We can then, in a separate loop, update the actual world
+ * with the new values we have assigned.
+ */
+
+typedef struct wmapdef {
+    int16_t	temp;		/**< Base temperature of this tile (F). */
+    int16_t	pressure;	/**< Barometric pressure (mb). */
+    int8_t	humid;		/**< Humitidy of this tile. */
+    int8_t	windspeed;	/**< Windspeed of this tile. */
+    int8_t	winddir;	/**< Direction of wind. */
+    int8_t	sky;		/**< Sky conditions. */
+    int32_t	avgelev;	/**< Average elevation. */
+    uint32_t	rainfall;	/**< Cumulative rainfall. */
+    uint8_t	darkness;	/**< Indicates level of darkness of map. */
+    int8_t	water;		/**< -100 - 100 percentage of water tiles. < 0 means it is a droughty spot */
+    int8_t	forestry;	/**< Range of forestedness. 100 is full forested. 0 is no trees.
+    /*Dynamic parts*/
+    int16_t  realtemp;		/**< Temperature at a given calculation step for this tile. */
+} weathermap_t;
 
 /**
  * Structure to hold density data entries.
@@ -126,6 +165,9 @@ typedef struct _weather_grow {
 /********************************************************************************************
  * Section END -- weather structures
  ********************************************************************************************/
+
+extern unsigned long todtick;
+weathermap_t **weathermap;
 
 DensityConfig *forest_list = NULL;
 DensityConfig *water_list = NULL;
