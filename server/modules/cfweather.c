@@ -4550,7 +4550,7 @@ static int weather_object_listener(int *type, ...) {
  */
 void command_weather (object *op, const char *params) {
     int wx, wy, temp, sky;
-    char buf[MAX_BUF];
+    char *buf;
 
     if (settings.dynamiclevel < 1) {
         draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
@@ -4615,14 +4615,30 @@ void command_weather (object *op, const char *params) {
 
     /* wind */
     switch (weathermap[wx][wy].winddir) {
-        case 1: strcpy(buf, "north");            break;
-        case 2: strcpy(buf, "northeast");   break;
-        case 3: strcpy(buf, "east");            break;
-        case 4: strcpy(buf, "southeast");   break;
-        case 5: strcpy(buf, "south");            break;
-        case 6: strcpy(buf, "southwest");   break;
-        case 7: strcpy(buf, "west");            break;
-        case 8: strcpy(buf, "northwest");   break;
+        case 1:
+            buf = "north";
+            break;
+        case 2:
+            buf = "northeast";
+            break;
+        case 3:
+            buf = "east";
+            break;
+        case 4:
+            buf = "southeast";
+            break;
+        case 5:
+            buf = "south";
+            break;
+        case 6:
+            buf = "southwest";
+            break;
+        case 7:
+            buf = "west";
+            break;
+        case 8:
+            buf = "northwest";
+            break;
     }
     if (weathermap[wx][wy].windspeed < 5)
         draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
