@@ -4395,13 +4395,15 @@ static int weather_listener(int *type, ...) {
 
     va_start(args, type);
     code = va_arg(args, int);
-    // At this point, we don't need the entering object for this.
-    // but it is passed as an arg, so just skip it.
-    va_arg(args, object *);
-    m = va_arg(args, mapstruct *);
 
     switch (code) {
         case EVENT_MAPENTER:
+            // At this point, we don't need the entering object for this.
+            // but it is passed as an arg, so just skip it.
+            va_arg(args, object *);
+            /* FALLTHROUGH */
+        case EVENT_MAPLOAD:
+            m = va_arg(args, mapstruct *);
             if (m->outdoor)
                 do_map_precipitation(m);
             break;
@@ -4542,7 +4544,10 @@ static int weather_object_listener(int *type, ...) {
  ********************************************************************************************/
 
 // Event handler ids start at 1, so 0 is an unset flag.
-static event_registration global_map_handler = 0, global_clock_handler = 0, global_object_handler = 0;
+static event_registration global_map_handler = 0,
+                          global_clock_handler = 0,
+                          global_object_handler = 0,
+                          global_mapload_handler = 0;
 
 /**
  * Weather module initialisation.
@@ -4641,6 +4646,7 @@ void cfweather_init(Settings *settings) {
     // Connect the events after initialization, since we don't need to do
     // precipitation when we're initializing.
     global_map_handler = events_register_global_handler(EVENT_MAPENTER, weather_listener);
+    global_mapload_handler = events_register_global_handler(EVENT_MAPLOAD, weather_listener);
     global_clock_handler = events_register_global_handler(EVENT_CLOCK, weather_clock_listener);
     global_object_handler = events_register_global_handler(EVENT_TIME, weather_object_listener);
     /* Disable the plugin in case it's still there */
@@ -4662,6 +4668,8 @@ void cfweather_close() {
         events_unregister_global_handler(EVENT_CLOCK, global_clock_handler);
     if (global_object_handler != 0)
         events_unregister_global_handler(EVENT_TIME, global_object_handler);
+    if (global_mapload_handler != 0)
+        events_unregister_global_handler(EVENT_MAPLOAD, global_mapload_handler);
     // Free the weathermap
     for (int x = 0; x < WEATHERMAPTILESX; x++) {
         FREE_AND_CLEAR(weathermap[x]);
