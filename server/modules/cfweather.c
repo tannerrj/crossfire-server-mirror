@@ -4597,21 +4597,21 @@ void command_weather (object *op, const char *params) {
          "It's currently %d degrees Centigrade out.", temp);
 
     /* humid */
+    // We use buf real quick here for the same reason we use it for sky conditions: clarity
     if (weathermap[wx][wy].humid < 20)
-        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                      "It is very dry.");
+        buf = "It is very dry.";
     else if (weathermap[wx][wy].humid < 40)
-        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                      "It is very comfortable today.");
+        buf = "It is rather dry.";
     else if (weathermap[wx][wy].humid < 60)
-        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                      "It is a bit muggy.");
-    else if (weathermap[wx][wy].humid < 80)
-        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                      "It is muggy.");
+        buf = "It is very comfortable today.";
+    else if (weathermap[wx][wy].humid < 75)
+        buf = "It is a bit muggy.";
+    else if (weathermap[wx][wy].humid < 85)
+        buf = "It is muggy.";
     else
-        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-                      "It is uncomfortably muggy.");
+        buf = "It is uncomfortably muggy.";
+    // buf will have a string, based on the if clauses above
+    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER, buf);
 
     /* wind */
     switch (weathermap[wx][wy].winddir) {
