@@ -4486,8 +4486,7 @@ static int weather_object_listener(int *type, ...) {
  * @param params
  * unused.
  */
-void command_weather (object *op, const char *params)
-{
+void command_weather (object *op, const char *params) {
     int wx, wy, temp, sky;
     char buf[MAX_BUF];
 
@@ -4498,7 +4497,7 @@ void command_weather (object *op, const char *params)
     }
 
     if (op->map == NULL)
-	return;
+        return;
 
     if (worldmap_to_weathermap(op->x, op->y, &wx, &wy, op->map) != 0) {
         draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
@@ -4507,138 +4506,138 @@ void command_weather (object *op, const char *params)
     }
 
     if (QUERY_FLAG(op, FLAG_WIZ)) {
-	/* dump the weather, Dm style! Yo! */
+        /* dump the weather, Dm style! Yo! */
 
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "Real temp: %d", real_world_temperature(op->x, op->y, op->map));
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "Real temp: %d", real_world_temperature(op->x, op->y, op->map));
 
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "Base temp: %d", weathermap[wx][wy].temp);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "Base temp: %d", weathermap[wx][wy].temp);
 
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "Humid: %d", weathermap[wx][wy].humid);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "Humid: %d", weathermap[wx][wy].humid);
 
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "Wind: dir=%d speed=%d", weathermap[wx][wy].winddir, weathermap[wx][wy].windspeed);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "Wind: dir=%d speed=%d", weathermap[wx][wy].winddir, weathermap[wx][wy].windspeed);
 
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "Pressure: %d", weathermap[wx][wy].pressure);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "Pressure: %d", weathermap[wx][wy].pressure);
 
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "Avg Elevation: %d", weathermap[wx][wy].avgelev);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "Avg Elevation: %d", weathermap[wx][wy].avgelev);
 
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "Rainfall: %d  Water: %d", weathermap[wx][wy].rainfall, weathermap[wx][wy].water);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "Rainfall: %d  Water: %d", weathermap[wx][wy].rainfall, weathermap[wx][wy].water);
     }
 
     temp = real_world_temperature(op->x, op->y, op->map);
     draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	 "It's currently %d degrees Centigrade out.", temp);
+         "It's currently %d degrees Centigrade out.", temp);
 
     /* humid */
     if (weathermap[wx][wy].humid < 20)
-	draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-		      "It is very dry.");
+        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                      "It is very dry.");
     else if (weathermap[wx][wy].humid < 40)
-	draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-		      "It is very comfortable today.");
+        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                      "It is very comfortable today.");
     else if (weathermap[wx][wy].humid < 60)
-	draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-		      "It is a bit muggy.");
+        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                      "It is a bit muggy.");
     else if (weathermap[wx][wy].humid < 80)
-	draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-		      "It is muggy.");
+        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                      "It is muggy.");
     else
-	draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-		      "It is uncomfortably muggy.");
+        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                      "It is uncomfortably muggy.");
 
     /* wind */
     switch (weathermap[wx][wy].winddir) {
-	case 1: strcpy(buf, "north");	    break;
-	case 2: strcpy(buf, "northeast");   break;
-	case 3: strcpy(buf, "east");	    break;
-	case 4: strcpy(buf, "southeast");   break;
-	case 5: strcpy(buf, "south");	    break;
-	case 6: strcpy(buf, "southwest");   break;
-	case 7: strcpy(buf, "west");	    break;
-	case 8: strcpy(buf, "northwest");   break;
+        case 1: strcpy(buf, "north");            break;
+        case 2: strcpy(buf, "northeast");   break;
+        case 3: strcpy(buf, "east");            break;
+        case 4: strcpy(buf, "southeast");   break;
+        case 5: strcpy(buf, "south");            break;
+        case 6: strcpy(buf, "southwest");   break;
+        case 7: strcpy(buf, "west");            break;
+        case 8: strcpy(buf, "northwest");   break;
     }
     if (weathermap[wx][wy].windspeed < 5)
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "There is a mild breeze coming from the %s.", buf);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "There is a mild breeze coming from the %s.", buf);
     else if (weathermap[wx][wy].windspeed < 10)
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	      "There is a strong breeze coming from the %s.", buf);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+              "There is a strong breeze coming from the %s.", buf);
     else if (weathermap[wx][wy].windspeed < 15)
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "There is a light wind coming from the %s.", buf);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "There is a light wind coming from the %s.", buf);
     else if (weathermap[wx][wy].windspeed < 25)
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "There is a strong wind coming from the %s.", buf);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "There is a strong wind coming from the %s.", buf);
     else if (weathermap[wx][wy].windspeed < 35)
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "There is a heavy wind coming from the %s.", buf);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "There is a heavy wind coming from the %s.", buf);
     else
-	draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-	     "The wind from the %s is incredibly strong!", buf);
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+             "The wind from the %s is incredibly strong!", buf);
 
     sky = weathermap[wx][wy].sky;
     if (temp <= 0 && sky > SKY_OVERCAST && sky < SKY_FOG)
-	sky += 10; /*let it snow*/
+        sky += 10; /*let it snow*/
 
     switch (sky) {
-	case SKY_CLEAR:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "There isn't a cloud in the sky.");
-	    break;
-	case SKY_LIGHTCLOUD:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "There are a few light clouds in the sky");
-	    break;
-	case SKY_OVERCAST:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			   "The sky is cloudy and dreary.");
-	    break;
-	case SKY_LIGHT_RAIN:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "It is raining softly.");
-	    break;
-	case SKY_RAIN:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "It is raining.");
-	    break;
-	case SKY_HEAVY_RAIN:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "It is raining heavily.");
-	    break;
-	case SKY_HURRICANE:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "There is a heavy storm!  You should go inside!");
-	    break;
-	case SKY_FOG:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			   "It's foggy and miserable.");
-	    break;
-	case SKY_HAIL:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "It's hailing out!  Take cover!");
-	    break;
-	case SKY_LIGHT_SNOW:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "Snow is gently falling from the sky.");
-	    break;
-	case SKY_SNOW:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "It is snowing out.");
-	    break;
-	case SKY_HEAVY_SNOW:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "Snow is falling very heavily.");
-	    break;
-	case SKY_BLIZZARD:
-	    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
-			  "A full blown blizzard is in effect.  You might want to take cover!");
-	    break;
+        case SKY_CLEAR:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "There isn't a cloud in the sky.");
+            break;
+        case SKY_LIGHTCLOUD:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "There are a few light clouds in the sky");
+            break;
+        case SKY_OVERCAST:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                           "The sky is cloudy and dreary.");
+            break;
+        case SKY_LIGHT_RAIN:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "It is raining softly.");
+            break;
+        case SKY_RAIN:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "It is raining.");
+            break;
+        case SKY_HEAVY_RAIN:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "It is raining heavily.");
+            break;
+        case SKY_HURRICANE:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "There is a heavy storm!  You should go inside!");
+            break;
+        case SKY_FOG:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                           "It's foggy and miserable.");
+            break;
+        case SKY_HAIL:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "It's hailing out!  Take cover!");
+            break;
+        case SKY_LIGHT_SNOW:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "Snow is gently falling from the sky.");
+            break;
+        case SKY_SNOW:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "It is snowing out.");
+            break;
+        case SKY_HEAVY_SNOW:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "Snow is falling very heavily.");
+            break;
+        case SKY_BLIZZARD:
+            draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
+                          "A full blown blizzard is in effect.  You might want to take cover!");
+            break;
     }
 }
 
