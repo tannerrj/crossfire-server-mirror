@@ -373,6 +373,8 @@ void set_darkness_map(mapstruct *m) {
 }
 
 int players_on_map(mapstruct *m, int show_all) {
+    (void)m;
+    (void)show_all;
     return 0;
 }
 
