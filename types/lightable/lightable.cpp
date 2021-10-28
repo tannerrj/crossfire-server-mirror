@@ -91,11 +91,6 @@ static uint8_t is_better_lighter(object *current, object *old) {
 /**
  * Attempt to find a lighter, wielded fire weapon, or fire spell to light with.
  *
-<<<<<<< HEAD
-=======
- * @param context
- * method context
->>>>>>> 09f5f6b5 (Add new type -- lightable.)
  * @param lightable
  * The lightable object we applied.
  * @param applier
