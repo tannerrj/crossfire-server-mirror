@@ -67,12 +67,15 @@ enum Sock_Status {
     Ns_Dead
 };
 
+#include "global.h"
+
 /**
  * Contains parameters for socket() and bind() for listening sockets.
  * This struct contains most fields of "struct addrinfo", but
  * older systems do not know struct addrinfo yet.
  */
 struct listen_info {
+    int fd;
     int family;
     int socktype;
     int protocol;
@@ -91,6 +94,7 @@ typedef struct socket_struct {
     int         fd;
     struct listen_info  *listen;
     struct Map  lastmap;
+    struct pl     *pl;
     int8_t       map_scroll_x, map_scroll_y;
     size_t      faces_sent_len;         /**< This is the number of elements allocated in faces_sent[]. */
     uint8_t       *faces_sent;            /**< This is a bitmap on sent face status. */

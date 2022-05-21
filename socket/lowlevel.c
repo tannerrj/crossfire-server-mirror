@@ -305,7 +305,8 @@ int SockList_ReadPacket(int fd, SockList *sl, int len) {
                 LOG(llevDebug, "ReadPacket got error %s, returning 0\n", strerror(errno));
             }
 #endif
-            return 0; /*Error */
+            perror("unhandled error");
+            return -1; /*Error */
         }
         if (stat == 0)
             return -1;

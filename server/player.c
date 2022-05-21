@@ -403,34 +403,8 @@ void set_first_map(object *op) {
  * the socket structure to copy.
  */
 void set_player_socket(player *p, socket_struct *ns) {
-    if (p->socket && p->socket->account_chars) {
-        account_char_free(p->socket->account_chars);
-    }
-
-    p->socket = malloc(sizeof(socket_struct));
-    if (!p->socket) {
-        fatal(OUT_OF_MEMORY);
-    }
-    memcpy(p->socket, ns, sizeof(socket_struct));
-
-    /* The memcpy above copies the reference to faces sent.  So we need to clear
-     * that pointer in ns, otherwise we get a double free.
-     */
-    ns->faces_sent = NULL;
-    ns->host = strdup_local("");
-    ns->account_name = strdup_local("");
-    ns->account_chars = NULL;   // If not NULL, the reference is now kept by p
-
-    if (p->socket->faces_sent == NULL)
-        fatal(OUT_OF_MEMORY);
-
-    /* Needed because the socket we just copied over needs to be cleared.
-     * Note that this can result in a client reset if there is partial data
-     * on the incoming socket.
-     */
-    SockList_ResetRead(&p->socket->inbuf);
-
-
+    p->socket = ns;
+    ns->pl = p;
 }
 
 /**
@@ -455,6 +429,9 @@ player *add_player(socket_struct *ns, int flags) {
     p = get_player(NULL);
     set_player_socket(p, ns);
     ns->status = Ns_Avail;
+    if (p->socket->account_chars) {
+        account_char_free(p->socket->account_chars);
+    }
 
     CLEAR_FLAG(p->ob, FLAG_FRIENDLY);
 

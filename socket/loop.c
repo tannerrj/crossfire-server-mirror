@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #ifndef WIN32 /* ---win32 exclude unix headers */
 #include <arpa/inet.h>
@@ -45,6 +46,13 @@
 #include "newserver.h"
 #include "sockproto.h"
 #include "sproto.h"
+#include "server.h"
+
+extern int listen_socket_count;
+static void send_delayed_buffers(player *pl);
+static void send_updates(player *pl);
+
+pthread_mutex_t global_lock;
 
 /*****************************************************************************
  * Start of command dispatch area.
@@ -250,7 +258,7 @@ handle_cmd(socket_struct *ns, player *pl, char *cmd, char *data, int len) {
  * @param pl Player associated with this socket, or NULL
  * @return If the main loop should continue processing this client.
  */
-bool handle_client(socket_struct *ns, player *pl) {
+bool handle_client(socket_struct *ns) {
     /* Loop through this - maybe we have several complete packets here. */
     /* Command_count is used to limit the number of requests from
      * clients that have not logged in - we do not want an unauthenticated
@@ -262,18 +270,36 @@ bool handle_client(socket_struct *ns, player *pl) {
      * a map may not be uncommon.
      */
     int command_count = 0;
-    while (command_count < 5 || (pl && command_count < 25)) {
-        if (pl && pl->state == ST_PLAYING && pl->ob != NULL && pl->ob->speed_left < 0) {
+    while (command_count < 5 || (ns->pl && command_count < 25)) {
+        pthread_mutex_lock(&global_lock);
+        // Acquire global_lock to access pl, which is visible from other threads
+        if (ns->pl && ns->pl->state == ST_PLAYING && ns->pl->ob != NULL && ns->pl->ob->speed_left < 0) {
+            pthread_mutex_unlock(&global_lock);
             // Skip processing players with no turns left.
+            usleep(tick_duration/2);
+            return true;
+        }
+        pthread_mutex_unlock(&global_lock);
+
+        int status = SockList_ReadPacket(ns->fd, &ns->inbuf, sizeof(ns->inbuf.buf)-1);
+        if (status < 0) {
+            // Disconnect
+            pthread_mutex_lock(&global_lock);
+            ns->status = Ns_Dead;
+            LOG(llevInfo, "Disconnected from %s\n", ns->host);
+            if (ns->pl) {
+                save_player(ns->pl->ob, 0);
+                leave(ns->pl, 1);
+                final_free_player(ns->pl);
+            } else {
+                free_newsocket(ns);
+            }
+            pthread_mutex_unlock(&global_lock);
             return false;
         }
 
-        int status = SockList_ReadPacket(ns->fd, &ns->inbuf, sizeof(ns->inbuf.buf)-1);
         if (status != 1) {
-            if (status < 0) {
-                ns->status = Ns_Dead;
-            }
-            return false;
+            continue;
         }
 
         /* Since we have a full packet, reset last tick time. */
@@ -287,9 +313,13 @@ bool handle_client(socket_struct *ns, player *pl) {
         int got_player_cmd;
         if (data != NULL) {
             int rem = ns->inbuf.len - ((unsigned char *)data - ns->inbuf.buf);
-            got_player_cmd = handle_cmd(ns, pl, cmd, data, rem);
+            pthread_mutex_lock(&global_lock);
+            got_player_cmd = handle_cmd(ns, ns->pl, cmd, data, rem);
+            pthread_mutex_unlock(&global_lock);
         } else {
-            got_player_cmd = handle_cmd(ns, pl, cmd, NULL, 0);
+            pthread_mutex_lock(&global_lock);
+            got_player_cmd = handle_cmd(ns, ns->pl, cmd, NULL, 0);
+            pthread_mutex_unlock(&global_lock);
         }
 
         SockList_ResetRead(&ns->inbuf);
@@ -298,18 +328,15 @@ bool handle_client(socket_struct *ns, player *pl) {
         }
 
         command_count += 1;
-        /* Evil case, and not a nice workaround, but well...
-         * If we receive eg an accountplay command, the socket is copied
-         * to the player structure, and its faces_sent is set to NULL.
-         * This leads to issues when processing the next commands in the queue,
-         * especially if related to faces...
-         * So get out of here in this case, which we detect because faces_sent is NULL.
-         */
-        if (ns->faces_sent == NULL) {
-            command_count = 6;
-        }
     }
-    return false;
+
+    if (ns->pl) {
+        pthread_mutex_lock(&global_lock);
+        send_delayed_buffers(ns->pl);
+        send_updates(ns->pl);
+        pthread_mutex_unlock(&global_lock);
+    }
+    return true;
 }
 
 /*****************************************************************************
@@ -350,6 +377,7 @@ void watchdog(void) {
 /**
  * Waits for new connection when there is no one connected.
  */
+#if 0
 static void block_until_new_connection(void) {
     struct timeval Timeout;
     fd_set readfs;
@@ -403,93 +431,65 @@ static void block_until_new_connection(void) {
 
     reset_sleep(); /* Or the game would go too fast */
 }
-
-/**
- * Checks if file descriptor is valid.
- *
- * @param fd
- * file descriptor to check.
- * @return
- * 1 if fd is valid, 0 else.
- */
-static int is_fd_valid(int fd) {
-#ifndef WIN32
-    return fcntl(fd, F_GETFL) != -1 || errno != EBADF;
-#else
-    return 1;
 #endif
+
+socket_struct *socket_struct_new(int fd) {
+    socket_struct *ns = calloc(1, sizeof(socket_struct));
+    if (ns == NULL) {
+        fatal(OUT_OF_MEMORY);
+    }
+    ns->fd = fd;
+    ns->status = Ns_Add;
+    SockList_ResetRead(&ns->inbuf);
+    return ns;
+}
+
+static void *client_thread(void *data) {
+    socket_struct *ns = (socket_struct *)data;
+    init_connection(ns, ns->host);
+    while (handle_client(ns));
+    return NULL;
 }
 
 /**
- * Handle a new connection from a client.
- * @param listen_fd file descriptor the request came from.
+ * Try to accept a new client connection.
+ * @param listen_fd File descriptor to to accept() on
  */
 static void new_connection(int listen_fd) {
-    int newsocknum = -1, j;
 #ifdef HAVE_GETNAMEINFO
     struct sockaddr_storage addr;
 #else
     struct sockaddr_in addr;
 #endif
     socklen_t addrlen = sizeof(addr);
-
-#ifdef ESRV_DEBUG
-    LOG(llevDebug, "do_server: New Connection\n");
-#endif
-
-    for (j = 0; j < socket_info.allocated_sockets; j++)
-        if (init_sockets[j].status == Ns_Avail) {
-            newsocknum = j;
-            break;
+    int fd = accept(listen_fd, (struct sockaddr *)&addr, &addrlen);
+    if (fd == -1) {
+        if (errno == EWOULDBLOCK || errno == EAGAIN) {
+            return;
         }
-
-    if (newsocknum == -1) {
-        /* If this is the case, all sockets currently in used */
-        init_sockets = realloc(init_sockets, sizeof(socket_struct)*(socket_info.allocated_sockets+1));
-        if (!init_sockets)
-            fatal(OUT_OF_MEMORY);
-        newsocknum = socket_info.allocated_sockets;
-        socket_info.allocated_sockets++;
-        init_sockets[newsocknum].listen = NULL;
-        init_sockets[newsocknum].faces_sent_len = get_faces_count();
-        init_sockets[newsocknum].faces_sent = calloc(get_faces_count(), sizeof(*init_sockets[newsocknum].faces_sent));
-        if (!init_sockets[newsocknum].faces_sent)
-            fatal(OUT_OF_MEMORY);
-        init_sockets[newsocknum].status = Ns_Avail;
+        return;
     }
 
-    if (newsocknum < 0) {
-        LOG(llevError, "FATAL: didn't allocate a newsocket?? alloc = %d, newsocknum = %d", socket_info.allocated_sockets, newsocknum);
-        fatal(SEE_LAST_ERROR);
-    }
-
-    init_sockets[newsocknum].fd = accept(listen_fd, (struct sockaddr *)&addr, &addrlen);
-    if (init_sockets[newsocknum].fd == -1) {
-        LOG(llevError, "accept failed: %s\n", strerror(errno));
-    } else {
-        char buf[MAX_BUF];
-#ifndef HAVE_GETNAMEINFO
-        long ip;
-#endif
-        socket_struct *ns;
-
-        ns = &init_sockets[newsocknum];
-
+    socket_struct *ns = socket_struct_new(fd);
+    char buf[MAX_BUF];
 #ifdef HAVE_GETNAMEINFO
-        getnameinfo((struct sockaddr *) &addr, addrlen, buf, sizeof(buf), NULL, 0, NI_NUMERICHOST);
+    getnameinfo((struct sockaddr *) &addr, addrlen, buf, sizeof(buf), NULL, 0, NI_NUMERICHOST);
 #else
-        ip = ntohl(addr.sin_addr.s_addr);
-        snprintf(buf, sizeof(buf), "%ld.%ld.%ld.%ld", (ip>>24)&255, (ip>>16)&255, (ip>>8)&255, ip&255);
+    long ip;
+    ip = ntohl(addr.sin_addr.s_addr);
+    snprintf(buf, sizeof(buf), "%ld.%ld.%ld.%ld", (ip>>24)&255, (ip>>16)&255, (ip>>8)&255, ip&255);
 #endif
+    ns->host = strdup(buf);
 
-        if (checkbanned(NULL, buf)) {
-            LOG(llevInfo, "Banned host tried to connect: [%s]\n", buf);
-            close(init_sockets[newsocknum].fd);
-            init_sockets[newsocknum].fd = -1;
-        } else {
-            init_connection(ns, buf);
-        }
+    // Disconnect client if banned.
+    if (checkbanned(NULL, ns->host)) {
+        LOG(llevInfo, "Banned host tried to connect: [%s]\n", buf);
+        close(fd);
+        return;
     }
+
+    pthread_t thread;
+    pthread_create(&thread, NULL, client_thread, ns);
 }
 
 /**
@@ -556,142 +556,20 @@ static void send_updates(player *pl) {
  *
  */
 void do_server(void) {
-    fd_set tmp_read, tmp_exceptions;
-    int active = 0;
-    FD_ZERO(&tmp_read);
-    FD_ZERO(&tmp_exceptions);
-
-    for (int i = 0; i < socket_info.allocated_sockets; i++) {
-        if (init_sockets[i].status == Ns_Add && !is_fd_valid(init_sockets[i].fd)) {
-            LOG(llevError, "do_server: invalid waiting fd %d\n", i);
-            init_sockets[i].status = Ns_Dead;
-            FREE_AND_CLEAR(init_sockets[i].faces_sent);
-        }
-        if (init_sockets[i].status == Ns_Dead) {
-            LOG(llevInfo, "Disconnected from %s\n", init_sockets[i].host);
-            if (init_sockets[i].listen) {
-                /* try to reopen the listening socket */
-                init_listening_socket(&init_sockets[i]);
-            } else {
-                free_newsocket(&init_sockets[i]);
-                init_sockets[i].status = Ns_Avail;
-            }
-        } else if (init_sockets[i].status != Ns_Avail) {
-            FD_SET((uint32_t)init_sockets[i].fd, &tmp_read);
-            FD_SET((uint32_t)init_sockets[i].fd, &tmp_exceptions);
-            active++;
-        }
+    for (int i = 0; i < listen_socket_count; i++) {
+        new_connection(listeners[i].fd);
     }
-
-    /* Go through the players.  Let the loop set the next pl value,
-     * since we may remove some
-     */
-    player *pl, *next;
-    for (pl = first_player; pl != NULL; ) {
-        if (pl->socket->status != Ns_Dead && !is_fd_valid(pl->socket->fd)) {
-            LOG(llevError, "do_server: invalid file descriptor for player %s [%s]: %d\n", (pl->ob && pl->ob->name) ? pl->ob->name : "(unnamed player?)", (pl->socket->host) ? pl->socket->host : "(unknown ip?)", pl->socket->fd);
-            pl->socket->status = Ns_Dead;
-        }
-
-        if (pl->socket->status == Ns_Dead) {
-            player *npl = pl->next;
-
-            save_player(pl->ob, 0);
-            leave(pl, 1);
-            final_free_player(pl);
-            pl = npl;
-        } else {
-            FD_SET((uint32_t)pl->socket->fd, &tmp_read);
-            FD_SET((uint32_t)pl->socket->fd, &tmp_exceptions);
-            pl = pl->next;
-        }
+    if (first_player == NULL) {
+        //block_until_new_connection();
     }
-
-    if (active == 1 && first_player == NULL)
-        block_until_new_connection();
-
     long sleep_time = get_sleep_remaining();
     if (sleep_time < 0) {
         LOG(llevInfo, "skipping time (over by %ld ms)\n", -sleep_time/1000);
         jump_time();
-    }
-
-    while (sleep_time > 0) {
-        socket_info.timeout.tv_sec = 0;
-        socket_info.timeout.tv_usec = sleep_time;
-        int pollret = select(socket_info.max_filedescriptor, &tmp_read, NULL,
-                             &tmp_exceptions, &socket_info.timeout);
-        if (pollret == -1) {
-            if (errno != EINTR) {
-                LOG(llevError, "select failed: %s\n", strerror(errno));
-            }
-            return;
-        } else if (!pollret) {
-            return;
-        }
-
-        /* Check for any exceptions/input on the sockets */
-        for (int i = 0; i < socket_info.allocated_sockets; i++) {
-            /* listen sockets can stay in status Ns_Dead */
-            if (init_sockets[i].status != Ns_Add) {
-                continue;
-            }
-            if (FD_ISSET(init_sockets[i].fd, &tmp_exceptions)) {
-                free_newsocket(&init_sockets[i]);
-                init_sockets[i].status = Ns_Avail;
-                continue;
-            }
-            if (FD_ISSET(init_sockets[i].fd, &tmp_read)) {
-                if (init_sockets[i].listen)
-                    new_connection(init_sockets[i].fd);
-                else
-                    handle_client(&init_sockets[i], NULL);
-            }
-        }
-
-        /* This does roughly the same thing, but for the players now */
-        for (pl = first_player; pl != NULL; pl = next) {
-            next = pl->next;
-            if (pl->socket->status == Ns_Dead)
-                continue;
-
-            if (FD_ISSET(pl->socket->fd, &tmp_exceptions)) {
-                save_player(pl->ob, 0);
-                leave(pl, 1);
-                final_free_player(pl);
-            } else {
-                bool keep_processing = handle_client(pl->socket, pl);
-                if (!keep_processing) {
-                    FD_CLR(pl->socket->fd, &tmp_read);
-                }
-
-                /* There seems to be rare cases where next points to a removed/freed player.
-                 * My belief is that this player does something (shout, move, whatever)
-                 * that causes data to be sent to the next player on the list, but
-                 * that player is defunct, so the socket codes removes that player.
-                 * End result is that next now points at the removed player, and
-                 * that has garbage data so we crash.  So update the next pointer
-                 * while pl is still valid.  MSW 2007-04-21
-                 */
-                next = pl->next;
-
-
-                /* If the player has left the game, then the socket status
-                 * will be set to this be the leave function.  We don't
-                 * need to call leave again, as it has already been called
-                 * once.
-                 */
-                if (pl->socket->status == Ns_Dead) {
-                    save_player(pl->ob, 0);
-                    leave(pl, 1);
-                    final_free_player(pl);
-                } else {
-                    send_delayed_buffers(pl);
-                    send_updates(pl);
-                }
-            }
-        }
-        sleep_time = get_sleep_remaining();
+    } else {
+        pthread_mutex_unlock(&global_lock);
+        usleep(sleep_time);
+        pthread_mutex_lock(&global_lock);
     }
 }
 

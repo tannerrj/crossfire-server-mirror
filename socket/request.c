@@ -2537,7 +2537,6 @@ void account_play_cmd(char *buf, int len, socket_struct *ns)
         pl = get_player(NULL);
         set_player_socket(pl, ns);
         ns->status = Ns_Avail;
-        ns->account_chars = NULL;
         SockList_ResetRead(&pl->socket->inbuf);
     } else {
         pl->state = ST_PLAYING;

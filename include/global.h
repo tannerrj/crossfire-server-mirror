@@ -175,7 +175,7 @@ extern const Face *blank_face, *empty_face;
 extern const Face *smooth_face;
 
 extern uint32_t tick_duration; /* loop time */
-extern socket_struct *init_sockets;
+extern struct listen_info *listeners;
 
 #include "stringbuffer.h"
 #include "libproto.h"

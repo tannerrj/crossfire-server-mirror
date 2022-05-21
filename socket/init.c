@@ -48,6 +48,9 @@
 /** Socket information. */
 Socket_Info socket_info;
 
+struct listen_info *listeners;
+int listen_socket_count;
+
 /**
  * Established connections for clients not yet playing.  See the page on
  * @ref page_connection "the login process" for a description of its use.
@@ -55,7 +58,6 @@ Socket_Info socket_info;
  * be freed.
  * If this socket becomes invalid, then the server will try to reopen it.
  */
-socket_struct *init_sockets;
 
 static void set_output_sock_buf(socket_struct *ns, int bufsize) {
     int oldbufsize;
@@ -85,17 +87,10 @@ static void set_output_sock_buf(socket_struct *ns, int bufsize) {
 void init_connection(socket_struct *ns, const char *from_ip) {
     SockList sl;
 
-#ifdef WIN32 /* ***WIN32 SOCKET: init win32 non blocking socket */
-    long temp = 1;
-
-    if (ioctlsocket(ns->fd, FIONBIO , &temp) == -1)
-        LOG(llevError, "init_connection:  Error on ioctlsocket.\n");
-#else
-    if (fcntl(ns->fd, F_SETFL, O_NONBLOCK) == -1) {
+    int oldflags = fcntl(ns->fd, F_GETFL, 0);
+    if (fcntl(ns->fd, F_SETFL, oldflags & ~O_NONBLOCK) == -1) {
         LOG(llevError, "init_connection:  Error on fcntl.\n");
     }
-#endif /* end win32 */
-
     set_output_sock_buf(ns, SOCKETBUFSIZE);
 
     ns->faceset = 0;
@@ -163,32 +158,19 @@ void init_connection(socket_struct *ns, const char *from_ip) {
 #endif
 }
 
-/**
- * This opens *ns for listening to connections.
- * The structure must be allocated already and
- * ns->listen must be initialized.
- * No other variable is changed.
- */
-void init_listening_socket(socket_struct *ns) {
+void init_listening_socket(struct listen_info *li) {
     struct linger linger_opt;
     char buf1[MAX_BUF], buf2[MAX_BUF];
 
-    if (ns == NULL || ns->listen == NULL) {
-        LOG(llevError, "init_listening_socket: missing listen info in socket_struct?!\n");
-        fatal(SEE_LAST_ERROR);
-    }
-
-    ns->status = Ns_Dead;
-
-    ns->fd = socket(ns->listen->family, ns->listen->socktype, ns->listen->protocol);
-    if (ns->fd == -1) {
+    li->fd = socket(li->family, li->socktype, li->protocol);
+    if (li->fd == -1) {
         LOG(llevError, "Cannot create socket: %s\n", strerror(errno));
         return;
     }
 
     linger_opt.l_onoff = 0;
     linger_opt.l_linger = 0;
-    if (setsockopt(ns->fd, SOL_SOCKET, SO_LINGER, (char *)&linger_opt, sizeof(struct linger))) {
+    if (setsockopt(li->fd, SOL_SOCKET, SO_LINGER, (char *)&linger_opt, sizeof(struct linger))) {
         LOG(llevError, "Cannot setsockopt(SO_LINGER): %s\n", strerror(errno));
     }
 /* Would be nice to have an autoconf check for this.  It appears that
@@ -207,61 +189,72 @@ void init_listening_socket(socket_struct *ns) {
         int tmp = 1;
 #endif
 
-        if (setsockopt(ns->fd, SOL_SOCKET, SO_REUSEADDR, &tmp, sizeof(tmp))) {
+        if (setsockopt(li->fd, SOL_SOCKET, SO_REUSEADDR, &tmp, sizeof(tmp))) {
             LOG(llevError, "Cannot setsockopt(SO_REUSEADDR): %s\n", strerror(errno));
         }
 #ifdef HAVE_GETADDRINFO
-        if ((ns->listen->family == AF_INET6) && setsockopt(ns->fd, IPPROTO_IPV6, IPV6_V6ONLY, &tmp, sizeof(tmp))) {
+        if ((li->family == AF_INET6) && setsockopt(li->fd, IPPROTO_IPV6, IPV6_V6ONLY, &tmp, sizeof(tmp))) {
             LOG(llevError, "Cannot setsockopt(IPV6_V6ONLY): %s\n", strerror(errno));
         }
 #endif
     }
 #else
-    if (setsockopt(ns->fd, SOL_SOCKET, SO_REUSEADDR, (char *)NULL, 0)) {
+    if (setsockopt(li->fd, SOL_SOCKET, SO_REUSEADDR, (char *)NULL, 0)) {
         LOG(llevError, "Cannot setsockopt(SO_REUSEADDR): %s\n", strerror(errno));
     }
 #endif
 
-    if (bind(ns->fd, ns->listen->addr, ns->listen->addrlen) == (-1)) {
+#ifdef WIN32 /* ***WIN32 SOCKET: init win32 non blocking socket */
+    long temp = 1;
+
+    if (ioctlsocket(li->fd, FIONBIO , &temp) == -1)
+        LOG(llevError, "init_connection:  Error on ioctlsocket.\n");
+#else
+    if (fcntl(li->fd, F_SETFL, O_NONBLOCK) == -1) {
+        LOG(llevError, "init_connection:  Error on fcntl.\n");
+    }
+#endif /* end win32 */
+
+    if (bind(li->fd, li->addr, li->addrlen) == (-1)) {
 #ifdef HAVE_GETNAMEINFO
-        getnameinfo(ns->listen->addr, ns->listen->addrlen, buf1, sizeof(buf1), buf2, sizeof(buf2), NI_NUMERICHOST|NI_NUMERICSERV);
+        getnameinfo(li->addr, li->addrlen, buf1, sizeof(buf1), buf2, sizeof(buf2), NI_NUMERICHOST|NI_NUMERICSERV);
 #else
         short port;
         long ip;
 
-        ip = ntohl(((struct sockaddr_in *)ns->listen->addr)->sin_addr.s_addr);
-        port = ntohs(((struct sockaddr_in *)ns->listen->addr)->sin_port);
+        ip = ntohl(((struct sockaddr_in *)li->addr)->sin_addr.s_addr);
+        port = ntohs(((struct sockaddr_in *)li->addr)->sin_port);
         snprintf(buf1, sizeof(buf1), "%ld.%ld.%ld.%ld", (ip>>24)&255, (ip>>16)&255, (ip>>8)&255, ip&255);
         snprintf(buf2, sizeof(buf2), "%d", port&65535);
 #endif
         LOG(llevError, "Cannot bind socket to [%s]:%s: %s\n", buf1, buf2, strerror(errno));
 #ifdef WIN32 /* ***win32: close() -> closesocket() */
-        shutdown(ns->fd, SD_BOTH);
-        closesocket(ns->fd);
+        shutdown(li->fd, SD_BOTH);
+        closesocket(li->fd);
 #else
-        close(ns->fd);
+        close(li->fd);
 #endif /* win32 */
-        ns->fd = -1;
+        li->fd = -1;
         return;
     }
-    if (listen(ns->fd, 5) == (-1))  {
+
+    if (listen(li->fd, 5) == (-1))  {
         LOG(llevError, "Cannot listen on socket: %s\n", strerror(errno));
 #ifdef WIN32 /* ***win32: close() -> closesocket() */
-        shutdown(ns->fd, SD_BOTH);
-        closesocket(ns->fd);
+        shutdown(li->fd, SD_BOTH);
+        closesocket(li->fd);
 #else
-        close(ns->fd);
+        close(li->fd);
 #endif /* win32 */
-        ns->fd = -1;
+        li->fd = -1;
         return;
     }
-    ns->status = Ns_Add;
 }
 
 /** This sets up the listening socket.
  * @todo fix socket_info.max_filedescriptor hack. */
 void init_server(void) {
-    int i, e, listen_socket_count;
+    int i, e;
 #ifdef HAVE_GETADDRINFO
     struct addrinfo *ai, *ai_p;
     struct addrinfo hints;
@@ -336,23 +329,15 @@ void init_server(void) {
     listen_socket_count = 1;
 #endif
 
-    LOG(llevDebug, "Initialize new client/server data\n");
-    init_sockets = malloc(sizeof(socket_struct) * listen_socket_count);
-    socket_info.allocated_sockets = listen_socket_count;
-    for (i = 0; i < listen_socket_count; i++) {
-        init_sockets[i].listen = calloc(sizeof(struct listen_info), 1);
-        init_sockets[i].faces_sent = NULL; /* unused */
-        init_sockets[i].account_name = NULL; /* Must be set to avoid undef behaviour elsewhere. */
-    }
-
+    listeners = calloc(listen_socket_count, sizeof(struct listen_info));
 #ifdef HAVE_GETADDRINFO
     for (i = 0, ai_p = ai; i < listen_socket_count && ai_p != NULL; i++, ai_p = ai_p->ai_next) {
-        init_sockets[i].listen->family   = ai_p->ai_family;
-        init_sockets[i].listen->socktype = ai_p->ai_socktype;
-        init_sockets[i].listen->protocol = ai_p->ai_protocol;
-        init_sockets[i].listen->addrlen  = ai_p->ai_addrlen;
-        init_sockets[i].listen->addr     = malloc(ai_p->ai_addrlen);
-        memcpy(init_sockets[i].listen->addr, ai_p->ai_addr, ai_p->ai_addrlen);
+        listeners[i].family   = ai_p->ai_family;
+        listeners[i].socktype = ai_p->ai_socktype;
+        listeners[i].protocol = ai_p->ai_protocol;
+        listeners[i].addrlen  = ai_p->ai_addrlen;
+        listeners[i].addr     = malloc(ai_p->ai_addrlen);
+        memcpy(listeners[i].addr, ai_p->ai_addr, ai_p->ai_addrlen);
     }
     freeaddrinfo(ai);
 #else
@@ -361,21 +346,21 @@ void init_server(void) {
         LOG(llevError, "init_server: Error getting protox\n");
         fatal(SEE_LAST_ERROR);
     }
-    init_sockets[0].listen->family   = PF_INET;
-    init_sockets[0].listen->socktype = SOCK_STREAM;
-    init_sockets[0].listen->protocol = protox->p_proto;
+    listeners[0].family   = PF_INET;
+    listeners[0].socktype = SOCK_STREAM;
+    listeners[0].protocol = protox->p_proto;
     insock = calloc(sizeof(struct sockaddr_in), 1);
     insock->sin_family = AF_INET;
     insock->sin_port = htons(settings.csport);
     insock->sin_addr.s_addr = htonl(INADDR_ANY);
-    init_sockets[0].listen->addr = (struct sockaddr *) insock;
-    init_sockets[0].listen->addrlen = sizeof(struct sockaddr_in);
+    listeners[0].addr = (struct sockaddr *) insock;
+    listeners[0].addrlen = sizeof(struct sockaddr_in);
 #endif
 
     e = 1;
     for (i = 0; i < listen_socket_count; i++) {
-        init_listening_socket(&init_sockets[i]);
-        if (init_sockets[i].fd != -1)
+        init_listening_socket(&listeners[i]);
+        if (listeners[i].fd != -1)
             e = 0;
     }
     if (e != 0) {
@@ -392,13 +377,7 @@ void init_server(void) {
 
 /** Free's all the memory that ericserver allocates. */
 void free_all_newserver(void) {
-    int i;
-    LOG(llevDebug, "Freeing all new client/server information.\n");
-    for (i = 0; i < socket_info.allocated_sockets && init_sockets[i].listen; i++) {
-        free(init_sockets[i].listen->addr);
-        free(init_sockets[i].listen);
-    }
-    free(init_sockets);
+    free(listeners);
 }
 
 /**

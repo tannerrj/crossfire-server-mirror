@@ -18,7 +18,7 @@ void magic_mapping_mark(object *pl, char *map_mark, int strength);
 void draw_magic_map(object *pl);
 /* init.c */
 void init_connection(socket_struct *ns, const char *from_ip);
-void init_listening_socket(socket_struct *ns);
+void init_listening_socket(struct listen_info *listen);
 void init_server(void);
 void free_all_newserver(void);
 void free_newsocket(socket_struct *ns);
@@ -39,7 +39,7 @@ void esrv_move_object(object *pl, tag_t to, tag_t tag, long nrof);
 void inscribe_scroll_cmd(char *buf, int len, player *pl);
 /* loop.c */
 void request_info_cmd(char *buf, int len, socket_struct *ns);
-bool handle_client(socket_struct *ns, player *pl);
+bool handle_client(socket_struct *ns);
 void watchdog(void);
 void do_server(void);
 void update_players(void);
