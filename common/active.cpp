@@ -22,8 +22,8 @@ extern "C" {
 
 #include <cassert>
 #include <cmath>
+#include <map>
 #include <queue>
-#include <set>
 
 static bool object_in_icecube(object *op) {
     return op->env != NULL && strcmp(op->env->arch->name, "icecube") == 0;
@@ -38,10 +38,10 @@ static int numerator(object *ob) {
 
 class ActiveObject {
     private:
-        uint32_t next_tick;
         float incr;
 
     public:
+        uint32_t tick_added, next_tick;
         object *ob;
 
     ActiveObject(object *o) {
@@ -49,6 +49,7 @@ class ActiveObject {
         assert(FABS(ob->speed) > MIN_ACTIVE_SPEED); // otherwise it wouldn't be active_add()'ed
         // The earliest that the event can fire is the tick after the next (2)
         uint32_t nticks = MAX(2, ceil(.5 + -ob->speed_left * numerator(ob) / FABS(ob->speed)));
+        tick_added = pticks;
         next_tick = pticks + nticks;
         incr = nticks * FABS(ob->speed) / numerator(ob);
         assert(really_ready());
@@ -71,19 +72,23 @@ class ActiveObject {
     }
 };
 
-static std::set<tag_t> active_objects; //< for querying active list membership
+static std::map<tag_t, ActiveObject> active_objects; //< for querying active list membership
 static std::priority_queue<ActiveObject> queue; //< for ordering events
 
 extern "C" {
     void active_add(object *ob) {
-        auto result = active_objects.insert(ob->count);
+        auto ao = ActiveObject(ob);
+        auto result = active_objects.insert(std::pair<tag_t, ActiveObject>(ob->count, ao));
         // Only add to queue if not already there.
         if (result.second) {
-            queue.push(ActiveObject(ob));
+            queue.push(ao);
         }
     }
 
     void active_remove(object *ob) {
+        auto ao = active_objects.find(ob->count)->second;
+        // Update speed_left so that it can be saved when maps are swapped.
+        ob->speed_left += (pticks - ao.tick_added) * FABS(ob->speed);
         active_objects.erase(ob->count);
     }
 
