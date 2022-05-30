@@ -4864,8 +4864,8 @@ void cfweather_init(Settings *settings) {
 
     // Connect the events after initialization, since we don't need to do
     // precipitation when we're initializing.
-    global_map_handler = events_register_global_handler(EVENT_MAPENTER, weather_listener);
-    global_mapload_handler = events_register_global_handler(EVENT_MAPLOAD, weather_listener);
+    global_map_handler = events_register_global_handler(EVENT_MAPREADY, weather_listener);
+    //global_mapload_handler = events_register_global_handler(EVENT_MAPLOAD, weather_listener);
     global_clock_handler = events_register_global_handler(EVENT_CLOCK, weather_clock_listener);
     global_object_handler = events_register_global_handler(EVENT_TIME, weather_object_listener);
     // Register the 'weather command
@@ -4881,7 +4881,7 @@ void cfweather_close() {
     weather_replace_t *rpcur;
     // Unregister handlers.
     if (global_map_handler != 0)
-        events_unregister_global_handler(EVENT_MAPENTER, global_map_handler);
+        events_unregister_global_handler(EVENT_MAPREADY, global_map_handler);
     if (global_clock_handler != 0)
         events_unregister_global_handler(EVENT_CLOCK, global_clock_handler);
     if (global_object_handler != 0)
