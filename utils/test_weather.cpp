@@ -1,10 +1,7 @@
 #include <stdio.h>
 
 #include "global.h"
-<<<<<<< HEAD
 #include "sproto.h"
-=======
->>>>>>> a3085b6c (Add weather test program)
 
 void init_beforeplay(void);
 void init_modules();
@@ -21,11 +18,8 @@ int main(int argc, char *argv[]) {
 
     int num = atoi(argv[1]);
 
-    init_library();
-    load_settings(); // for worldmap coordinates
+    init(argc, argv);
     settings.dynamiclevel = 2; // overwrite settings
-    init_beforeplay();
-    init_modules(); // All relevant weather code lives in the modules now.
     LOG(llevInfo, "Simulating weather for %d ticks: ", num);
     for (int i = 0; i < num; i++) {
         todtick++;
