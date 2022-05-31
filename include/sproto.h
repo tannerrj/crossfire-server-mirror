@@ -614,6 +614,7 @@ int cftimer_find_free_id(void);
 void cftimer_init(void);
 /* weather.c */
 void set_darkness_map(mapstruct *m);
+int get_world_darkness();
 void tick_the_clock(void);
 int get_world_darkness(void);
 /* modules/cfweather.c */

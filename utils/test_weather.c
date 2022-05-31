@@ -13,11 +13,8 @@ int main(int argc, char *argv[]) {
 
     int num = atoi(argv[1]);
 
-    init_library();
-    load_settings(); // for worldmap coordinates
+    init(argc, argv);
     settings.dynamiclevel = 2; // overwrite settings
-    init_beforeplay();
-    init_modules(); // All relevant weather code lives in the modules now.
     LOG(llevInfo, "Simulating weather for %d ticks: ", num);
     for (int i = 0; i < num; i++) {
         todtick++;

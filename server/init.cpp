@@ -36,7 +36,7 @@
 #include "modules.h"
 
 static void help(void);
-void init_beforeplay(void);
+static void init_beforeplay(void);
 static void init_startup(void);
 
 /** If set after command line argument parsing, then the server will exit. */
