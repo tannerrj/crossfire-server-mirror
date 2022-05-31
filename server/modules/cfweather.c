@@ -4404,6 +4404,7 @@ static int weather_listener(int *type, ...) {
             va_arg(args, object *);
             /* FALLTHROUGH */
         case EVENT_MAPLOAD:
+        case EVENT_MAPREADY:
             m = va_arg(args, mapstruct *);
             if (m->outdoor)
                 do_map_precipitation(m);
