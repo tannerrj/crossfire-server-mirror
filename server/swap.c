@@ -82,7 +82,8 @@ void read_map_log(void) {
     while (fgets(buf, MAX_BUF, fp) != NULL) {
         char *tmp[3];
 
-        map = get_linked_map();
+        map = map_new();
+        map_add(map);
         /* scanf doesn't work all that great on strings, so we break
          * out that manually.  strdup is used for tmpname, since other
          * routines will try to free that pointer.

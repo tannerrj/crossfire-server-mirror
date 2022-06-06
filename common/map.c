@@ -775,9 +775,8 @@ int save_objects(mapstruct *m, FILE *fp, FILE *fp2, int flag) {
 }
 
 /**
- * Allocates, initialises, and returns a pointer to a mapstruct.
- * Modified to no longer take a path option which was not being
- * used anyways.  MSW 2001-07-01
+ * Allocates, initialises, and returns a pointer to a mapstruct. After filling
+ * in the size, you should call allocate_map(), then map_add().
  *
  * @return
  * new structure.
@@ -785,27 +784,10 @@ int save_objects(mapstruct *m, FILE *fp, FILE *fp2, int flag) {
  * @note
  * will never return NULL, but call fatal() if memory error.
  */
-mapstruct *get_linked_map(void) {
+mapstruct *map_new(void) {
     mapstruct *map = (mapstruct *)calloc(1, sizeof(mapstruct));
-    /* mapstruct *mp;*/
-
     if (map == NULL)
         fatal(OUT_OF_MEMORY);
-    /*
-     * Nothing in the code appears to require we add new maps to the end of the list.
-     * Why not just add them to the front instead? Its faster.
-     *
-     * SilverNexus 2016-05-18
-     *
-    for (mp = first_map; mp != NULL && mp->next != NULL; mp = mp->next)
-        ;
-    if (mp == NULL)
-        first_map = map;
-    else
-        mp->next = map;
-    */
-    map->next = first_map;
-    first_map = map;
 
     map->in_memory = MAP_SWAPPED;
     /* The maps used to pick up default x and y values from the
@@ -819,6 +801,14 @@ mapstruct *get_linked_map(void) {
     MAP_ENTER_Y(map) = 0;
     map->last_reset_time = 0;
     return map;
+}
+
+/**
+ * Add the given map to the global map linked list.
+ */
+void map_add(mapstruct *map) {
+    map->next = first_map;
+    first_map = map;
 }
 
 /** Calculate map size without intermediate sign extension. */
@@ -862,12 +852,10 @@ void allocate_map(mapstruct *m) {
  * map size.
  * @return
  * new map.
- *
- * @note
- * will never return NULL, as get_linked_map() never fails.
  */
 mapstruct *get_empty_map(int sizex, int sizey) {
-    mapstruct *m = get_linked_map();
+    mapstruct *m = map_new();
+    map_add(m);
     m->width = sizex;
     m->height = sizey;
     m->in_memory = MAP_SWAPPED;
@@ -1232,7 +1220,8 @@ mapstruct *mapfile_load(const char *map, int flags) {
         return (NULL);
     }
 
-    m = get_linked_map();
+    m = map_new();
+    map_add(m);
 
     safe_strncpy(m->path, map, HUGE_BUF);
     if (load_map_header(fp, m)) {

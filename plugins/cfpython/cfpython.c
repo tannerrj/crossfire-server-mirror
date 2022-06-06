@@ -1637,7 +1637,7 @@ static char **getEventFiles(CFPContext *context) {
 
     dp = opendir(path);
     if (dp == NULL) {
-        cf_log(llevInfo, "CFPython: global event directory %s not found\n", context->options);
+        cf_log(llevDebug, "CFPython: global event directory %s not found\n", context->options);
         eventFiles = calloc(1, sizeof(eventFiles[0]));
         eventFiles[0] = NULL;
         return eventFiles;

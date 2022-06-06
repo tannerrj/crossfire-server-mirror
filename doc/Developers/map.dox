@@ -32,7 +32,7 @@ The ::mapstruct structure contains all the map information, objects it contains,
 The usual function to call to obtain a valid ::mapstruct structure is ready_map_name(). It is responsible for loading a map from disk, adding unique items and overlays, reloading a map if it was swapped out. The flag parameter controls what should or not be done.
 
 Other ways to get a map are:
-- call get_linked_map(). This does not initialize the map's mapstruct::spaces field, though
+- call map_new(). This does not initialize the map's mapstruct::spaces field, though. To do that, use allocate_map(). Make sure to then map_add()
 - call get_empty_map(), which initializes this field.
 
 In any case the map is linked to the map list.

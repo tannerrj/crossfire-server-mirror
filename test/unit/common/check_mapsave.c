@@ -27,7 +27,8 @@ int mapsave_test(const char *map) {
 
     // Load objects from saved map
     fp1 = fopen("check_mapsave_1.map", "r");
-    m = get_linked_map();
+    m = map_new();
+    map_add(m);
     m->width = width;
     m->height = height;
     allocate_map(m);
