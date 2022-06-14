@@ -4884,8 +4884,6 @@ void cfweather_close() {
         events_unregister_global_handler(EVENT_CLOCK, global_clock_handler);
     if (global_object_handler != 0)
         events_unregister_global_handler(EVENT_TIME, global_object_handler);
-    if (global_mapload_handler != 0)
-        events_unregister_global_handler(EVENT_MAPLOAD, global_mapload_handler);
     if (command_handler != 0)
         command_unregister(command_handler);
     // Free the weathermap
