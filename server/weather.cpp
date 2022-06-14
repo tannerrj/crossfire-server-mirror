@@ -125,21 +125,4 @@ void tick_the_clock(void) {
     }
     get_tod(&tod);
     dawn_to_dusk(&tod);
-    /* call the weather calculators, here, in order */
-    if (settings.dynamiclevel > 0) {
-        perform_pressure();     /* pressure is the random factor */
-        smooth_wind();          /* calculate the wind. depends on pressure */
-        plot_gulfstream();
-        update_humid();
-        init_temperature();
-        //compute_sky(); This is done in perform_weather
-        if (tod.hour == 0) {
-            process_rain();
-        }
-    }
-    /* perform_weather must follow calculators */
-    perform_weather();
-    if (settings.dynamiclevel > 0) {
-        spin_globe();
-    }
 }
