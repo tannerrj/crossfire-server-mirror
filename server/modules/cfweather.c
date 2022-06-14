@@ -4520,7 +4520,7 @@ static int weather_object_listener(int *type, ...) {
 
                     // Make sure to update the player view
                     if (op->type == PLAYER) {
-                        esrv_map_scroll(&op->contr->socket, freearr_x[dir], freearr_y[dir]);
+                        esrv_map_scroll(op->contr->socket, freearr_x[dir], freearr_y[dir]);
                         op->contr->socket->update_look = 1;
                         op->contr->socket->look_position = 0;
                     } else if (op->type == TRANSPORT) {
@@ -4530,7 +4530,7 @@ static int weather_object_listener(int *type, ...) {
                                 pl->map = op->map;
                                 pl->x = op->x;
                                 pl->y = op->y;
-                                esrv_map_scroll(&pl->contr->socket, freearr_x[dir], freearr_y[dir]);
+                                esrv_map_scroll(pl->contr->socket, freearr_x[dir], freearr_y[dir]);
                                 pl->contr->socket->update_look = 1;
                                 pl->contr->socket->look_position = 0;
                             }
