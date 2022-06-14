@@ -429,9 +429,6 @@ player *add_player(socket_struct *ns, int flags) {
     p = get_player(NULL);
     set_player_socket(p, ns);
     ns->status = Ns_Avail;
-    if (p->socket->account_chars) {
-        account_char_free(p->socket->account_chars);
-    }
 
     CLEAR_FLAG(p->ob, FLAG_FRIENDLY);
 
