@@ -44,6 +44,7 @@
 #include "image.h"
 #include "newserver.h"
 #include "sproto.h"
+#include "server.h"
 
 /** Socket information. */
 Socket_Info socket_info;
@@ -367,6 +368,8 @@ void init_server(void) {
         LOG(llevError, "init_server: can't open any listening socket\n");
         fatal(SEE_LAST_ERROR);
     }
+
+    pthread_mutex_init(&global_lock, NULL);
 }
 
 /*******************************************************************************
