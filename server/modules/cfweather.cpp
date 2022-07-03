@@ -2394,7 +2394,7 @@ static int init_config_vals(const Settings *settings, const char *conf_filename,
                 name = line; // Each line starts with name
                 line = get_next_field(line);
                 if (line == NULL) {
-                    LOG(llevError, "init_config_vals: Malformed name entry in %s, line %d.\n",
+                    LOG(llevError, "init_config_vals: Malformed name entry in %s, line %ld.\n",
                         filename, bufferreader_current_line(bfr));
                     // Move on to the next line and hope it is fine.
                     continue;
@@ -2403,7 +2403,7 @@ static int init_config_vals(const Settings *settings, const char *conf_filename,
                 found = sscanf(line, "%d, %d\n", &is_obj_name, &tree_count);
                 if (found != 2) {
                     // Print an error for the malformed line
-                    LOG(llevError, "init_config_vals: Malformed forestry entry in %s, line %d.\n",
+                    LOG(llevError, "init_config_vals: Malformed forestry entry in %s, line %ld.\n",
                         filename, bufferreader_current_line(bfr));
                 }
                 else {
@@ -2477,7 +2477,7 @@ static int init_weatheravoid(const Settings *settings, const char *conf_filename
                 name = line; // Each line starts with name
                 line = get_next_field(line);
                 if (line == NULL) {
-                    LOG(llevError, "init_weatheravoid: Malformed name entry in %s, line %d.\n",
+                    LOG(llevError, "init_weatheravoid: Malformed name entry in %s, line %ld.\n",
                         filename, bufferreader_current_line(bfr));
                     // Move on to the next line and hope it is fine.
                     continue;
@@ -2486,7 +2486,7 @@ static int init_weatheravoid(const Settings *settings, const char *conf_filename
                 found = sscanf(line, "%d\n", &is_effect);
                 if (found != 1) {
                     // Print an error for the malformed line
-                    LOG(llevError, "init_weatheravoid: Malformed effect flag entry in %s, line %d.\n",
+                    LOG(llevError, "init_weatheravoid: Malformed effect flag entry in %s, line %ld.\n",
                         filename, bufferreader_current_line(bfr));
                 }
                 else {
@@ -2559,7 +2559,7 @@ static int init_weather_replace(const Settings *settings, const char *conf_filen
                 line = get_next_field(line);
                 if (line == NULL) {
                     // Since we end up tokenizing the line strings, we can't reliably print it in the output.
-                    LOG(llevError, "init_weather_replace: Malformed name entry in %s, line %d.\n",
+                    LOG(llevError, "init_weather_replace: Malformed name entry in %s, line %ld.\n",
                         filename, bufferreader_current_line(bfr));
                     // Move on to the next line and hope it is fine.
                     continue;
@@ -2569,7 +2569,7 @@ static int init_weather_replace(const Settings *settings, const char *conf_filen
                 line = get_next_field(line);
                 if (line == NULL) {
                     // Since we end up tokenizing the line strings, we can't reliably print it in the output.
-                    LOG(llevError, "init_weather_replace: Malformed replacement entry in %s, line %d.\n",
+                    LOG(llevError, "init_weather_replace: Malformed replacement entry in %s, line %ld.\n",
                         filename, bufferreader_current_line(bfr));
                     // Move on to the next line and hope it is fine.
                     continue;
@@ -2579,7 +2579,7 @@ static int init_weather_replace(const Settings *settings, const char *conf_filen
                 line = get_next_field(line);
                 if (line == NULL) {
                     // Since we end up tokenizing the line strings, we can't reliably print it in the output.
-                    LOG(llevError, "init_weather_replace: Malformed doublestack entry in %s, line %d.\n",
+                    LOG(llevError, "init_weather_replace: Malformed doublestack entry in %s, line %ld.\n",
                         filename, bufferreader_current_line(bfr));
                     // Move on to the next line and hope it is fine.
                     continue;
@@ -2588,8 +2588,8 @@ static int init_weather_replace(const Settings *settings, const char *conf_filen
                 found = sscanf(line, "%d\n", &is_arch);
                 if (found != 1) {
                     // Print an error for the malformed line
-                    LOG(llevError, "init_weatheravoid: Malformed archetype/object flag entry in %s, line %d.\n",
-                        filename, bufferreader_current_line(bfr), line);
+                    LOG(llevError, "init_weatheravoid: Malformed archetype/object flag entry in %s, line %ld.\n",
+                        filename, bufferreader_current_line(bfr));
                 }
                 else {
                     // Add a struct to the list.
