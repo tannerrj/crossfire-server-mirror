@@ -616,8 +616,9 @@ void cftimer_init(void);
 void set_darkness_map(mapstruct *m);
 int get_world_darkness();
 void tick_the_clock(void);
-void init_weather(void);
-void free_weather(void);
+/* modules/cfweather.c */
+void tick_weather(void);
+void process_rain(void);
 int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct *m);
 int real_world_temperature(int x, int y, mapstruct *m);
 int write_rainfallmap(const Settings *settings);
