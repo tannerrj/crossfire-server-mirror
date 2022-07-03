@@ -4552,7 +4552,7 @@ static int weather_object_listener(int *type, ...) {
  */
 static void command_weather (object *op, const char *params) {
     int wx, wy, temp, sky;
-    char *buf;
+    const char *buf;
 
     if (settings.dynamiclevel < 1) {
         draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
