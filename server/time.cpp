@@ -826,8 +826,13 @@ void process_object(object *op) {
         change_object(op);
         return;
     }
-    if (QUERY_FLAG(op, FLAG_GENERATOR) && !QUERY_FLAG(op, FLAG_FRIENDLY))
+    if (QUERY_FLAG(op, FLAG_GENERATOR) && !QUERY_FLAG(op, FLAG_FRIENDLY)) {
+        OBJECT_REF_CREATE(op);
         generate_monster(op);
+        if (!OBJECT_REF_VALID(op)) {
+            return;
+        }
+    }
 
     /* If object can be used up, decrement 'food' and eventually remove it. */
     if (QUERY_FLAG(op, FLAG_IS_USED_UP) && (--op->stats.food) <= 0) {
