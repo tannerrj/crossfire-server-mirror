@@ -19,8 +19,8 @@
 
 #include <stdlib.h>
 
-/** List of all friendly objects, object and its count. */
-static std::vector<std::pair<object *, tag_t>> friends;
+/** List of all friendly objects, as weak references. */
+static std::vector<object_ref> friends;
 
 /**
  * Add a new friendly object to the list of friendly objects.
@@ -40,7 +40,7 @@ void add_friendly_object(object *op) {
         return;
     }
 
-    friends.push_back(std::make_pair(op, op->count));
+    friends.push_back(*op->self);
 }
 
 /**
@@ -51,12 +51,8 @@ void add_friendly_object(object *op) {
  */
 void remove_friendly_object(object *op) {
     CLEAR_FLAG(op, FLAG_FRIENDLY);
-    auto find = std::find_if(friends.begin(), friends.end(), [&] (auto item) { return item.first == op; });
+    auto find = std::find_if(friends.begin(), friends.end(), [&] (auto item) { return item.lock().get() == op; });
     if (find != friends.end()) {
-        if ((*find).second != op->count) {
-            LOG(llevError, "remove_friendly_object, tags do no match, %s, %u != %u\n",
-                op->name ? op->name : "none", op->count, (*find).second);
-        }
         friends.erase(find);
     }
 }
@@ -69,7 +65,10 @@ void remove_friendly_object(object *op) {
  */
 void dump_friendly_objects(void) {
     std::for_each(friends.begin(), friends.end(), [] (const auto item) {
-        LOG(llevError, "%s (%u)\n", item.first->name, item.second);
+        auto l = item.lock();
+        if (l) {
+            LOG(llevError, "%s (%u)\n", l->name, l->count);
+        }
     });
 }
 
@@ -80,15 +79,14 @@ void dump_friendly_objects(void) {
 void clean_friendly_list(void) {
     int count = 0;
 
-    auto item = friends.begin();
-    while (item != friends.end()) {
-        if (QUERY_FLAG((*item).first, FLAG_FREED)
-        || !QUERY_FLAG((*item).first, FLAG_FRIENDLY)
-        || ((*item).first->count != (*item).second)) {
+    auto weak = friends.begin();
+    while (weak != friends.end()) {
+        auto item = weak->lock();
+        if (!item || item.get()->count == 0 || QUERY_FLAG(item.get(), FLAG_FREED) || !QUERY_FLAG(item.get(), FLAG_FRIENDLY)) {
             ++count;
-            item = friends.erase(item);
+            weak = friends.erase(weak);
         } else {
-            ++item;
+            ++weak;
         }
     }
 
@@ -106,7 +104,7 @@ void clean_friendly_list(void) {
  * 1 if on friendly list, 0 else
  */
 int is_friendly(const object *op) {
-    return std::find_if(friends.begin(), friends.end(), [&] (auto item) { return item.first == op; }) != friends.end();
+    return std::find_if(friends.begin(), friends.end(), [&] (auto item) { return item.lock().get() == op; }) != friends.end();
 }
 
 /**
@@ -116,13 +114,16 @@ int is_friendly(const object *op) {
  */
 objectlink *get_friends_of(const object *owner) {
     objectlink *list = NULL;
-    std::for_each(friends.begin(), friends.end(), [&] (auto item) {
-        if (owner == NULL || object_get_owner(item.first) == owner) {
-            objectlink *add = get_objectlink();
-            add->id = item.second;
-            add->ob = item.first;
-            add->next = list;
-            list = add;
+    std::for_each(friends.begin(), friends.end(), [&] (auto ref) {
+        auto item = ref.lock();
+        if (item) {
+            if (owner == NULL || object_get_owner(item.get()) == owner) {
+                objectlink *add = get_objectlink();
+                add->id = item->count;
+                add->ob = item.get();
+                add->next = list;
+                list = add;
+            }
         }
     });
     return list;
@@ -145,12 +146,12 @@ object *get_next_friend(object *current) {
         return nullptr;
     }
     if (current == nullptr) {
-        return friends.begin()->first;
+        return friends.begin()->lock().get();
     };
-    auto pos = std::find_if(friends.begin(), friends.end(), [&] (const auto item) { return item.first == current; });
+    auto pos = std::find_if(friends.begin(), friends.end(), [&] (const auto item) { return item.lock().get() == current; });
     if (pos == friends.end()) {
         return nullptr;
     }
     pos++;
-    return pos == friends.end() ? nullptr : (*pos).first;
+    return pos == friends.end() ? nullptr : (*pos).lock().get();
 }
