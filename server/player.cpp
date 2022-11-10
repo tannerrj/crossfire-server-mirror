@@ -1715,7 +1715,6 @@ static void flee_player(object *op) {
  * player should stop.
  */
 int check_pick(object *op) {
-    tag_t op_tag;
     int stop = 0;
     int j, k, wvratio, current_ratio;
     char putstring[128], tmpstr[16];
@@ -1728,10 +1727,10 @@ int check_pick(object *op) {
         return 1;
     }
 
-    op_tag = op->count;
+    OBJECT_REF_CREATE(op);
 
     FOR_BELOW_PREPARE(op, tmp) {
-        if (object_was_destroyed(op, op_tag))
+        if (!OBJECT_REF_VALID(op))
             return 0;
 
         if (!object_can_pick(op, tmp))
@@ -2092,7 +2091,6 @@ static object *pick_arrow_target(object *op, const char *type, int dir) {
  */
 int fire_bow(object *op, object *arrow, int dir, int wc_mod, int16_t sx, int16_t sy) {
     object *bow;
-    tag_t tag;
     int bowspeed, mflags;
     mapstruct *m;
 
@@ -2240,10 +2238,10 @@ int fire_bow(object *op, object *arrow, int dir, int wc_mod, int16_t sx, int16_t
     arrow->move_type = MOVE_FLY_LOW;
     arrow->move_on = MOVE_FLY_LOW|MOVE_WALK;
 
-    tag = arrow->count;
+    OBJECT_REF_CREATE(arrow);
     object_insert_in_map_at(arrow, m, op, 0, sx, sy);
 
-    if (!object_was_destroyed(arrow, tag)) {
+    if (OBJECT_REF_VALID(arrow)) {
         play_sound_map(SOUND_TYPE_ITEM, arrow, arrow->direction, "fire");
         ob_process(arrow);
     }
@@ -2753,6 +2751,7 @@ void move_player_attack(object *op, int dir) {
             }
             op->weapon_speed_left -= 1.0;
 
+            OBJECT_REF_CREATE(mon);
             skill_attack(mon, op, 0, NULL, NULL);
 
             /* If attacking another player, that player gets automatic
@@ -2760,7 +2759,7 @@ void move_player_attack(object *op, int dir) {
              * Disable hitback on the battleground or if the target is
              * the wiz.
              */
-            if (mon->type == PLAYER
+            if (OBJECT_REF_VALID(mon) && mon->type == PLAYER
             && mon->stats.hp >= 0
             && !mon->contr->has_hit
             && !on_battleground

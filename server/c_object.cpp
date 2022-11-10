@@ -1071,8 +1071,6 @@ void put_object_in_sack(object *op, object *sack, object *tmp, uint32_t nrof) {
  * @todo shouldn't tmp be NULL if object_was_destroyed returns true?
  */
 object *drop_object(object *op, object *tmp, uint32_t nrof) {
-    tag_t tmp_tag;
-
     if (QUERY_FLAG(tmp, FLAG_NO_DROP)) {
         return NULL;
     }
@@ -1136,10 +1134,9 @@ object *drop_object(object *op, object *tmp, uint32_t nrof) {
     }
 #endif /* SAVE_INTERVAL */
 
-
-    tmp_tag = tmp->count;
+    OBJECT_REF_CREATE(tmp);
     object_insert_in_map_at(tmp, op->map, op, INS_BELOW_ORIGINATOR, op->x, op->y);
-    if (!object_was_destroyed(tmp, tmp_tag) && !QUERY_FLAG(tmp, FLAG_UNPAID) && tmp->type != MONEY && shop_contains(op)) {
+    if (OBJECT_REF_VALID(tmp) && !QUERY_FLAG(tmp, FLAG_UNPAID) && tmp->type != MONEY && shop_contains(op)) {
         sell_item(tmp, op);
     }
 

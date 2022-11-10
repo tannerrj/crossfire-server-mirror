@@ -183,7 +183,7 @@ static int attempt_steal(object *op, object *who, object *skill) {
         if (chance == -1)
             return 0;
         if (roll < chance) {
-            tag_t inv_count = inv->count;
+            OBJECT_REF_CREATE(inv);
 
             pick_up(who, inv);
             /* need to see if the player actually stole this item -
@@ -191,7 +191,7 @@ static int attempt_steal(object *op, object *who, object *skill) {
              * abuses where the player can not carry the item, so just
              * keeps stealing it over and over.
              */
-            if (object_was_destroyed(inv, inv_count) || inv->env != op) {
+            if (!OBJECT_REF_VALID(inv) || inv->env != op) {
                 /* for players, play_sound: steals item */
                 success = inv;
                 CLEAR_FLAG(inv, FLAG_INV_LOCKED);
@@ -1991,7 +1991,6 @@ static int do_throw(object *op, object *part, object *toss_item, int dir, object
     float str_factor = 1.0, load_factor = 1.0, item_factor = 1.0;
     mapstruct *m;
     int16_t  sx, sy;
-    tag_t tag;
     char name[MAX_BUF];
 
     if (throw_ob == NULL) {
@@ -2009,9 +2008,9 @@ static int do_throw(object *op, object *part, object *toss_item, int dir, object
         return 0;
     }
 
-    tag = throw_ob->count;
+    OBJECT_REF_CREATE(throw_ob);
     events_execute_object_event(throw_ob, EVENT_THROW, op, NULL, NULL, SCRIPT_FIX_ACTIVATOR);
-    if (object_was_destroyed(throw_ob, tag)) {
+    if (!OBJECT_REF_VALID(throw_ob)) {
         return 1;
     }
 
@@ -2252,9 +2251,9 @@ static int do_throw(object *op, object *part, object *toss_item, int dir, object
     LOG(llevDebug, " %s stats: wc=%d dam=%d dist=%d spd=%f break=%d\n", throw_ob->name, throw_ob->stats.wc, throw_ob->stats.dam, throw_ob->last_sp, throw_ob->speed, throw_ob->stats.food);
     LOG(llevDebug, "inserting tossitem (%d) into map\n", throw_ob->count);
 #endif
-    tag = throw_ob->count;
+    OBJECT_NREF_CREATE(to, throw_ob);
     object_insert_in_map_at(throw_ob, part->map, op, 0, part->x, part->y);
-    if (!object_was_destroyed(throw_ob, tag))
+    if (OBJECT_NREF_VALID(to))
         ob_process(throw_ob);
     return 1;
 }

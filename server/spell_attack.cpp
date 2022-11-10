@@ -119,7 +119,6 @@ int fire_bolt(object *op, object *caster, int dir, object *spob) {
  * the object to explode.
  */
 void explode_bullet(object *op) {
-    tag_t op_tag = op->count;
     object *tmp, *owner;
 
     if (op->other_arch == NULL) {
@@ -148,9 +147,10 @@ void explode_bullet(object *op) {
         return;
     }
 
+    OBJECT_REF_CREATE(op);
     if (op->attacktype) {
         hit_map(op, 0, op->attacktype, 1);
-        if (object_was_destroyed(op, op_tag))
+        if (!OBJECT_REF_VALID(op))
             return;
     }
 
@@ -201,7 +201,7 @@ void explode_bullet(object *op) {
 
     object_insert_in_map_at(tmp, op->map, op, 0, op->x, op->y);
     /* remove the firebullet */
-    if (!object_was_destroyed(op, op_tag)) {
+    if (OBJECT_REF_VALID(op)) {
         object_remove(op);
         object_free_drop_inventory(op);
     }
@@ -215,7 +215,6 @@ void explode_bullet(object *op) {
  * object to check.
  */
 void check_bullet(object *op) {
-    tag_t op_tag = op->count, tmp_tag;
     int dam, mflags;
     mapstruct *m;
     int16_t sx, sy;
@@ -235,12 +234,14 @@ void check_bullet(object *op) {
     if (!(mflags&P_IS_ALIVE))
         return;
 
+    OBJECT_REF_CREATE(op);
+
     FOR_MAP_PREPARE(op->map, op->x, op->y, tmp) {
         if (QUERY_FLAG(tmp, FLAG_ALIVE)) {
-            tmp_tag = tmp->count;
+            OBJECT_REF_CREATE(tmp);
             dam = hit_player(tmp, op->stats.dam, op, op->attacktype, 1);
-            if (object_was_destroyed(op, op_tag) || !object_was_destroyed(tmp, tmp_tag) || (op->stats.dam -= dam) < 0) {
-                if (!QUERY_FLAG(op, FLAG_REMOVED)) {
+            if (!OBJECT_REF_VALID(op) || OBJECT_REF_VALID(tmp) || (op->stats.dam -= dam) < 0) {
+                if (OBJECT_REF_VALID(op)) {
                     object_remove(op);
                     object_free_drop_inventory(op);
                     return;

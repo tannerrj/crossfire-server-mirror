@@ -354,7 +354,6 @@ int hit_map(object *op, int dir, uint32_t type, int full_hit) {
     mapstruct *map;
     int16_t x, y;
     int retflag = 0;  /* added this flag..  will return 1 if it hits a monster */
-    tag_t op_tag;
 
     if (QUERY_FLAG(op, FLAG_FREED)) {
         LOG(llevError, "BUG: hit_map(): free object\n");
@@ -372,7 +371,6 @@ int hit_map(object *op, int dir, uint32_t type, int full_hit) {
     }
 
     op = HEAD(op);
-    op_tag = op->count;
 
     map = op->map;
     x = op->x+freearr_x[dir];
@@ -402,6 +400,8 @@ int hit_map(object *op, int dir, uint32_t type, int full_hit) {
         type &= ~AT_CHAOS;
     }
 
+    OBJECT_REF_CREATE(op);
+
     FOR_MAP_PREPARE(map, x, y, tmp) {
         if (QUERY_FLAG(tmp, FLAG_FREED)) {
             LOG(llevError, "BUG: hit_map(): found freed object\n");
@@ -428,7 +428,7 @@ int hit_map(object *op, int dir, uint32_t type, int full_hit) {
         if (QUERY_FLAG(tmp, FLAG_ALIVE)) {
             hit_player(tmp, op->stats.dam, op, type, full_hit);
             retflag |= 1;
-            if (object_was_destroyed(op, op_tag))
+            if (!OBJECT_REF_VALID(op))
                 break;
         }
         /* Here we are potentially destroying an object.  If the object has
@@ -440,7 +440,7 @@ int hit_map(object *op, int dir, uint32_t type, int full_hit) {
          */
         else if ((tmp->material || tmp->materialname) && op->stats.dam > 0 && !tmp->move_block) {
             save_throw_object(tmp, type, op);
-            if (object_was_destroyed(op, op_tag))
+            if (!OBJECT_REF_VALID(op))
                 break;
         }
     } FOR_MAP_FINISH();
@@ -753,7 +753,6 @@ static void thrown_item_effect(object *, object *);
 static int attack_ob_simple(object *op, object *hitter, int base_dam, int base_wc) {
     int simple_attack, roll, dam;
     uint32_t type;
-    tag_t op_tag, hitter_tag;
     const char *anim_suffix = NULL;
 
     if (get_attack_mode(&op, &hitter, &simple_attack))
@@ -780,8 +779,8 @@ static int attack_ob_simple(object *op, object *hitter, int base_dam, int base_w
     apply_anim_suffix(hitter, anim_suffix);
 
 
-    op_tag = op->count;
-    hitter_tag = hitter->count;
+    OBJECT_REF_CREATE(op);
+    OBJECT_REF_CREATE(hitter);
     /*
      * A little check to make it more difficult to dance forward and back
      * to avoid ever being hit by monsters.
@@ -795,8 +794,8 @@ static int attack_ob_simple(object *op, object *hitter, int base_dam, int base_w
          */
         op->speed_left--;
         process_object(op);
-        if (object_was_destroyed(op, op_tag)
-        || object_was_destroyed(hitter, hitter_tag)
+        if (!OBJECT_REF_VALID(op)
+        || !OBJECT_REF_VALID(hitter)
         || abort_attack(op, hitter, simple_attack))
             return 1;
     }
@@ -854,8 +853,8 @@ static int attack_ob_simple(object *op, object *hitter, int base_dam, int base_w
              * wrapper object.
              */
             thrown_item_effect(hitter, op);
-            if (object_was_destroyed(hitter, hitter_tag)
-                || object_was_destroyed(op, op_tag)
+            if (!OBJECT_REF_VALID(hitter)
+                || !OBJECT_REF_VALID(op)
                 || abort_attack(op, hitter, simple_attack)) {
                 return 0;
             }
@@ -877,8 +876,8 @@ static int attack_ob_simple(object *op, object *hitter, int base_dam, int base_w
                 draw_ext_info(NDI_UNIQUE, 0, hitter, MSG_TYPE_VICTIM, MSG_TYPE_VICTIM_WAS_HIT,
                               "You are splashed by acid!\n");
             hit_player(hitter, random_roll(0, (op->stats.dam), hitter, PREFER_LOW), op, op->attacktype, 1);
-            if (object_was_destroyed(op, op_tag)
-            || object_was_destroyed(hitter, hitter_tag)
+            if (!OBJECT_REF_VALID(op)
+            || !OBJECT_REF_VALID(hitter)
             || abort_attack(op, hitter, simple_attack)) {
                 return 0;
             }
@@ -888,8 +887,8 @@ static int attack_ob_simple(object *op, object *hitter, int base_dam, int base_w
          * types in its area, so remove it from here.
          */
         dam = hit_player(op, random_roll(1, base_dam, hitter, PREFER_HIGH), hitter, type, 1);
-        if (object_was_destroyed(op, op_tag)
-        || object_was_destroyed(hitter, hitter_tag)
+        if (!OBJECT_REF_VALID(op)
+        || !OBJECT_REF_VALID(hitter)
         || abort_attack(op, hitter, simple_attack)) {
             return 0;
         }
@@ -965,10 +964,10 @@ static int stick_arrow(object *op, object *tmp) {
 object *hit_with_arrow(object *op, object *victim) {
     object *container, *hitter;
     int hit_something = 0;
-    tag_t victim_tag, hitter_tag, container_tag;
     int16_t victim_x, victim_y;
     mapstruct *victim_map;
     const char *old_skill = NULL;
+    object_ref rc;
 
     /* Disassemble missile */
     hitter = op->inv;
@@ -994,15 +993,15 @@ object *hit_with_arrow(object *op, object *victim) {
          * might be called until this THROWN_OBJ is either reassembled or
          * removed at the end of this function must be able to deal with empty
          * THROWN_OBJs. */
-        container_tag = container->count;
+        rc = *container->self;
     }
 
     /* Try to hit victim */
     victim_x = victim->x;
     victim_y = victim->y;
     victim_map = victim->map;
-    victim_tag = victim->count;
-    hitter_tag = hitter->count;
+    OBJECT_REF_CREATE(victim);
+    OBJECT_REF_CREATE(hitter);
     /* FIXME provide also to script the skill? hitter is the throwed
        items, but there is no information about the fact it was
        thrown
@@ -1026,7 +1025,7 @@ object *hit_with_arrow(object *op, object *victim) {
      * but is no longer on the map. Ugh. (Beware: Such things can happen at
      * other places as well!)
      */
-    if (object_was_destroyed(hitter, hitter_tag) || hitter->env != NULL) {
+    if (!OBJECT_REF_VALID(hitter) || hitter->env != NULL) {
         if (container) {
             object_remove(container);
             object_free_drop_inventory(container);
@@ -1048,14 +1047,14 @@ object *hit_with_arrow(object *op, object *victim) {
             if (hitter == NULL)
                 return NULL;
         } else {
-            if(!object_was_destroyed(container, container_tag)) {
+            if (rc.lock()) {
                 object_remove(container);
                 object_free_drop_inventory(container);
             }
         }
 
         /* Try to stick arrow into victim */
-        if (!object_was_destroyed(victim, victim_tag)
+        if (OBJECT_REF_VALID(victim)
                 && stick_arrow(hitter, victim)) {
             object_set_owner(hitter, NULL);
             return NULL;
@@ -1866,7 +1865,6 @@ int hit_player(object *op, int dam, object *hitter, uint32_t type, int full_hit)
     int maxattacktype, attacknum;
     int body_attack = op->head != NULL;   /* Did we hit op's head? */
     int simple_attack;
-    tag_t op_tag, hitter_tag;
     int rtn_kill = 0;
     int friendlyfire;
     object *owner;
@@ -1885,8 +1883,8 @@ int hit_player(object *op, int dam, object *hitter, uint32_t type, int full_hit)
     if (QUERY_FLAG(op, FLAG_WIZ) || QUERY_FLAG(op, FLAG_NO_DAMAGE))
         return 0;
 
-    op_tag = op->count;
-    hitter_tag = hitter->count;
+    OBJECT_REF_CREATE(op);
+    OBJECT_REF_CREATE(hitter);
 
     if (body_attack) {
         /* slow and paralyze must hit the head.  But we don't want to just
@@ -1911,8 +1909,8 @@ int hit_player(object *op, int dam, object *hitter, uint32_t type, int full_hit)
         tmp = object_find_by_type2(op, RUNE, TRAP);
         if (tmp != NULL) {
             spring_trap(tmp, hitter);
-            if (object_was_destroyed(hitter, hitter_tag)
-            || object_was_destroyed(op, op_tag)
+            if (!OBJECT_REF_VALID(hitter)
+            || !OBJECT_REF_VALID(op)
             || abort_attack(op, hitter, simple_attack))
                 return 0;
         }

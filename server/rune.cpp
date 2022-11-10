@@ -174,9 +174,9 @@ int write_rune(object *op, object *caster, object *spell, int dir, const char *r
  */
 static void rune_attack(object *op, object *victim) {
     if (victim) {
-        tag_t tag = victim->count;
+        OBJECT_REF_CREATE(victim);
         hit_player(victim, op->stats.dam, op, op->attacktype, 1);
-        if (object_was_destroyed(victim, tag))
+        if (!OBJECT_REF_VALID(victim))
             return;
         /*  if there's a disease in the needle, put it in the player */
         if (HAS_RANDOM_ITEMS(op))
@@ -204,13 +204,14 @@ static void rune_attack(object *op, object *victim) {
  */
 void spring_trap(object *trap, object *victim) {
     object *env;
-    tag_t trap_tag = trap->count;
     rv_vector rv;
     int i, has_spell;
 
     /* Prevent recursion */
     if (trap->stats.hp <= 0)
         return;
+
+    OBJECT_REF_CREATE(trap);
 
     if (QUERY_FLAG(trap, FLAG_IS_LINKED))
         use_trigger(trap);
@@ -253,7 +254,7 @@ void spring_trap(object *trap, object *victim) {
         object_remove(trap);
         object_insert_in_map_at(trap, victim->map, trap, 0, victim->x, victim->y);
 
-        if (object_was_destroyed(trap, trap_tag))
+        if (!OBJECT_REF_VALID(trap))
             return;
 
         for (i = 0; i < MAX(1, trap->stats.maxhp); i++) {
@@ -267,7 +268,7 @@ void spring_trap(object *trap, object *victim) {
         }
     } else {
         rune_attack(trap, victim);
-        if (object_was_destroyed(trap, trap_tag))
+        if (!OBJECT_REF_VALID(trap))
             return;
     }
 

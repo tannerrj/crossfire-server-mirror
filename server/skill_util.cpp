@@ -1207,9 +1207,10 @@ static void do_skill_attack(object *tmp, object *op, const char *string, object 
         object_update(op, UP_OBJ_FACE);
     }
 
+    OBJECT_REF_CREATE(tmp);
     success = attack_ob(tmp, op);
 
-    if (tmp && !QUERY_FLAG(tmp, FLAG_FREED)) {
+    if (OBJECT_REF_VALID(tmp) && !QUERY_FLAG(tmp, FLAG_FREED)) {
         char op_name[MAX_BUF];
         if (!success) { // In case of miss, attack_ob didn't print anything
             query_name(tmp, op_name, MAX_BUF);

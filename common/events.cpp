@@ -255,9 +255,9 @@ static int do_execute_event(object *op, int eventcode, object *activator, object
                     int rvt = 0;
                     int rv;
 
-                    tag_t oldtag = op->count;
+                    OBJECT_REF_CREATE(op);
                     rv = (*(*handler).second)(&rvt, op, activator, third, message, fix, tmp, talk);
-                    if (object_was_destroyed(op, oldtag)) {
+                    if (!OBJECT_REF_VALID(op)) {
                         return rv;
                     }
                     if (QUERY_FLAG(tmp, FLAG_UNIQUE)) {

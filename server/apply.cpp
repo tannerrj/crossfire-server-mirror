@@ -317,8 +317,6 @@ int apply_container(object *op, object *sack, int aflags) {
     if (op->container && QUERY_FLAG(op->container, FLAG_APPLIED) &&
         (QUERY_FLAG(sack, FLAG_APPLIED) || sack->env != op) )
     {
-        tag_t tmp_tag = op->container->count;
-
         if (op->container->env != op) { /* if container is on the ground */
             object *part = op->container->head ? op->container->head : op->container;
             while (part) {
@@ -329,6 +327,7 @@ int apply_container(object *op, object *sack, int aflags) {
 
         /* Query name before the close event, as the container could be destroyed. */
         query_name(op->container, name_tmp, MAX_BUF);
+        OBJECT_NREF_CREATE(cr, op->container);
 
         if (events_execute_object_event(tmp, EVENT_CLOSE, op, NULL, NULL, SCRIPT_FIX_ALL) != 0)
             return 1;
@@ -343,7 +342,7 @@ int apply_container(object *op, object *sack, int aflags) {
             op->contr->socket->container_position = 0;
 
         /* The container may have been destroyed by the event handler. */
-        if (!object_was_destroyed(tmp, tmp_tag)) {
+        if (OBJECT_NREF_VALID(cr)) {
             CLEAR_FLAG(tmp, FLAG_APPLIED);
             if (set_object_face_main(tmp))
                 esrv_update_item(UPD_FLAGS|UPD_FACE, op, tmp);

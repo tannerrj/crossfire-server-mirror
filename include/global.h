@@ -39,6 +39,7 @@
 #include <vector>
 #include <stdarg.h>
 #include <algorithm>
+#include <memory>
 
 /** Used for printf-like functions, mostly LOG and draw_ext_info_format */
 #define PRINTF_ARGS(x, y) __attribute__ ((format (printf, x, y)))

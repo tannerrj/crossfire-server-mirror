@@ -57,19 +57,6 @@ struct key_value {
 /*@}*/
 
 /**
- * Checks if an object still exists.
- * @param op
- * object to check
- * @param old_tag
- * old tag of the object.
- * @return
- * true if the object was destroyed, 0 otherwise
- */
-#define object_was_destroyed(op, old_tag) \
-    (op->count != old_tag || QUERY_FLAG(op, FLAG_FREED))
-
-
-/**
  * Defines default size of the *spell_tags pointer.
  * The OB_SPELL_TAG_HASH is a simple mechanism to get/set the
  * spell tags based on a simple hash - it should change if the tag size
@@ -279,6 +266,7 @@ typedef uint32_t ob_flags[4];
  */
 struct object {
     /* These variables are not changed by object_copy() */
+    std::shared_ptr<object> *self;
     struct player   *contr;         /**< Pointer to the player which control this object */
     object  *next;          /**< Pointer to the next object in the free/used list */
     object  *prev;          /**< Pointer to the previous object in the free/used list*/
@@ -442,6 +430,18 @@ struct object {
     tag_t       *spell_tags;      /**< Tags used for spell effect merging. */
     uint64_t    event_bitmask;  /**< Bitmask of events this object has a handler for, see events.h */
 };
+
+typedef std::weak_ptr<object> object_ref;
+#define OBJECT_NREF_CREATE(x, o) object_ref x(*o->self)
+#define OBJECT_NREF_VALID(x) x.lock()
+#define OBJECT_REF_CREATE(o) OBJECT_NREF_CREATE(ref_##o, o)
+#define OBJECT_REF_VALID(o) OBJECT_NREF_VALID(ref_##o)
+
+typedef std::shared_ptr<object> object_saver;
+#define OBJECT_NSAVE(x, o) object_saver x(*o->self)
+#define OBJECT_NDESTROY(x) x.reset()
+#define OBJECT_SAVE(o) OBJECT_NSAVE(saver_##o, o)
+#define OBJECT_DESTROY(o) OBJECT_NDESTROY(saver_##o)
 
 /**
  * Used to link together several objects

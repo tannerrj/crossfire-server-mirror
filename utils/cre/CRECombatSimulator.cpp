@@ -69,8 +69,6 @@ void CRECombatSimulator::fight(const archetype* first, const archetype* second)
     int limit = myMaxRounds->value();
     object* obfirst = object_create_arch(const_cast<archetype *>(first));
     object* obsecond = object_create_arch(const_cast<archetype *>(second));
-    tag_t tagfirst = obfirst->count;
-    tag_t tagsecond = obsecond->count;
 
     // make a big map so large monsters are ok in map
     mapstruct* test_map = get_empty_map(50, 50);
@@ -78,6 +76,9 @@ void CRECombatSimulator::fight(const archetype* first, const archetype* second)
     // insert shifted for monsters like titans who have parts with negative values
     obfirst = object_insert_in_map_at(obfirst, test_map, NULL, 0, 12, 12);
     obsecond = object_insert_in_map_at(obsecond, test_map, NULL, 0, 37, 37);
+
+    OBJECT_REF_CREATE(obfirst);
+    OBJECT_REF_CREATE(obsecond);
 
     while (limit-- > 0 && obfirst->stats.hp >= 0 && obsecond->stats.hp >= 0)
     {
@@ -88,7 +89,7 @@ void CRECombatSimulator::fight(const archetype* first, const archetype* second)
                 myFirstMaxHp = obfirst->stats.hp;
 
             attack_ob(obsecond, obfirst);
-            if (object_was_destroyed(obsecond, tagsecond))
+            if (!OBJECT_REF_VALID(obsecond))
                 break;
             if (obsecond->stats.hp < mySecondMinHp && obsecond->stats.hp > 0)
                 mySecondMinHp = obsecond->stats.hp;
@@ -101,7 +102,7 @@ void CRECombatSimulator::fight(const archetype* first, const archetype* second)
                 mySecondMaxHp = obsecond->stats.hp;
 
             attack_ob(obfirst, obsecond);
-            if (object_was_destroyed(obfirst, tagfirst))
+            if (!OBJECT_REF_VALID(obfirst))
                 break;
             if (obfirst->stats.hp < myFirstMinHp && obfirst->stats.hp > 0)
                 myFirstMinHp = obfirst->stats.hp;
@@ -121,12 +122,12 @@ void CRECombatSimulator::fight(const archetype* first, const archetype* second)
             myFirstVictories++;
     }
 
-    if (!object_was_destroyed(obfirst, tagfirst))
+    if (OBJECT_REF_VALID(obfirst))
     {
         object_remove(obfirst);
         object_free(obfirst, 0);
     }
-    if (!object_was_destroyed(obsecond, tagsecond))
+    if (OBJECT_REF_VALID(obsecond))
     {
         object_remove(obsecond);
         object_free(obsecond, 0);

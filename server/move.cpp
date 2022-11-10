@@ -62,9 +62,8 @@ int move_ob(object *op, int dir, object *originator) {
     op->direction = dir;
 
     if (op->will_apply&(WILL_APPLY_EARTHWALL|WILL_APPLY_DOOR)) {
-        tag_t op_tag;
+        OBJECT_REF_CREATE(op);
 
-        op_tag = op->count;
         for (part = op; part != NULL; part = part->more) {
             int16_t x, y;
 
@@ -73,13 +72,13 @@ int move_ob(object *op, int dir, object *originator) {
 
             if (op->will_apply&WILL_APPLY_EARTHWALL) {
                 monster_check_earthwalls(op, m, x, y);
-                if (object_was_destroyed(op, op_tag))
+                if (!OBJECT_REF_VALID(op))
                     return 1;
             }
 
             if (op->will_apply&WILL_APPLY_DOOR) {
                 monster_check_doors(op, m, x, y);
-                if (object_was_destroyed(op, op_tag))
+                if (!OBJECT_REF_VALID(op))
                     return 1;
             }
         }

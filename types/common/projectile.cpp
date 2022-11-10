@@ -36,15 +36,14 @@
  */
 void stop_projectile(object *op) {
     object *event = op;
-    tag_t tag;
 
     if (op->inv)
         event = op->inv;
 
-    tag = event->count;
+    OBJECT_REF_CREATE(event);
     events_execute_object_event(event, EVENT_STOP, NULL, NULL, NULL, SCRIPT_FIX_NOTHING);
 
-    if (object_was_destroyed(event, tag)) {
+    if (!OBJECT_REF_VALID(event)) {
         if (event != op) {
             object_remove(op);
             object_free(op, FREE_OBJ_FREE_INVENTORY);

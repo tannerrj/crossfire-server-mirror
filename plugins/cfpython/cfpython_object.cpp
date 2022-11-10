@@ -30,8 +30,10 @@
 #include <cfpython.h>
 #include <map>
 
+/** @todo fix: should rely on weak_ptr, but is it ok between .so boundaries. */
+
 #define EXISTCHECK(ob) { \
-    if (!ob || !ob->obj || (object_was_destroyed(ob->obj, ob->obj->count))) { \
+    if (!ob || !ob->obj || (!ob->obj->self)) { \
         PyErr_SetString(PyExc_ReferenceError, "Crossfire object no longer exists"); \
         return NULL; \
     } }
@@ -42,13 +44,13 @@
  * will always be a compatible type.
  */
 #define TYPEEXISTCHECK(ob) { \
-    if (!ob || !PyObject_TypeCheck((PyObject*)ob, &Crossfire_ObjectType) || !ob->obj || (object_was_destroyed(ob->obj, ob->obj->count))) { \
+    if (!ob || !PyObject_TypeCheck((PyObject*)ob, &Crossfire_ObjectType) || !ob->obj || (!ob->obj->self)) { \
         PyErr_SetString(PyExc_ReferenceError, "Not a Crossfire object or Crossfire object no longer exists"); \
         return NULL; \
     } }
 
 #define EXISTCHECK_INT(ob) { \
-    if (!ob || !ob->obj || (object_was_destroyed(ob->obj, ob->obj->count))) { \
+    if (!ob || !ob->obj || (!ob->obj->self)) { \
         PyErr_SetString(PyExc_ReferenceError, "Crossfire object no longer exists"); \
         return -1; \
     } }
@@ -407,7 +409,7 @@ static PyObject *Object_GetOtherArchetype(Crossfire_Object *whoptr, void *closur
 
 static PyObject *Object_GetExists(Crossfire_Object *whoptr, void *closure) {
     (void)closure;
-    if (!object_was_destroyed(whoptr->obj, whoptr->obj->count)) {
+    if (whoptr->obj && whoptr->obj->self) {
         Py_INCREF(Py_True);
         return Py_True;
     } else {
@@ -1615,7 +1617,7 @@ PyObject *Crossfire_Object_wrap(object *what) {
     }
 
     pyobj = find_assoc_pyobject(what);
-    if ((!pyobj) || (object_was_destroyed(((Crossfire_Object *)pyobj)->obj, ((Crossfire_Object *)pyobj)->count))) {
+    if ((!pyobj) || (!((Crossfire_Object *)pyobj)->obj->self)) {
         if (what->type == PLAYER) {
             plwrap = PyObject_NEW(Crossfire_Player, &Crossfire_PlayerType);
             if (plwrap != NULL) {

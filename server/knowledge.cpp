@@ -356,7 +356,6 @@ static void knowledge_alchemy_attempt(player *pl, const knowledge_item *item) {
     char name[MAX_BUF];
     const char *ingname;
     linked_char *ing;
-    tag_t cauldron_tag;
     mapstruct *map;
 
     if (!rp) {
@@ -380,8 +379,6 @@ static void knowledge_alchemy_attempt(player *pl, const knowledge_item *item) {
         draw_ext_info_format(NDI_UNIQUE, 0, pl->ob, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_INFO, "You are not on a %s", rp->cauldron);
         return;
     }
-
-    cauldron_tag = cauldron->count;
 
     /* find ingredients in player's inventory */
     for (index = 0; index < 50; index++) {
@@ -459,10 +456,9 @@ static void knowledge_alchemy_attempt(player *pl, const knowledge_item *item) {
 
     /* drop ingredients */
     for (index = 0; index < rp->ingred_count; index++) {
-        tag_t tag = ingredients[index]->count;
-        count = ingredients[index]->nrof;
+        OBJECT_NREF_CREATE(ing, ingredients[index]);
         put_object_in_sack(pl->ob, cauldron, ingredients[index], counts[index]);
-        if (object_was_destroyed(ingredients[index], tag)) {
+        if (!OBJECT_NREF_VALID(ing)) {
             draw_ext_info(NDI_UNIQUE, 0, pl->ob, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_INFO, "Hum, some item disappeared, stopping the attempt.");
             return;
 
@@ -477,6 +473,8 @@ static void knowledge_alchemy_attempt(player *pl, const knowledge_item *item) {
     x = pl->ob->x;
     y = pl->ob->y;
 
+    OBJECT_REF_CREATE(cauldron);
+
     /* do alchemy */
     use_alchemy(pl->ob);
 
@@ -485,7 +483,7 @@ static void knowledge_alchemy_attempt(player *pl, const knowledge_item *item) {
     pl->ob->speed_left -= 1.0 * (rp->ingred_count + 1);
 
     /* safety: ensure cauldron is still there, and player is still above */
-    if (object_was_destroyed(cauldron, cauldron_tag) || map != pl->ob->map || x != pl->ob->x || y != pl->ob->y) {
+    if (!OBJECT_REF_VALID(cauldron) || map != pl->ob->map || x != pl->ob->x || y != pl->ob->y) {
         return;
     }
 

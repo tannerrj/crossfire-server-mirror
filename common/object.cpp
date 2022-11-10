@@ -1220,49 +1220,8 @@ void object_copy_with_inv(const object *src_ob, object *dest_ob, bool update_spe
     } FOR_INV_FINISH();
 }
 
-#ifndef MEMORY_DEBUG
 /**
- * Allocates more objects for the list of unused objects.
- *
- * It is called from object_new() if the unused list is empty.
- *
- * If there is not enough memory, fatal() is called.
- */
-static void expand_objects(void) {
-    int i;
-    object *add;
-
-    add = (object *)CALLOC(OBJ_EXPAND, sizeof(object));
-
-    if (add == NULL)
-        fatal(OUT_OF_MEMORY);
-    free_objects = add;
-    add[0].prev = NULL;
-    add[0].next = &add[1],
-    SET_FLAG(&add[0], FLAG_REMOVED);
-    SET_FLAG(&add[0], FLAG_FREED);
-
-    for (i = 1; i < OBJ_EXPAND-1; i++) {
-        add[i].next = &add[i+1],
-        add[i].prev = &add[i-1],
-        SET_FLAG(&add[i], FLAG_REMOVED);
-        SET_FLAG(&add[i], FLAG_FREED);
-    }
-    add[OBJ_EXPAND-1].prev = &add[OBJ_EXPAND-2],
-    add[OBJ_EXPAND-1].next = NULL,
-    SET_FLAG(&add[OBJ_EXPAND-1], FLAG_REMOVED);
-    SET_FLAG(&add[OBJ_EXPAND-1], FLAG_FREED);
-
-    nrofallocobjects += OBJ_EXPAND;
-    nroffreeobjects += OBJ_EXPAND;
-}
-#endif
-
-/**
- * Grabs an object from the list of unused objects, makes
- * sure it is initialised, and returns it.
- *
- * If there are no free objects, expand_objects() is called to get more.
+ * Create a new cleared object.
  *
  * @return
  * cleared and ready to use object*.
@@ -1272,32 +1231,11 @@ static void expand_objects(void) {
  */
 object *object_new(void) {
     object *op;
-#ifdef MEMORY_DEBUG
-    /* FIXME: However this doesn't work since object_free() sometimes add
-     * objects back to the free_objects linked list, and some functions mess
-     * with the object after return of object_free(). This is bad and should be
-     * fixed. But it would need fairly extensive changes and a lot of debugging.
-     */
     op = static_cast<object *>(calloc(1, sizeof(object)));
     if (op == NULL)
         fatal(OUT_OF_MEMORY);
-#else
-    if (free_objects == NULL) {
-        expand_objects();
-    }
-    op = free_objects;
-    if (!QUERY_FLAG(op, FLAG_FREED)) {
-        LOG(llevError, "Fatal: Getting busy object.\n");
-#ifdef MANY_CORES
-        abort();
-#endif
-    }
-    free_objects = op->next;
-    if (free_objects != NULL)
-        free_objects->prev = NULL;
-    nroffreeobjects--;
-#endif
     op->count = ++ob_count;
+    op->self = new std::shared_ptr<object>(op, free);
     op->name = NULL;
     op->name_pl = NULL;
     op->title = NULL;
@@ -1729,17 +1667,9 @@ void object_free(object *ob, int flags) {
         }
     }
 
-#ifdef MEMORY_DEBUG
-    free(ob);
-#else
-    /* Now link it with the free_objects list: */
-    ob->prev = NULL;
-    ob->next = free_objects;
-    if (free_objects != NULL)
-        free_objects->prev = ob;
-    free_objects = ob;
-    nroffreeobjects++;
-#endif
+    std::shared_ptr<object> tmp(*(ob->self));
+    delete ob->self;
+    ob->self = nullptr;
 }
 
 /**
@@ -1833,7 +1763,6 @@ void object_sub_weight(object *op, signed long weight) {
 void object_remove(object *op) {
     object *last = NULL;
     object *otmp;
-    tag_t tag;
     int check_walk_off;
     mapstruct *m;
     int16_t x, y;
@@ -1985,7 +1914,8 @@ void object_remove(object *op) {
     if (op->map->in_memory == MAP_SAVING)
         return;
 
-    tag = op->count;
+    OBJECT_REF_CREATE(op);
+
     check_walk_off = !QUERY_FLAG(op, FLAG_NO_APPLY);
     FOR_MAP_PREPARE(m, x, y, tmp) {
         /* No point updating the players look faces if he is the object
@@ -2007,7 +1937,7 @@ void object_remove(object *op) {
         if (check_walk_off
         && ((op->move_type&tmp->move_off) && (op->move_type&~tmp->move_off&~tmp->move_block) == 0)) {
             ob_move_on(tmp, op, NULL);
-            if (object_was_destroyed(op, tag)) {
+            if (!OBJECT_REF_VALID(op)) {
                 LOG(llevError, "BUG: object_remove(): name %s, archname %s destroyed leaving object\n", tmp->name, tmp->arch->name);
             }
         }
@@ -3004,15 +2934,12 @@ object *object_insert_in_ob(object *op, object *where) {
  */
 int object_check_move_on(object *op, object *originator) {
     object *tmp;
-    tag_t tag;
     mapstruct *m = op->map;
     int x = op->x, y = op->y;
     MoveType move_on, move_slow, move_block;
 
     if (QUERY_FLAG(op, FLAG_NO_APPLY))
         return 0;
-
-    tag = op->count;
 
     move_on = GET_MAP_MOVE_ON(op->map, op->x, op->y);
     move_slow = GET_MAP_MOVE_SLOW(op->map, op->x, op->y);
@@ -3052,6 +2979,7 @@ int object_check_move_on(object *op, object *originator) {
         if ((tmp->move_type&MOVE_FLY_LOW) && QUERY_FLAG(tmp, FLAG_NO_PICK))
             break;
     } FOR_OB_AND_ABOVE_FINISH();
+    OBJECT_REF_CREATE(op);
     FOR_OB_AND_BELOW_PREPARE(tmp) {
         if (tmp == op)
             continue;    /* Can't apply yourself */
@@ -3082,7 +3010,7 @@ int object_check_move_on(object *op, object *originator) {
         if ((!op->move_type && tmp->move_on&MOVE_WALK)
         || ((op->move_type&tmp->move_on) && (op->move_type&~tmp->move_on&~tmp->move_block) == 0)) {
             ob_move_on(tmp, op, originator);
-            if (object_was_destroyed(op, tag))
+            if (!OBJECT_REF_VALID(op))
                 return 1;
 
             /* what the person/creature stepped onto has moved the object

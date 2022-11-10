@@ -770,14 +770,22 @@ void cf_srandom(unsigned long seed);
  */
 #define FOR_OB_PREPARE2(op_, field_, suffix_)                     \
     do {                                                        \
-        object *next##suffix_ = (op_);                        \
-        tag_t next_tag##suffix_ = next##suffix_ == NULL ? 0 : next##suffix_->count;\
-        while (((op_) = next##suffix_) != NULL) {              \
-            if (object_was_destroyed(next##suffix_, next_tag##suffix_)) {\
-                break;                                          \
-            }                                                   \
-            next##suffix_ = next##suffix_->field_;                               \
-            next_tag##suffix_ = next##suffix_ == NULL ? 0 : next##suffix_->count;
+        object_ref ref_##suffix_(op_ ? *op_->self : object_saver()); \
+        object_saver s_##suffix_; \
+        bool last_##suffix_ = false; \
+        while (last_##suffix_ || ((s_##suffix_) = ref_##suffix_.lock())) {              \
+            if (last_##suffix_) { \
+              op_ = nullptr; \
+              break; \
+            } \
+            op_ = s_##suffix_.get(); \
+            if (!op_) break; \
+            if (op_->field_) {\
+                ref_##suffix_ = *op_->field_->self; \
+            } else { \
+                last_##suffix_ = true; \
+                ref_##suffix_ = object_ref(); \
+            }
 /**
  * Finishes #FOR_OB_PREPARE().
  */

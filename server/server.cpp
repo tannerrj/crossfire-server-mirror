@@ -1083,7 +1083,6 @@ static bool object_in_icecube(object *op) {
 void process_events(void) {
     object *op;
     object marker;
-    tag_t tag;
 
     process_players1();
 
@@ -1098,7 +1097,6 @@ void process_events(void) {
 
     while (marker.active_next) {
         op = marker.active_next;
-        tag = op->count;
 
         /* Move marker forward - swap op and marker */
         op->active_prev = marker.active_prev;
@@ -1204,8 +1202,9 @@ void process_events(void) {
                     op->speed_left -= 1;
                 }
             }
+            OBJECT_REF_CREATE(op);
             process_object(op);
-            if (object_was_destroyed(op, tag))
+            if (!OBJECT_REF_VALID(op))
                 continue;
         } else {
             // Custom-made creatures for random maps can still have negative speeds, so catch that with FABS().

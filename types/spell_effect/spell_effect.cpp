@@ -77,10 +77,10 @@ static method_ret spell_effect_type_move_on(object *trap, object *victim, object
 
     case SP_MAGIC_MISSILE:
         if (QUERY_FLAG(victim, FLAG_ALIVE)) {
-            tag_t spell_tag = trap->count;
+            OBJECT_REF_CREATE(trap);
 
             hit_player(victim, trap->stats.dam, trap, trap->attacktype, 1);
-            if (!object_was_destroyed(trap, spell_tag)) {
+            if (OBJECT_REF_VALID(trap)) {
                 object_remove(trap);
                 object_free_drop_inventory(trap);
             }
@@ -385,7 +385,6 @@ static void explosion(object *op) {
  */
 static void move_cone(object *op) {
     int i;
-    tag_t tag;
 
     /* if no map then hit_map will crash so just ignore object */
     if (!op->map) {
@@ -401,8 +400,9 @@ static void move_cone(object *op) {
         return;
     }
 
-    tag = op->count;
     hit_map(op, 0, op->attacktype, 0);
+
+    OBJECT_REF_CREATE(op);
 
     /* Check to see if we should push anything.
      * Spell objects with weight push whatever they encounter to some
@@ -410,7 +410,7 @@ static void move_cone(object *op) {
      */
     check_spell_knockback(op);
 
-    if (object_was_destroyed(op, tag))
+    if (!OBJECT_REF_VALID(op))
         return;
 
     if ((op->duration--) < 0) {
@@ -525,13 +525,13 @@ static void move_missile(object *op) {
 
     if (!(mflags&P_OUT_OF_MAP)
     && ((mflags&P_IS_ALIVE) || OB_TYPE_MOVE_BLOCK(op, GET_MAP_MOVE_BLOCK(m, new_x, new_y)))) {
-        tag_t tag = op->count;
+        OBJECT_REF_CREATE(op);
 
         hit_map(op, op->direction, AT_MAGIC, 1);
         /* Basically, missile only hits one thing then goes away.
          * we need to remove it if someone hasn't already done so.
          */
-        if (!object_was_destroyed(op, tag)) {
+        if (OBJECT_REF_VALID(op)) {
             object_remove(op);
             object_free_drop_inventory(op);
         }

@@ -316,7 +316,6 @@ void pets_follow_owner(object *ob, object *owner) {
  */
 void pets_move(object *ob) {
     int dir, i;
-    tag_t tag;
     int16_t dx, dy;
     object *owner;
     mapstruct *m;
@@ -358,7 +357,7 @@ void pets_move(object *ob) {
     }
     ob->direction = dir;
 
-    tag = ob->count;
+    OBJECT_REF_CREATE(ob);
     /* move_ob returns 0 if the object couldn't move.  If that is the
      * case, lets do some other work.
      */
@@ -366,7 +365,7 @@ void pets_move(object *ob) {
         object *part;
 
         /* the failed move_ob above may destroy the pet, so check here */
-        if (object_was_destroyed(ob, tag))
+        if (!OBJECT_REF_VALID(ob))
             return;
 
         for (part = ob; part != NULL; part = part->more) {
@@ -519,7 +518,6 @@ static object *fix_summon_pet(archetype *at, object *op, int dir) {
 void pets_move_golem(object *op) {
     int made_attack = 0;
     object *tmp;
-    tag_t tag;
     object *owner;
 
     if (QUERY_FLAG(op, FLAG_MONSTER))
@@ -554,10 +552,10 @@ void pets_move_golem(object *op) {
      * move_ob (makes recursive calls to other parts)
      * move_ob returns 0 if the creature was not able to move.
      */
-    tag = op->count;
+    OBJECT_REF_CREATE(op);
     if (move_ob(op, op->direction, op))
         return;
-    if (object_was_destroyed(op, tag))
+    if (!OBJECT_REF_VALID(op))
         return;
 
     for (tmp = op; tmp; tmp = tmp->more) {

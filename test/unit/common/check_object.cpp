@@ -441,6 +441,8 @@ START_TEST(test_object_new) {
     fail_unless(ob->prev == NULL, "Field prev has not been nullified by object_new()");
     fail_unless(ob->active_next == NULL, "Field active_next has not been nullified by object_new()");
     fail_unless(ob->active_prev == NULL, "Field active_prev has not been nullified by object_new()");
+    fail_unless(ob->self, "Missing self");
+    fail_unless(ob->self->use_count() == 1, "Wrong use_count!");
     /* did you really thing i'll go with only one object? */
     /* let's go for about 2M allocations in a row, let's test roughness */
     for (i = 0; i < 1L<<17; i++) {
@@ -449,6 +451,30 @@ START_TEST(test_object_new) {
         if (!(i&((1<<13)-1)))
             LOG(llevDebug, "%ldk items created with object_new\n", i>>10);
     }
+}
+END_TEST
+
+START_TEST(test_object_weak_ref) {
+    object *ob = object_new();
+
+    OBJECT_REF_CREATE(ob);
+    fail_unless(OBJECT_REF_VALID(ob), "weak reference must be valid");
+    fail_unless(ob->self->use_count() == 1, "use_count should have been decreased");
+    object_free(ob, FREE_OBJ_NO_DESTROY_CALLBACK);
+    fail_unless(!OBJECT_REF_VALID(ob), "weak reference still valid?");
+}
+END_TEST
+
+START_TEST(test_object_strong_ref) {
+    object *ob = object_new();
+    OBJECT_REF_CREATE(ob);
+    OBJECT_SAVE(ob);
+    fail_unless(saver_ob.use_count() == 2, "wrong use_count");
+    object_free(ob, FREE_OBJ_NO_DESTROY_CALLBACK);
+    fail_unless(saver_ob.use_count() == 1, "wrong use_count");
+    fail_unless(OBJECT_REF_VALID(ob), "weak reference must be valid");
+    OBJECT_DESTROY(ob);
+    fail_unless(!OBJECT_REF_VALID(ob), "weak reference must be invalid after destroying all strong refs");
 }
 END_TEST
 
@@ -550,31 +576,12 @@ START_TEST(test_object_free_drop_inventory) {
 
     ob1 = cctk_create_game_object(NULL);
     ob2 = cctk_create_game_object(NULL);
+    OBJECT_SAVE(ob1);   // So memory isn't freed
+    OBJECT_SAVE(ob2);
     object_insert_in_ob(ob2, ob1);
     object_free_drop_inventory(ob1);
     fail_unless(QUERY_FLAG(ob1, FLAG_FREED), "Freeing ob1 should mark it freed");
     fail_unless(QUERY_FLAG(ob2, FLAG_FREED), "Freeing ob1 should mark it's content freed");
-}
-END_TEST
-
-/** This is the test to check the behaviour of the method
- *  int object_count_free(void);
- */
-START_TEST(test_object_count_free) {
-    int free1, free2;
-
-    cctk_create_game_object(NULL);
-    free1 = object_count_free();
-    cctk_create_game_object(NULL);
-    free2 = object_count_free();
-    /* Behaviour under MEMORY_DEBUG is to allocate each object separately so
-     * both will be 0. Allow test suite to pass with this option.
-     */
-#ifdef MEMORY_DEBUG
-    fail_unless(((free2 == 0) && (free1 == 0)), "after creating an object, the object_count_free() should return 0 (compiled with MEMORY_DEBUG)", free1-1, free2);
-#else
-    fail_unless((free2 == free1-1), "after creating an object, the object_count_free() should return one less (%d) but returned %d", free1-1, free2);
-#endif
 }
 END_TEST
 
@@ -777,10 +784,12 @@ START_TEST(test_object_insert_in_map) {
     third->x = 3;
     third->y = 3;
 
+    OBJECT_SAVE(second);
     got = object_insert_in_map(third, map, NULL, 0);
     fail_unless(got == third, "gem shouldn't disappear");
     fail_unless(QUERY_FLAG(second, FLAG_FREED), "first gem should have been removed.");
     fail_unless(third->nrof == 2, "second gem should have nrof 2");
+    OBJECT_DESTROY(second);
 
     second = cctk_create_game_object("gem");
     fail_unless(second != NULL, "create gem failed");
@@ -826,7 +835,6 @@ END_TEST
 START_TEST(test_object_replace_insert_in_map) {
     mapstruct *map;
     object *first = NULL, *second = NULL, *third = NULL;
-    tag_t tag_first, tag_second, tag_third;
     object *got = NULL;
 
     map = get_empty_map(5, 5);
@@ -835,7 +843,6 @@ START_TEST(test_object_replace_insert_in_map) {
     /* Single tile object */
     first = cctk_create_game_object("barrel");
     fail_unless(first != NULL, "create barrel failed");
-    tag_first = first->count;
 
     got = object_insert_in_map_at(first, map, NULL, 0, 0, 0);
     fail_unless(got == first, "item shouldn't be destroyed");
@@ -845,24 +852,23 @@ START_TEST(test_object_replace_insert_in_map) {
 
     got = object_insert_in_map_at(second, map, NULL, 0, 0, 0);
     fail_unless(got == second, "second item shouldn't be destroyed");
-    tag_second = second->count;
 
     third = cctk_create_game_object("barrel");
     fail_unless(third != NULL, "create 2nd barrel failed");
     got = object_insert_in_map_at(third, map, NULL, 0, 0, 0);
     fail_unless(got == third, "second barrel shouldn't be destroyed");
-    tag_third = third->count;
 
     fail_unless(GET_MAP_OB(map, 0, 0) == first, "item at 0,0 isn't barrel");
     fail_unless(GET_MAP_OB(map, 0, 0)->above == second, "second item at 0,0 isn't table");
     fail_unless(GET_MAP_OB(map, 0, 0)->above->above == third, "third item at 0,0 isn't barrel");
 
+    std::weak_ptr<object> pf(*first->self), ps(*second->self), pt(*third->self);
+
     object_replace_insert_in_map("barrel", second);
 
-    fail_unless(GET_MAP_OB(map, 0, 0) != first, "item at 0, 0 is still first?");
-    fail_unless(object_was_destroyed(first, tag_first), "1st barrel should be destroyed");
-    fail_unless(!object_was_destroyed(second, tag_second), "table shouldn't be destroyed");
-    fail_unless(object_was_destroyed(third, tag_third), "2nd barrel should be destroyed");
+    fail_unless(!pf.lock(), "1st barrel should be destroyed");
+    fail_unless(ps.lock(), "table shouldn't be destroyed");
+    fail_unless(!pt.lock(), "2nd barrel should be destroyed");
 
     fail_unless(GET_MAP_OB(map, 0, 0) != NULL, "no item at 0,0 after object_replace_insert_in_map");
     fail_unless(GET_MAP_OB(map, 0, 0) != second, "second at bottom at 0,0 after object_replace_insert_in_map");
@@ -888,9 +894,11 @@ START_TEST(test_object_split) {
     fail_unless(second->nrof == 2, "2 expected to split");
     fail_unless(first->nrof == 3, "3 should be left");
 
+    OBJECT_SAVE(first);
     second = object_split(first, 3, err, sizeof(err));
     fail_unless(second != NULL, "should return an item");
     fail_unless(QUERY_FLAG(first, FLAG_FREED), "first should be freed");
+    OBJECT_DESTROY(first);
 
     first = object_split(second, 10, err, sizeof(err));
     fail_unless(first == NULL, "should return NULL");
@@ -911,6 +919,8 @@ START_TEST(test_object_decrease_nrof) {
 
     second = object_decrease_nrof(first, 3);
     fail_unless(second == first, "gem shouldn't be destroyed");
+
+    OBJECT_SAVE(first);
 
     second = object_decrease_nrof(first, 2);
     fail_unless(second == NULL, "object_decrease_nrof should return NULL");
@@ -1215,12 +1225,13 @@ static Suite *object_suite(void) {
     tcase_add_test(tc_core, test_object_clear);
     tcase_add_test(tc_core, test_object_copy);
     tcase_add_test(tc_core, test_object_new);
+    tcase_add_test(tc_core, test_object_weak_ref);
+    tcase_add_test(tc_core, test_object_strong_ref);
     tcase_add_test(tc_core, test_object_update_turn_face);
     tcase_add_test(tc_core, test_object_update_speed);
     tcase_add_test(tc_core, test_object_remove_from_active_list);
     tcase_add_test(tc_core, test_object_update);
     tcase_add_test(tc_core, test_object_free_drop_inventory);
-    tcase_add_test(tc_core, test_object_count_free);
     tcase_add_test(tc_core, test_object_count_used);
     tcase_add_test(tc_core, test_object_count_active);
     tcase_add_test(tc_core, test_object_sub_weight);
@@ -1270,7 +1281,7 @@ int main(void) {
     sr = srunner_create(s);
     srunner_set_xml(sr, LOGDIR "/unit/common/object.xml");
 /* if you wish to debug, uncomment the following line. */
-/*  srunner_set_fork_status(sr, CK_NOFORK);*/
+  srunner_set_fork_status(sr, CK_NOFORK);
 
     srunner_run_all(sr, CK_ENV); /*verbosity from env variable*/
     nf = srunner_ntests_failed(sr);

@@ -974,16 +974,17 @@ static int monsterFight(archetype* monster, archetype* skill, int level)
     obfirst->stats.hp = obfirst->stats.maxhp;
 
     object* obsecond = object_create_arch(monster);
-    tag_t tagfirst = obfirst->count;
-    tag_t tagsecond = obsecond->count;
 
     // make a big map so large monsters are ok in map
     mapstruct* test_map = get_empty_map(50, 50);
 
+    OBJECT_REF_CREATE(obfirst);
+    OBJECT_REF_CREATE(obsecond);
+
     obfirst = object_insert_in_map_at(obfirst, test_map, NULL, 0, 0, 0);
     obsecond = object_insert_in_map_at(obsecond, test_map, NULL, 0, 1 + monster->tail_x, monster->tail_y);
 
-    if (!obsecond || object_was_destroyed(obsecond, tagsecond))
+    if (!obsecond || !OBJECT_REF_VALID(obsecond))
     {
         qDebug() << "second removed??";
     }
@@ -995,11 +996,11 @@ static int monsterFight(archetype* monster, archetype* skill, int level)
             do_some_living(obfirst);
 
             move_player(obfirst, 3);
-            if (object_was_destroyed(obsecond, tagsecond))
+            if (!OBJECT_REF_VALID(obsecond))
                 break;
 
             /* the player may have been killed (acid for instance), so check here */
-            if (object_was_destroyed(obfirst, tagfirst) || (obfirst->map != test_map))
+            if (!OBJECT_REF_VALID(obfirst) || (obfirst->map != test_map))
             {
                 result = 0;
                 break;
@@ -1012,7 +1013,7 @@ static int monsterFight(archetype* monster, archetype* skill, int level)
 
             attack_ob(obfirst, obsecond);
             /* when player is killed, she is teleported to bed of reality -> check map */
-            if (object_was_destroyed(obfirst, tagfirst) || (obfirst->map != test_map))
+            if (!OBJECT_REF_VALID(obfirst) || (obfirst->map != test_map))
             {
                 result = 0;
                 break;
@@ -1026,12 +1027,12 @@ static int monsterFight(archetype* monster, archetype* skill, int level)
             obsecond->speed_left += FABS(obsecond->speed);
     }
 
-    if (!object_was_destroyed(obfirst, tagfirst))
+    if (OBJECT_REF_VALID(obfirst))
     {
         object_remove(obfirst);
         object_free(obfirst, FREE_OBJ_FREE_INVENTORY);
     }
-    if (!object_was_destroyed(obsecond, tagsecond))
+    if (OBJECT_REF_VALID(obsecond))
     {
         object_remove(obsecond);
         object_free(obsecond, FREE_OBJ_FREE_INVENTORY);

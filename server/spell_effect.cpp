@@ -494,7 +494,6 @@ int cast_create_missile(object *op, object *caster, object *spell, int dir, cons
     int missile_plus = 0, bonus_plus = 0;
     const char *missile_name;
     object *tmp, *missile;
-    tag_t tag;
 
     tmp = object_find_by_type_applied(op, BOW);
     missile_name = tmp != NULL ? tmp->race : "arrow";
@@ -579,11 +578,11 @@ int cast_create_missile(object *op, object *caster, object *spell, int dir, cons
     missile->value = 0;
 
     SET_FLAG(missile, FLAG_IDENTIFIED);
-    tag = missile->count;
+    OBJECT_REF_CREATE(missile);
 
     if (!cast_create_obj(op, missile, dir)
     && op->type == PLAYER
-    && !object_was_destroyed(missile, tag)) {
+    && OBJECT_REF_VALID(missile)) {
         pick_up(op, missile);
     }
     return 1;
