@@ -233,7 +233,7 @@ static void enter_map(object *op, mapstruct *newmap, int x, int y) {
     /* object_remove clears these so they must be reset after the object_remove() call */
     object_insert_in_map_at(op, newmap, NULL, INS_NO_WALK_ON, x, y);
 
-    object_set_enemy(op, NULL);
+    object_set_enemy(op, (object *)NULL);
 
     if (op->contr) {
         safe_strncpy(op->contr->maplevel, newmap->path,

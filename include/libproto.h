@@ -248,6 +248,7 @@ extern void object_clear_owner(object *op);
 extern void object_set_owner(object *op, object *owner);
 extern void object_copy_owner(object *op, object *clone);
 extern void object_set_enemy(object *op, object *enemy);
+extern void object_set_enemy(object *op, object_ref *enemy);
 extern void object_reset(object *op);
 extern void object_free_key_values(object *op);
 extern void object_clear(object *op);

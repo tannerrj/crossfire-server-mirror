@@ -112,7 +112,7 @@ static void do_mood_floor(object *op, object *op2) {
     case 2:                     /* calm -- pacify unfriendly monsters */
         if (!QUERY_FLAG(tmp, FLAG_UNAGGRESSIVE)) {
             SET_FLAG(tmp, FLAG_UNAGGRESSIVE);
-            object_set_enemy(tmp, NULL);
+            object_set_enemy(tmp, (object *)NULL);
         }
         break;
 

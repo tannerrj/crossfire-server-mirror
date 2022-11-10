@@ -676,7 +676,7 @@ static void alchemy_failure_effect(object *op, object *cauldron, const recipe *r
         /* this is kind of kludgy I know...*/
         object_set_enemy(cauldron, op);
         monster_npc_call_help(cauldron);
-        object_set_enemy(cauldron, NULL);
+        object_set_enemy(cauldron, (object *)NULL);
 
         alchemy_failure_effect(op, cauldron, rp, level-5);
         return;

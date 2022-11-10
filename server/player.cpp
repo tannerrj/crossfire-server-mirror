@@ -1671,23 +1671,25 @@ static void flee_player(object *op) {
         return;
     }
 
+    auto ref = op->enemy->lock();
+    auto enemy = ref.get();
     /* Seen some crashes here.  Since we don't store an
      * op->enemy_count, it is possible that something destroys the
      * actual enemy, and the object is recycled.
      */
-    if (op->enemy->map == NULL) {
+    if (enemy->map == NULL) {
         CLEAR_FLAG(op, FLAG_SCARED);
-        object_set_enemy(op, NULL);
+        object_set_enemy(op, (object *)NULL);
         return;
     }
 
     if (!(random_roll(0, 4, op, PREFER_LOW)) && did_make_save(op, op->level, 0)) {
-        object_set_enemy(op, NULL);
+        object_set_enemy(op, (object *)NULL);
         CLEAR_FLAG(op, FLAG_SCARED);
         return;
     }
-    if (!get_rangevector(op, op->enemy, &rv, 0)) {
-        object_set_enemy(op, NULL);
+    if (!get_rangevector(op, enemy, &rv, 0)) {
+        object_set_enemy(op, (object *)NULL);
         CLEAR_FLAG(op, FLAG_SCARED);
         return;
     }
@@ -1702,7 +1704,7 @@ static void flee_player(object *op) {
     }
     /* Cornered, get rid of scared */
     CLEAR_FLAG(op, FLAG_SCARED);
-    object_set_enemy(op, NULL);
+    object_set_enemy(op, (object *)NULL);
 }
 
 /**
@@ -2709,7 +2711,7 @@ void move_player_attack(object *op, int dir) {
          * someone, but put it inside this loop so that you won't
          * attack them either.
          */
-        if ((mon->type == PLAYER || mon->enemy != op)
+        if ((mon->type == PLAYER || (mon->enemy && mon->enemy->lock().get() != op))
         && (mon->type == PLAYER || QUERY_FLAG(mon, FLAG_UNAGGRESSIVE) || QUERY_FLAG(mon, FLAG_FRIENDLY))
         && (op->contr->peaceful && !on_battleground)) {
             if (!op->contr->braced) {

@@ -2039,7 +2039,7 @@ int hit_player(object *op, int dam, object *hitter, uint32_t type, int full_hit)
 
     owner = object_get_owner(hitter);
     if (owner != NULL) {
-        if (op->enemy != hitter)
+        if (!op->enemy || op->enemy->lock().get() != hitter)
             object_set_enemy(op, owner);
     } else if (QUERY_FLAG(hitter, FLAG_ALIVE))
         if (op->enemy == NULL || rndm(1, 20) == 0)

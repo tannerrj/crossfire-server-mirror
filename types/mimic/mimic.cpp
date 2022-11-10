@@ -113,7 +113,7 @@ static method_ret mimic_type_apply(object *op, object *applier, int aflags) {
         op->stats.exp = op->stats.exp + (int64_t)(atof(object_try_get_value(op, "xp_per_level")) * level);
         op->speed = FABS(op->speed) + atof(object_try_get_value(op, "speed_per_level")) * level;
         // Set enemy to the triggerer.
-        op->enemy = applier;
+        op->enemy = new object_ref(*applier->self);
         // TODO: Should this be able to be set dynamically?
         FREE_AND_COPY(op->name, "mimic");
         return METHOD_OK;

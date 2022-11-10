@@ -642,7 +642,10 @@ void object_dump(const object *op, StringBuffer *sb) {
             stringbuffer_append_printf(sb, "inv %u\n", op->inv->count);
         }
         if (op->enemy) {
-            stringbuffer_append_printf(sb, "enemy %u\n", op->enemy->count);
+            auto enemy = op->enemy->lock();
+            if (enemy) {
+                stringbuffer_append_printf(sb, "enemy %u\n", enemy->count);
+            }
         }
         if (op->attacked_by) {
             stringbuffer_append_printf(sb, "attacked_by %u\n", op->attacked_by->count);
@@ -848,7 +851,7 @@ void object_copy_owner(object *op, object *clone) {
  * the new enemy for op; can be NULL to clear the enemy
  */
 void object_set_enemy(object *op, object *enemy) {
-    if (op->enemy == enemy) {
+    if ((!op->enemy && !enemy) || (op->enemy && op->enemy->lock().get() == enemy)) {
         return;
     }
 
@@ -857,7 +860,20 @@ void object_set_enemy(object *op, object *enemy) {
         LOG(llevDebug, "object_set_enemy: %s(%lu)->enemy=%s(%lu)\n", op->name, op->count, enemy == NULL ? "NONE" : enemy->name, enemy == NULL ? 0 : enemy->count);
     }
 #endif
-    op->enemy = enemy;
+    delete op->enemy;
+    op->enemy = enemy ? new object_ref(*enemy->self) : nullptr;
+}
+
+/**
+ * Sets the enemy of an object.
+ *
+ * @param op
+ * the object of which to set the enemy
+ * @param enemy
+ * the new enemy for op; can be NULL to clear the enemy
+ */
+void object_set_enemy(object *op, object_ref *enemy) {
+    object_set_enemy(op, enemy ? enemy->lock().get() : nullptr);
 }
 
 /**
@@ -947,6 +963,7 @@ void object_clear(object *op) {
     if (op->materialname != NULL)
         FREE_AND_CLEAR_STR(op->materialname);
     delete op->owner;
+    delete op->enemy;
 
     /* Remove object from friendly list if needed. */
     if (QUERY_FLAG(op, FLAG_FRIENDLY))
@@ -1022,6 +1039,7 @@ void object_copy_no_speed(const object *src_ob, object *dest_ob) {
     if (dest_ob->spell_tags != NULL)
         FREE_AND_CLEAR(dest_ob->spell_tags);
     delete dest_ob->owner;
+    delete dest_ob->enemy;
 
     /* Basically, same code as from object_clear() */
 
@@ -1061,6 +1079,8 @@ void object_copy_no_speed(const object *src_ob, object *dest_ob) {
         add_refcount(dest_ob->materialname);
     if (dest_ob->owner)
         dest_ob->owner = new object_ref(*dest_ob->owner);
+    if (dest_ob->enemy)
+        dest_ob->enemy = new object_ref(*dest_ob->enemy);
 
     if (dest_ob->spell_tags != NULL) {
         dest_ob->spell_tags = static_cast<tag_t *>(malloc(sizeof(tag_t)*SPELL_TAG_SIZE));
@@ -1572,6 +1592,7 @@ void object_free(object *ob, int flags) {
     if (ob->spell_tags) FREE_AND_CLEAR(ob->spell_tags);
     FREE_AND_CLEAR_STR_IF(ob->anim_suffix);
     delete ob->owner;
+    delete ob->enemy;
 
     /* Why aren't events freed? */
     object_free_key_values(ob);

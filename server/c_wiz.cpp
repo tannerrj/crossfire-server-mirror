@@ -1385,7 +1385,7 @@ void command_dump(object *op, const char *params) {
 void command_mon_aggr(object *op, const char *params) {
     (void)params;
     if (op->enemy || !QUERY_FLAG(op, FLAG_UNAGGRESSIVE)) {
-        object_set_enemy(op, NULL);
+        object_set_enemy(op, (object *)NULL);
         SET_FLAG(op, FLAG_UNAGGRESSIVE);
         draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_DM,
                       "Aggression turned OFF");

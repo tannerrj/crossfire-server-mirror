@@ -78,7 +78,7 @@ object *monster_check_enemy(object *npc, rv_vector *rv) {
     owner = object_get_owner(npc);
     if ((npc->attack_movement&HI4) == PETMOVE) {
         if (owner == NULL)
-            object_set_enemy(npc, NULL);
+            object_set_enemy(npc, (object *)NULL);
         else if (npc->enemy == NULL)
             object_set_enemy(npc, owner->enemy);
     }
@@ -94,26 +94,28 @@ object *monster_check_enemy(object *npc, rv_vector *rv) {
      * If we include a aggravated flag in , we can handle evil vs evil and good vs good
      * too. */
 
-    if (npc->enemy && !object_value_set(npc, "is_guard")) {
+    if (npc->enemy && npc->enemy->lock() && !object_value_set(npc, "is_guard")) {
+        auto ref = npc->enemy->lock();
+        auto enemy = ref.get();
         /* I broke these if's apart to better be able to see what
          * the grouping checks are.  Code is the same.
          */
-        if (QUERY_FLAG(npc->enemy, FLAG_REMOVED)
-        || QUERY_FLAG(npc->enemy, FLAG_FREED)
-        || !on_same_map(npc, npc->enemy)
-        || npc == npc->enemy
+        if (QUERY_FLAG(enemy, FLAG_REMOVED)
+        || QUERY_FLAG(enemy, FLAG_FREED)
+        || !on_same_map(npc, enemy)
+        || npc == enemy
         || QUERY_FLAG(npc, FLAG_NEUTRAL)
-        || QUERY_FLAG(npc->enemy, FLAG_NEUTRAL))
-            object_set_enemy(npc, NULL);
+        || QUERY_FLAG(enemy, FLAG_NEUTRAL))
+            object_set_enemy(npc, (object *)NULL);
 
         else if (QUERY_FLAG(npc, FLAG_FRIENDLY) && (
-                (QUERY_FLAG(npc->enemy, FLAG_FRIENDLY) && !pets_should_arena_attack(npc, owner, npc->enemy))
-                || (npc->enemy->type == PLAYER && !pets_should_arena_attack(npc, owner, npc->enemy))
-                || npc->enemy == owner))
-            object_set_enemy(npc, NULL);
+                (QUERY_FLAG(enemy, FLAG_FRIENDLY) && !pets_should_arena_attack(npc, owner, enemy))
+                || (enemy->type == PLAYER && !pets_should_arena_attack(npc, owner, enemy))
+                || enemy == owner))
+            object_set_enemy(npc, (object *)NULL);
         else if (!QUERY_FLAG(npc, FLAG_FRIENDLY)
-        && (!QUERY_FLAG(npc->enemy, FLAG_FRIENDLY) && npc->enemy->type != PLAYER))
-            object_set_enemy(npc, NULL);
+        && (!QUERY_FLAG(enemy, FLAG_FRIENDLY) && enemy->type != PLAYER))
+            object_set_enemy(npc, (object *)NULL);
 
         /* I've noticed that pets could sometimes get an arrow as the
          * target enemy - this code below makes sure the enemy is something
@@ -121,13 +123,13 @@ object *monster_check_enemy(object *npc, rv_vector *rv) {
          * the creature/owner, and so the creature then takes that
          * as the enemy to attack.
          */
-        else if (!QUERY_FLAG(npc->enemy, FLAG_MONSTER)
-        && !QUERY_FLAG(npc->enemy, FLAG_GENERATOR)
-        && npc->enemy->type != PLAYER
-        && npc->enemy->type != GOLEM)
-            object_set_enemy(npc, NULL);
+        else if (!QUERY_FLAG(enemy, FLAG_MONSTER)
+        && !QUERY_FLAG(enemy, FLAG_GENERATOR)
+        && enemy->type != PLAYER
+        && enemy->type != GOLEM)
+            object_set_enemy(npc, (object *)NULL);
     }
-    return monster_can_detect_enemy(npc, npc->enemy, rv) ? npc->enemy : NULL;
+    return monster_can_detect_enemy(npc, npc->enemy ? npc->enemy->lock().get() : nullptr, rv) ? npc->enemy->lock().get() : NULL;
 }
 
 /**
@@ -292,9 +294,9 @@ static object *monster_find_enemy(object *npc, rv_vector *rv) {
 
         if (object_value_set(npc, "is_guard")) {
             object_set_enemy(npc, get_nearest_criminal(npc));
-            if (npc->enemy) {
+            if (npc->enemy && npc->enemy->lock()) {
                 char buf[MAX_BUF];
-                snprintf(buf, sizeof(buf), "Halt, %s, you are under arrest!", npc->enemy->name);
+                snprintf(buf, sizeof(buf), "Halt, %s, you are under arrest!", npc->enemy->lock()->name);
                 monster_npc_say(npc, buf);
                 tmp = monster_check_enemy(npc, rv);
             }
@@ -865,7 +867,7 @@ int monster_move(object *op) {
         return 0;
 
     if (QUERY_FLAG(op, FLAG_NO_ATTACK)) { /* we never ever attack */
-        object_set_enemy(op, NULL);
+        object_set_enemy(op, (object *)NULL);
         enemy = NULL;
     } else {
         enemy = monster_find_enemy(op, &rv);
@@ -1009,7 +1011,7 @@ int monster_move(object *op) {
             // Can't reach enemy, so remove it, attempt to move in its last direction so not stay still
             LOG(llevMonster, "monster %s (%d, %d on %s) can't reach enemy %s (%d, %d on %s)\n",
                 op->name, op->x, op->y, op->map ? op->map->name : "(unknown map)", enemy->name, enemy->x, enemy->y, enemy->map ? enemy->map->path : "(unknown map)");
-            object_set_enemy(op, NULL);
+            object_set_enemy(op, (object *)NULL);
             dir = rv.direction;
         }
     }
@@ -1091,11 +1093,11 @@ int monster_move(object *op) {
      * the monster could get to - as it is, the monster won't look at that
      * third one.
      */
-    if (!QUERY_FLAG(op, FLAG_FRIENDLY) && enemy == op->enemy) {
+    if (!QUERY_FLAG(op, FLAG_FRIENDLY) && op->enemy && enemy == op->enemy->lock().get()) {
         object *nearest_player = get_nearest_player(op);
 
         if (nearest_player && nearest_player != enemy && !monster_can_hit(part, enemy, &rv)) {
-            object_set_enemy(op, NULL);
+            object_set_enemy(op, (object *)NULL);
             enemy = nearest_player;
         }
     }

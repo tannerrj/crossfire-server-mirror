@@ -1895,7 +1895,7 @@ static void cfapi_object_get_property(int *type, ...) {
 
     case CFAPI_OBJECT_PROP_ENEMY:
         robject = va_arg(args, object **);
-        *robject = op->enemy;
+        *robject = op->enemy ? op->enemy->lock().get() : nullptr;
         *type = CFAPI_POBJECT;
         break;
 

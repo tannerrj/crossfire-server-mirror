@@ -366,7 +366,7 @@ struct object {
 
     /* Following mostly refers to fields only used for monsters */
     object_ref *owner;
-    object  *enemy;         /**< Monster/player to follow even if not closest */
+    object_ref  *enemy;     /**< Monster/player to follow even if not closest */
     object  *attacked_by;   /**< This object start to attack us! only player & monster */
     tag_t       attacked_by_count; /**< The tag of attacker, so we can be sure */
     uint8_t       run_away;          /**< Monster runs away if it's hp goes below this percentage. */
