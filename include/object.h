@@ -244,16 +244,7 @@ enum object_type {
 typedef uint32_t ob_flags[4];
 
 typedef std::weak_ptr<object> object_ref;
-#define OBJECT_NREF_CREATE(x, o) object_ref x(*o->self)
-#define OBJECT_NREF_VALID(x) x.lock()
-#define OBJECT_REF_CREATE(o) OBJECT_NREF_CREATE(ref_##o, o)
-#define OBJECT_REF_VALID(o) OBJECT_NREF_VALID(ref_##o)
-
 typedef std::shared_ptr<object> object_saver;
-#define OBJECT_NSAVE(x, o) object_saver x(*o->self)
-#define OBJECT_NDESTROY(x) x.reset()
-#define OBJECT_SAVE(o) OBJECT_NSAVE(saver_##o, o)
-#define OBJECT_DESTROY(o) OBJECT_NDESTROY(saver_##o)
 
 /**
  * Main Crossfire structure, one ingame object.
@@ -282,14 +273,6 @@ struct object {
     struct player   *contr;         /**< Pointer to the player which control this object */
     object  *next;          /**< Pointer to the next object in the free/used list */
     object  *prev;          /**< Pointer to the previous object in the free/used list*/
-    object  *active_next;   /**< Next object in the 'active' list
-                                 * This is used in process_events
-                                 * so that the entire object list does not
-                                 * need to be gone through.*/
-    object  *active_prev;   /**< Previous object in the 'active list
-                                 * This is used in process_events
-                                 * so that the entire object list does not
-                                 * need to be gone through. */
     object  *below;         /**< Pointer to the object stacked below this one */
     object  *above;         /**< Pointer to the object stacked above this one */
                                 /* Note: stacked in the *same *environment*/
@@ -477,7 +460,7 @@ struct archetype {
 };
 
 extern object *objects;
-extern object *active_objects;
+extern std::vector<object_ref> active_objects;
 
 static inline void compare_flags(ob_flags *ret, const object *p, const object *q) {
     for (int i = 0; i < 4; i++) {
@@ -496,6 +479,16 @@ static inline void clear_flag(object *op, int flag) {
 static inline void set_flag(object *op, int flag) {
     op->flags[flag / 32] |= (1U << (flag % 32));
 }
+
+#define OBJECT_NREF_CREATE(x, o) object_ref x(*o->self)
+#define OBJECT_NREF_VALID(x) (x.lock() && !QUERY_FLAG(x.lock().get(), FLAG_FREED))
+#define OBJECT_REF_CREATE(o) OBJECT_NREF_CREATE(ref_##o, o)
+#define OBJECT_REF_VALID(o) OBJECT_NREF_VALID(ref_##o)
+
+#define OBJECT_NSAVE(x, o) object_saver x(*o->self)
+#define OBJECT_NDESTROY(x) x.reset()
+#define OBJECT_SAVE(o) OBJECT_NSAVE(saver_##o, o)
+#define OBJECT_DESTROY(o) OBJECT_NDESTROY(saver_##o)
 
 /**
  * This returns TRUE if the object is something that

@@ -162,8 +162,6 @@ START_TEST(test_get_archetype_struct) {
     fail_unless(arch->clone.contr == NULL, "arch->clone.contr of get_archetype_struct should be inited to NULL");
     fail_unless(arch->clone.next == NULL, "arch->clone.next of get_archetype_struct should be inited to NULL");
     fail_unless(arch->clone.prev == NULL, "arch->clone.prev of get_archetype_struct should be inited to NULL");
-    fail_unless(arch->clone.active_next == NULL, "arch->clone.active_next of get_archetype_struct should be inited to NULL");
-    fail_unless(arch->clone.active_prev == NULL, "arch->clone.active_prev of get_archetype_struct should be inited to NULL");
     fail_unless(arch->clone.below == NULL, "arch->clone.below of get_archetype_struct should be inited to NULL");
     fail_unless(arch->clone.above == NULL, "arch->clone.above of get_archetype_struct should be inited to NULL");
     fail_unless(arch->clone.inv == NULL, "arch->clone.inv of get_archetype_struct should be inited to NULL");

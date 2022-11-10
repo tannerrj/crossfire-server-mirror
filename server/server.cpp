@@ -1082,36 +1082,19 @@ static bool object_in_icecube(object *op) {
  */
 void process_events(void) {
     object *op;
-    object marker;
 
     process_players1();
 
-    memset(&marker, 0, sizeof(object));
-    /* Put marker object at beginning of active list */
-    marker.active_next = active_objects;
+    std::vector<object_ref> active(active_objects);
+    std::vector<object_ref>::iterator current = active.begin();
 
-    if (marker.active_next)
-        marker.active_next->active_prev = &marker;
-    marker.active_prev = NULL;
-    active_objects = &marker;
-
-    while (marker.active_next) {
-        op = marker.active_next;
-
-        /* Move marker forward - swap op and marker */
-        op->active_prev = marker.active_prev;
-
-        if (op->active_prev)
-            op->active_prev->active_next = op;
-        else
-            active_objects = op;
-
-        marker.active_next = op->active_next;
-
-        if (marker.active_next)
-            marker.active_next->active_prev = &marker;
-        marker.active_prev = op;
-        op->active_next = &marker;
+    while (current != active.end()) {
+        auto lock = (*current).lock();
+        ++current;  // We don't need to erase items, since it's a temporary list
+        if (!lock) {
+            continue;
+        }
+        op = lock.get();
 
         /* Now process op */
         if (QUERY_FLAG(op, FLAG_FREED)) {
@@ -1202,10 +1185,7 @@ void process_events(void) {
                     op->speed_left -= 1;
                 }
             }
-            OBJECT_REF_CREATE(op);
             process_object(op);
-            if (!OBJECT_REF_VALID(op))
-                continue;
         } else {
             // Custom-made creatures for random maps can still have negative speeds, so catch that with FABS().
             op->speed_left += FABS(op->speed);
@@ -1214,11 +1194,6 @@ void process_events(void) {
             op->casting_time--;
     }
 
-    /* Remove marker object from active list */
-    if (marker.active_prev != NULL)
-        marker.active_prev->active_next = NULL;
-    else
-        active_objects = NULL;
 
     process_players2();
 }

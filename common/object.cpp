@@ -281,7 +281,7 @@ const char *const spell_mapping[SPELL_MAPPINGS] = {
 };
 
 object *objects;           /**< Pointer to the list of used objects */
-object *active_objects;    /**< List of active objects that need to be processed */
+std::vector<object_ref> active_objects;    /**< List of active objects that need to be processed */
 
 /** X offset when searching around a spot. */
 short freearr_x[SIZEOFFREE] = {
@@ -315,7 +315,6 @@ int freedir[SIZEOFFREE] = {
 void init_objects(void) {
     /* Initialize all objects: */
     objects = NULL;
-    active_objects = NULL;
 }
 
 /**
@@ -970,8 +969,6 @@ void object_clear(object *op) {
     op->more = NULL;
     op->head = NULL;
     op->map = NULL;
-    op->active_next = NULL;
-    op->active_prev = NULL;
     /* What is not cleared is next, prev, and count */
 
     op->expmul = 1.0;
@@ -1187,8 +1184,6 @@ object *object_new(void) {
     op->materialname = NULL;
     op->next = objects;
     op->prev = NULL;
-    op->active_next = NULL;
-    op->active_prev = NULL;
     op->spell_tags = NULL;
     op->event_bitmask = BITMASK_VALID;
     if (objects != NULL)
@@ -1239,17 +1234,11 @@ void object_update_speed(object *op) {
 #endif
     }
     if (FABS(op->speed) > MIN_ACTIVE_SPEED) {
-        /* If already on active list, don't do anything */
-        /* TODO this check can probably be simplified a lot */
-        if (op->active_next || op->active_prev || op == active_objects)
-            return;
-
-        /* process_events() expects us to insert the object at the beginning
-         * of the list. */
-        op->active_next = active_objects;
-        if (op->active_next != NULL)
-            op->active_next->active_prev = op;
-        active_objects = op;
+        if (op->self && std::find_if(active_objects.cbegin(), active_objects.cend(), [&op] (object_ref ref) {
+            return ref.lock().get() == op;
+        }) == active_objects.cend()) {
+            active_objects.push_back(*op->self);
+        }
     } else {
         object_remove_from_active_list(op);
     }
@@ -1268,21 +1257,9 @@ void object_update_speed(object *op) {
  * object to remove.
  */
 void object_remove_from_active_list(object *op) {
-    /* If not on the active list, nothing needs to be done */
-    if (!op->active_next && !op->active_prev && op != active_objects)
-        return;
-
-    if (op->active_prev == NULL) {
-        active_objects = op->active_next;
-        if (op->active_next != NULL)
-            op->active_next->active_prev = NULL;
-    } else {
-        op->active_prev->active_next = op->active_next;
-        if (op->active_next)
-            op->active_next->active_prev = op->active_prev;
-    }
-    op->active_next = NULL;
-    op->active_prev = NULL;
+    active_objects.erase(std::remove_if(active_objects.begin(), active_objects.end(),
+            [&op] (object_ref ref) { return ref.lock().get() == op; }),
+        active_objects.end());
 }
 
 /**
@@ -1637,13 +1614,7 @@ int object_count_used(void) {
  * number of objects on the list of active objects.
  */
 int object_count_active(void) {
-    int i = 0;
-    object *tmp = active_objects;
-
-    while (tmp != NULL)
-        tmp = tmp->active_next,
-        i++;
-    return i;
+    return static_cast<int>(active_objects.size());
 }
 
 /**

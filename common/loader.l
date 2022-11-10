@@ -209,24 +209,12 @@ static void check_loaded_object(object *op, bool arch_init) {
         temp->name = add_string(op->arch->name);
         temp->tail_x = op->arch->tail_x;
         temp->tail_y = op->arch->tail_y;
-        object_copy(op, &temp->clone);
+        object_copy_no_speed(op, &temp->clone);
         temp->clone.inv = NULL;
         temp->clone.env = NULL;
         temp->clone.x = 0;
         temp->clone.y = 0;
         temp->clone.map = NULL;
-        if (FABS(temp->clone.speed) > MIN_ACTIVE_SPEED) {
-            /* Clone has a speed, so need to clear that because it isn't on a map.
-             * But we need to keep the value, because otherwise the customized object
-             * will have no speed (fix_player() will use the 0 value).  So set it
-             * to zero, call object_update_speed() to remove it from active list, then
-             * set its speed back to the original.
-             */
-            temp->clone.speed = 0;
-            object_update_speed(&temp->clone);
-            temp->clone.speed = op->speed;
-        }
-
         temp->more = op->arch->more;
         op->arch = temp;
         /* LOG(llevDebug, "created temporary archetype for %s at %d,%d\n", op->name, op->x, op->y); */

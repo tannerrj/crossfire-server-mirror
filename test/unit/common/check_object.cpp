@@ -439,8 +439,6 @@ START_TEST(test_object_new) {
     fail_unless(ob->msg == NULL, "Field msg has not been nullified by object_new()");
     fail_unless(ob->materialname == NULL, "Field materialname has not been nullified by object_new()");
     fail_unless(ob->prev == NULL, "Field prev has not been nullified by object_new()");
-    fail_unless(ob->active_next == NULL, "Field active_next has not been nullified by object_new()");
-    fail_unless(ob->active_prev == NULL, "Field active_prev has not been nullified by object_new()");
     fail_unless(ob->self, "Missing self");
     fail_unless(ob->self->use_count() == 1, "Wrong use_count!");
     /* did you really thing i'll go with only one object? */
@@ -472,7 +470,9 @@ START_TEST(test_object_strong_ref) {
     fail_unless(saver_ob.use_count() == 2, "wrong use_count");
     object_free(ob, FREE_OBJ_NO_DESTROY_CALLBACK);
     fail_unless(saver_ob.use_count() == 1, "wrong use_count");
-    fail_unless(OBJECT_REF_VALID(ob), "weak reference must be valid");
+    fail_unless(QUERY_FLAG(ob, FLAG_FREED), "object must be marked freed");
+    CLEAR_FLAG(ob, FLAG_FREED);
+    fail_unless(OBJECT_REF_VALID(ob), "weak reference must be valid (with patched flag)");
     OBJECT_DESTROY(ob);
     fail_unless(!OBJECT_REF_VALID(ob), "weak reference must be invalid after destroying all strong refs");
 }
@@ -497,7 +497,8 @@ START_TEST(test_object_update_turn_face) {
 }
 END_TEST
 
-#define IS_OBJECT_ACTIVE(op) (op->active_next || op->active_prev || op == active_objects)
+#define IS_OBJECT_ACTIVE(op) (std::find_if(active_objects.begin(), active_objects.end(), \
+            [&op] (object_ref ref) { return ref.lock().get() == op; }) != active_objects.cend())
 /** This is the test to check the behaviour of the method
  *  void object_update_speed(object *op);
  */
