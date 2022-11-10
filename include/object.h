@@ -243,6 +243,18 @@ enum object_type {
 
 typedef uint32_t ob_flags[4];
 
+typedef std::weak_ptr<object> object_ref;
+#define OBJECT_NREF_CREATE(x, o) object_ref x(*o->self)
+#define OBJECT_NREF_VALID(x) x.lock()
+#define OBJECT_REF_CREATE(o) OBJECT_NREF_CREATE(ref_##o, o)
+#define OBJECT_REF_VALID(o) OBJECT_NREF_VALID(ref_##o)
+
+typedef std::shared_ptr<object> object_saver;
+#define OBJECT_NSAVE(x, o) object_saver x(*o->self)
+#define OBJECT_NDESTROY(x) x.reset()
+#define OBJECT_SAVE(o) OBJECT_NSAVE(saver_##o, o)
+#define OBJECT_DESTROY(o) OBJECT_NDESTROY(saver_##o)
+
 /**
  * Main Crossfire structure, one ingame object.
  *
@@ -370,10 +382,7 @@ struct object {
                                 /* See the doc/Developers/objects for more info about body locations */
 
     /* Following mostly refers to fields only used for monsters */
-    object  *owner;         /**< Pointer to the object which controls this one.
-                                 * Owner should not be referred to directly -
-                                 * object_get_owner() should be used instead. */
-    tag_t       ownercount;     /**< What count the owner had (in case owner has been freed) */
+    object_ref *owner;
     object  *enemy;         /**< Monster/player to follow even if not closest */
     object  *attacked_by;   /**< This object start to attack us! only player & monster */
     tag_t       attacked_by_count; /**< The tag of attacker, so we can be sure */
@@ -430,18 +439,6 @@ struct object {
     tag_t       *spell_tags;      /**< Tags used for spell effect merging. */
     uint64_t    event_bitmask;  /**< Bitmask of events this object has a handler for, see events.h */
 };
-
-typedef std::weak_ptr<object> object_ref;
-#define OBJECT_NREF_CREATE(x, o) object_ref x(*o->self)
-#define OBJECT_NREF_VALID(x) x.lock()
-#define OBJECT_REF_CREATE(o) OBJECT_NREF_CREATE(ref_##o, o)
-#define OBJECT_REF_VALID(o) OBJECT_NREF_VALID(ref_##o)
-
-typedef std::shared_ptr<object> object_saver;
-#define OBJECT_NSAVE(x, o) object_saver x(*o->self)
-#define OBJECT_NDESTROY(x) x.reset()
-#define OBJECT_SAVE(o) OBJECT_NSAVE(saver_##o, o)
-#define OBJECT_DESTROY(o) OBJECT_NDESTROY(saver_##o)
 
 /**
  * Used to link together several objects

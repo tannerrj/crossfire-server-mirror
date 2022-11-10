@@ -311,7 +311,7 @@ START_TEST(test_object_set_owner) {
     ob1 = cctk_create_game_object(NULL);
     ob2 = cctk_create_game_object(NULL);
     object_set_owner(ob2, ob1);
-    fail_unless(ob2->owner == ob1, "After object_set_owner ob2(%p) owner should be ob1(%p) but was (%p)", ob2, ob1, ob2->owner); /* XXX: use object_get_owner() */
+    fail_unless(ob2->owner->lock().get() == ob1, "After object_set_owner ob2(%p) owner should be ob1(%p) but was (%p)", ob2, ob1, ob2->owner); /* XXX: use object_get_owner() */
 }
 END_TEST
 

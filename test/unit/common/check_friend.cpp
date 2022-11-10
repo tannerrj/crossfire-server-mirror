@@ -98,7 +98,7 @@ START_TEST(test_get_friends_of_owner) {
     object *ob = object_new(), *owner = object_new();
     CLEAR_FLAG(owner, FLAG_REMOVED);
     object_set_owner(ob, owner);
-    fail_unless(ob->owner == owner);
+    fail_unless(ob->owner && ob->owner->lock().get() == owner);
     add_friendly_object(ob);
     objectlink *list = get_friends_of(owner);
     fail_unless(list, "Must get a list of owner's friends");
@@ -110,7 +110,7 @@ START_TEST(test_get_friends_of_owner_only) {
     object *ob = object_new(), *owner = object_new(), *second = object_new();
     CLEAR_FLAG(owner, FLAG_REMOVED);
     object_set_owner(ob, owner);
-    fail_unless(ob->owner == owner);
+    fail_unless(ob->owner && ob->owner->lock().get() == owner);
     add_friendly_object(ob);
     add_friendly_object(second);
     objectlink *list = get_friends_of(owner);

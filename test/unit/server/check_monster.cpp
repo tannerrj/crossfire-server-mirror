@@ -73,16 +73,14 @@ START_TEST(test_monster_find_nearest_enemy) {
     owner = create_archetype("dwarf_player");
     owner->contr = &pl;
     object_insert_in_map_at(owner, map, NULL, 0, 0, 0);
-    first->owner = owner;
-    first->ownercount = owner->count;
+    object_set_owner(first, owner);
     for (uint8_t i = 0; i < 200; i++) {
         found = monster_find_nearest_enemy(first, owner);
         fail_if(found == owner, "Found owner?");
         fail_unless(found == second, "Should find second!");
     }
 
-    second->owner = owner;
-    second->ownercount = owner->count;
+    object_set_owner(second, owner);
     for (uint8_t i = 0; i < 200; i++) {
         found = monster_find_nearest_enemy(first, owner);
         fail_if(found == owner, "Found owner?");

@@ -625,12 +625,10 @@ static const object *object_get_owner_const(const object *op) {
     if (op->owner == NULL)
         return NULL;
 
-    if (!QUERY_FLAG(op->owner, FLAG_FREED)
-         && !QUERY_FLAG(op->owner, FLAG_REMOVED)
-         && op->owner->count == op->ownercount)
-        return op->owner;
-
-    LOG(llevError, "Warning, no owner found\n");
+    auto owner = op->owner->lock();
+    if (owner) {
+        return owner.get();
+    }
     return NULL;
 }
 
@@ -805,11 +803,10 @@ object *object_get_owner(object *op) {
     if (op->owner == NULL)
         return NULL;
 
-    if (!QUERY_FLAG(op->owner, FLAG_FREED)
-    && !QUERY_FLAG(op->owner, FLAG_REMOVED)
-    && op->owner->count == op->ownercount)
-        return op->owner;
-
+    auto owner = op->owner->lock().get();
+    if (owner) {
+        return owner;
+    }
     object_clear_owner(op);
     return NULL;
 }
@@ -824,8 +821,8 @@ void object_clear_owner(object *op) {
     if (!op)
         return;
 
+    delete op->owner;
     op->owner = NULL;
-    op->ownercount = 0;
 }
 
 /**
@@ -870,8 +867,7 @@ void object_set_owner(object *op, object *owner) {
     if (op->owner != NULL)
         object_clear_owner(op);
 
-    op->owner = owner;
-    op->ownercount = owner->count;
+    op->owner = new object_ref(*owner->self);
 }
 
 /**
@@ -1011,6 +1007,7 @@ void object_clear(object *op) {
         FREE_AND_CLEAR_STR(op->lore);
     if (op->materialname != NULL)
         FREE_AND_CLEAR_STR(op->materialname);
+    delete op->owner;
 
     /* Remove object from friendly list if needed. */
     if (QUERY_FLAG(op, FLAG_FRIENDLY))
@@ -1087,6 +1084,7 @@ void object_copy_no_speed(const object *src_ob, object *dest_ob) {
         free_string(dest_ob->materialname);
     if (dest_ob->spell_tags != NULL)
         FREE_AND_CLEAR(dest_ob->spell_tags);
+    delete dest_ob->owner;
 
     /* Basically, same code as from object_clear() */
 
@@ -1124,6 +1122,8 @@ void object_copy_no_speed(const object *src_ob, object *dest_ob) {
         add_refcount(dest_ob->msg);
     if (dest_ob->materialname != NULL)
         add_refcount(dest_ob->materialname);
+    if (dest_ob->owner)
+        dest_ob->owner = new object_ref(*dest_ob->owner);
 
     if (dest_ob->spell_tags != NULL) {
         dest_ob->spell_tags = static_cast<tag_t *>(malloc(sizeof(tag_t)*SPELL_TAG_SIZE));
@@ -1654,6 +1654,7 @@ void object_free(object *ob, int flags) {
     if (ob->materialname != NULL) FREE_AND_CLEAR_STR(ob->materialname);
     if (ob->spell_tags) FREE_AND_CLEAR(ob->spell_tags);
     FREE_AND_CLEAR_STR_IF(ob->anim_suffix);
+    delete ob->owner;
 
     /* Why aren't events freed? */
     object_free_key_values(ob);
@@ -2075,7 +2076,7 @@ void object_merge_spell(object *op, int16_t x, int16_t y) {
         if (op->type == tmp->type
         && op->subtype == tmp->subtype
         && op->direction == tmp->direction
-        && op->owner == tmp->owner && op->ownercount == tmp->ownercount
+        && ((op->owner && tmp->owner && op->owner->lock().get() == op->owner->lock().get()) || (!op->owner && !tmp->owner))
         && op->range == tmp->range
         && op->stats.wc == tmp->stats.wc
         && op->level == tmp->level
