@@ -262,7 +262,6 @@ extern void object_update(object *op, int action);
 extern void object_free_drop_inventory(object *ob);
 extern void object_free_inventory(object *ob);
 extern void object_free(object *ob, int flags);
-extern int object_count_free(void);
 extern int object_count_used(void);
 extern int object_count_active(void);
 extern void object_sub_weight(object *op, signed long weight);

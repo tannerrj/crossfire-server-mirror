@@ -33,6 +33,8 @@ public:
         empty_archetype = get("empty_archetype");
     }
 
+    virtual ~Archetypes();
+
     /**
      * Set the listener to be called when an archetype is updated.
      * @param fct listener, may be an empty std::function.

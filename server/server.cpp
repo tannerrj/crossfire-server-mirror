@@ -1261,21 +1261,15 @@ void cleanup(void) {
 
     close_modules();
 
-#ifdef MEMORY_DEBUG
     free_all_maps();
     free_style_maps();
-#endif
     cleanupPlugins();
     commands_clear();
-#ifdef MEMORY_DEBUG
-    free_all_archs();
     free_all_artifacts();
-    free_all_images();
     free_all_newserver();
     free_all_recipes();
     free_all_readable();
     free_all_god();
-    free_all_anim();
     i18n_free();
     free_loader();
     free_globals();
@@ -1283,10 +1277,8 @@ void cleanup(void) {
     object_free_all_data();
     free_knowledge();
     free_quest();
-    free_quest_definitions();
     /* See what the string data that is out there that hasn't been freed. */
     /*    LOG(llevDebug, "%s", ss_dump_table(0xff));*/
-#endif
     exit(0);
 }
 

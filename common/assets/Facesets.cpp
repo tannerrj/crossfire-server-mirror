@@ -28,6 +28,8 @@ void asset_destroy(face_sets *item) {
     free(item->size);
     free(item->extension);
     free(item->comment);
+    for (size_t a = 0; a < item->allocated; ++a)
+        free(item->faces[a].data);
     free(item->faces);
     free(item);
 }

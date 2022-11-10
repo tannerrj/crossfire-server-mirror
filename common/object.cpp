@@ -280,19 +280,7 @@ const char *const spell_mapping[SPELL_MAPPINGS] = {
     "spell_glyph",                      /* 205 */
 };
 
-#ifdef MEMORY_DEBUG
-int nroffreeobjects = 0;  /**< Number of free objects. */
-int nrofallocobjects = 0; /**< Number of allocated objects. */
-#undef OBJ_EXPAND
-#define OBJ_EXPAND 1
-#else
-static object objarray[STARTMAX]; /**< All objects, allocated this way at first */
-int nroffreeobjects = STARTMAX;  /**< How many OBs allocated and free (free) */
-int nrofallocobjects = STARTMAX; /**< How many OBs allocated (free + used) */
-#endif
-
 object *objects;           /**< Pointer to the list of used objects */
-static object *free_objects;      /**< Pointer to the list of unused objects */
 object *active_objects;    /**< List of active objects that need to be processed */
 
 /** X offset when searching around a spot. */
@@ -328,26 +316,6 @@ void init_objects(void) {
     /* Initialize all objects: */
     objects = NULL;
     active_objects = NULL;
-
-#ifdef MEMORY_DEBUG
-    free_objects = NULL;
-#else
-    free_objects = objarray;
-    objarray[0].prev = NULL,
-    objarray[0].next = &objarray[1],
-    SET_FLAG(&objarray[0], FLAG_REMOVED);
-    SET_FLAG(&objarray[0], FLAG_FREED);
-    for (int i = 1; i < STARTMAX-1; i++) {
-        objarray[i].next = &objarray[i+1];
-        objarray[i].prev = &objarray[i-1];
-        SET_FLAG(&objarray[i], FLAG_REMOVED);
-        SET_FLAG(&objarray[i], FLAG_FREED);
-    }
-    objarray[STARTMAX-1].next = NULL;
-    objarray[STARTMAX-1].prev = &objarray[STARTMAX-2];
-    SET_FLAG(&objarray[STARTMAX-1], FLAG_REMOVED);
-    SET_FLAG(&objarray[STARTMAX-1], FLAG_FREED);
-#endif
 }
 
 /**
@@ -754,37 +722,9 @@ object *object_find_by_name_global(const char *str) {
 }
 
 /**
- * Destroys all allocated objects.
- *
- * @note
- * free() is called instead of object_free_drop_inventory() as the object's memory has already by cleaned.
- *
- * @warning
- * this should be the last method called.
+ * Empty.
  */
 void object_free_all_data(void) {
-#ifdef MEMORY_DEBUG
-    object *op, *next;
-
-    for (op = free_objects; op != NULL; ) {
-        next = op->next;
-        free(op);
-        nrofallocobjects--;
-        nroffreeobjects--;
-        op = next;
-    }
-    free_objects = NULL;
-
-    for (op = objects; op != NULL; ) {
-        next = op->next;
-        if (!QUERY_FLAG(op, FLAG_FREED)) {
-            LOG(llevDebug, "non freed object: %s\n", op->name);
-        }
-        op = next;
-    }
-#endif
-
-    LOG(llevDebug, "%d allocated objects, %d free objects, STARMAX=%d\n", nrofallocobjects, nroffreeobjects, STARTMAX);
 }
 
 /**
@@ -1662,6 +1602,7 @@ void object_free(object *ob, int flags) {
     free_dialog_information(ob);
 
     /* Test whether archetype is a temporary one, and if so look whether it should be trashed. */
+    /** @todo at program end, archetypes are destroyed, so items in inventories will have invalid archetype pointers */
     if (ob->arch && ob->arch->reference_count > 0) {
         if (--ob->arch->reference_count == 0) {
             free_arch(ob->arch);
@@ -1671,22 +1612,6 @@ void object_free(object *ob, int flags) {
     std::shared_ptr<object> tmp(*(ob->self));
     delete ob->self;
     ob->self = nullptr;
-}
-
-/**
- * Objects statistics.
- *
- * @return
- * number of objects on the list of free objects.
- */
-int object_count_free(void) {
-    int i = 0;
-    object *tmp = free_objects;
-
-    while (tmp != NULL)
-        tmp = tmp->next,
-        i++;
-    return i;
 }
 
 /**

@@ -252,7 +252,7 @@ void command_news(object *op, const char *params) {
  * player requesting the information.
  */
 static void malloc_info(object *op) {
-    int ob_used = object_count_used(), ob_free = object_count_free(), players, nrofmaps;
+    int ob_used = object_count_used(), players, nrofmaps;
     int nrm = 0, mapmem = 0, anr, anims, sum_alloc = 0, sum_used = 0, i, alnr;
     player *pl;
     mapstruct *m;
@@ -284,22 +284,6 @@ static void malloc_info(object *op) {
     draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
                          "[fixed]%6d used", ob_used);
 
-    if (ob_used != nrofallocobjects - nroffreeobjects) {
-        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
-                             "[fixed]      (used list mismatch: %d)",
-                             nrofallocobjects - nroffreeobjects);
-    }
-
-    draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
-                         "[fixed]%6d free (%.2f%% of %d allocated)",
-                         ob_free, (float)ob_free / nrofallocobjects * 100, nrofallocobjects);
-
-    if (ob_free != nroffreeobjects) {
-        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
-                             "[fixed]      (free list mismatch: %d)",
-                             nroffreeobjects);
-    }
-
     draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
                          "[fixed]%6d on active list",
                          object_count_active());
@@ -310,9 +294,6 @@ static void malloc_info(object *op) {
 
     draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
                          "[fixed]     object total: %11d", i);
-
-    i = (ob_free*sizeof(object));
-    sum_alloc += i;
 
     draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_MALLOC,
                          "[fixed]%4d players:         %8d",

@@ -14,6 +14,19 @@
 
 #include <string.h>
 
+/**
+ * Recursively mark all items in inventory as not removed.
+ * @param item what to start from.
+ */
+static void mark_inv_not_removed(object *item) {
+    auto inv = item->inv;
+    while (inv) {
+        CLEAR_FLAG(inv, FLAG_REMOVED);
+        mark_inv_not_removed(inv);
+        inv = inv->below;
+    }
+}
+
 template<>
 archetype *asset_create(const std::string& name) {
     auto arch = get_archetype_struct();
@@ -24,8 +37,19 @@ archetype *asset_create(const std::string& name) {
 
 template<>
 void asset_destroy(archetype *item) {
+    mark_inv_not_removed(&item->clone);
     object_free_inventory(&item->clone);
     free_arch(item);
+}
+
+Archetypes::~Archetypes() {
+    // Free inventories so we can then destroy archetypes without
+    // use-after-free memory access when checking for temporary archetypes
+    for (auto it : m_assets) {
+        auto arch = it.second;
+        mark_inv_not_removed(&arch->clone);
+        object_free_inventory(&arch->clone);
+    }
 }
 
 void Archetypes::recursive_update(object *item, archetype *updated) {
@@ -44,19 +68,6 @@ void Archetypes::recursive_update(object *item, archetype *updated) {
     }
     recursive_update(item->below, updated);
     recursive_update(item->inv, updated);
-}
-
-/**
- * Recursively mark all items in inventory as not removed.
- * @param item what to start from.
- */
-static void mark_inv_not_removed(object *item) {
-    auto inv = item->inv;
-    while (inv) {
-        CLEAR_FLAG(inv, FLAG_REMOVED);
-        mark_inv_not_removed(inv);
-        inv = inv->below;
-    }
 }
 
 void Archetypes::replace(archetype *existing, archetype *update) {

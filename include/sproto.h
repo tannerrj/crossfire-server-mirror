@@ -465,7 +465,6 @@ int quest_was_completed(player *pl, sstring quest_code);
 void command_quest(object *op, const char *params);
 void dump_quests(void);
 void free_quest(void);
-void free_quest_definitions(void);
 void quest_send_initial_states(player *pl);
 void quest_first_player_save(player *pl);
 /* resurrection.c */

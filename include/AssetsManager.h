@@ -84,7 +84,7 @@ protected:
     AllAnimations m_animations;             /**< Animations. */
     Treasures m_treasures;                  /**< Treasures. */
     Messages m_messages;                    /**< Messages. */
-    Facesets m_facesets;                    /**< Cilent image variants. */
+    Facesets m_facesets;                    /**< Client image variants. */
     Quests m_quests;                        /**< Quests. */
 
     /**

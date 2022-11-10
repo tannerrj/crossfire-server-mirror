@@ -465,6 +465,16 @@ void free_globals(void) {
     all_regions.clear();
 
     assets_free();
+
+    for (auto material : materials) {
+        free(material);
+    }
+    materials.clear();
+
+    for (auto dp : settings.disabled_plugins) {
+        free(dp);
+    }
+    settings.disabled_plugins.clear();
 }
 
 /**

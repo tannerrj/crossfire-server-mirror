@@ -479,9 +479,6 @@ struct archetype {
 extern object *objects;
 extern object *active_objects;
 
-extern int nrofallocobjects;
-extern int nroffreeobjects;
-
 static inline void compare_flags(ob_flags *ret, const object *p, const object *q) {
     for (int i = 0; i < 4; i++) {
         (*ret)[i] = p->flags[i] ^ q->flags[i];
