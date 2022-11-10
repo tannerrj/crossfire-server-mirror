@@ -59,7 +59,8 @@ object *pets_get_enemy(object *pet, rv_vector *rv) {
     int search_arr[SIZEOFFREE];
     int mflags;
 
-    attacker = pet->attacked_by; /*pointer to attacking enemy*/
+    attacker = pet->attacked_by ? pet->attacked_by->lock().get() : nullptr; /*pointer to attacking enemy*/
+    delete pet->attacked_by;
     pet->attacked_by = NULL;     /*clear this, since we are dealing with it*/
 
     owner = object_get_owner(pet);
@@ -154,16 +155,13 @@ object *pets_get_enemy(object *pet, rv_vector *rv) {
 
     /* No threat to owner, check to see if the pet has an attacker*/
     if (attacker != NULL) {
-        /* need to be sure this is the right one! */
-        if (attacker->count == pet->attacked_by_count) {
-            /* also need to check to make sure it is not freindly */
-            /* or otherwise non-hostile, and is an appropriate target */
-            if (!QUERY_FLAG(attacker, FLAG_FRIENDLY) && on_same_map(pet, attacker)) {
-                object_set_enemy(pet, attacker);
-                if (monster_check_enemy(pet, rv) != NULL)
-                    return attacker;
-                object_set_enemy(pet, (object *)NULL);
-            }
+        /* also need to check to make sure it is not friendly */
+        /* or otherwise non-hostile, and is an appropriate target */
+        if (!QUERY_FLAG(attacker, FLAG_FRIENDLY) && on_same_map(pet, attacker)) {
+            object_set_enemy(pet, attacker);
+            if (monster_check_enemy(pet, rv) != NULL)
+                return attacker;
+            object_set_enemy(pet, (object *)NULL);
         }
     }
 

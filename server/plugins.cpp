@@ -1901,7 +1901,7 @@ static void cfapi_object_get_property(int *type, ...) {
 
     case CFAPI_OBJECT_PROP_ATTACKED_BY:
         robject = va_arg(args, object **);
-        *robject = op->attacked_by;
+        *robject = op->attacked_by ? op->attacked_by->lock().get() : nullptr;
         *type = CFAPI_POBJECT;
         break;
 

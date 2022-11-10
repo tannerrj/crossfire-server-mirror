@@ -648,7 +648,10 @@ void object_dump(const object *op, StringBuffer *sb) {
             }
         }
         if (op->attacked_by) {
-            stringbuffer_append_printf(sb, "attacked_by %u\n", op->attacked_by->count);
+            auto attacker = op->attacked_by->lock();
+            if (attacker) {
+                stringbuffer_append_printf(sb, "attacked_by %u\n", attacker->count);
+            }
         }
         owner = object_get_owner_const(op);
         if (owner != NULL) {
@@ -964,6 +967,7 @@ void object_clear(object *op) {
         FREE_AND_CLEAR_STR(op->materialname);
     delete op->owner;
     delete op->enemy;
+    delete op->attacked_by;
 
     /* Remove object from friendly list if needed. */
     if (QUERY_FLAG(op, FLAG_FRIENDLY))
@@ -990,7 +994,6 @@ void object_clear(object *op) {
 
     op->expmul = 1.0;
     op->face = blank_face;
-    op->attacked_by_count = -1;
     if (settings.casting_time)
         op->casting_time = -1;
 }
@@ -1040,6 +1043,7 @@ void object_copy_no_speed(const object *src_ob, object *dest_ob) {
         FREE_AND_CLEAR(dest_ob->spell_tags);
     delete dest_ob->owner;
     delete dest_ob->enemy;
+    delete dest_ob->attacked_by;
 
     /* Basically, same code as from object_clear() */
 
@@ -1081,6 +1085,8 @@ void object_copy_no_speed(const object *src_ob, object *dest_ob) {
         dest_ob->owner = new object_ref(*dest_ob->owner);
     if (dest_ob->enemy)
         dest_ob->enemy = new object_ref(*dest_ob->enemy);
+    if (dest_ob->attacked_by)
+        dest_ob->attacked_by = new object_ref(*dest_ob->attacked_by);
 
     if (dest_ob->spell_tags != NULL) {
         dest_ob->spell_tags = static_cast<tag_t *>(malloc(sizeof(tag_t)*SPELL_TAG_SIZE));
@@ -1593,6 +1599,7 @@ void object_free(object *ob, int flags) {
     FREE_AND_CLEAR_STR_IF(ob->anim_suffix);
     delete ob->owner;
     delete ob->enemy;
+    delete ob->attacked_by;
 
     /* Why aren't events freed? */
     object_free_key_values(ob);

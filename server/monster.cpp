@@ -236,7 +236,8 @@ object *monster_find_nearest_enemy(object *npc, object *owner) {
 static object *monster_find_enemy(object *npc, rv_vector *rv) {
     object *attacker, *tmp = NULL;
 
-    attacker = npc->attacked_by; /* save this for later use. This can be a attacker. */
+    attacker = npc->attacked_by ? npc->attacked_by->lock().get() : nullptr; /* save this for later use. This can be a attacker. */
+    delete npc->attacked_by;
     npc->attacked_by = NULL;     /* always clear the attacker entry */
 
     /* if we berserk, we don't care about others - we attack all we can find */
@@ -274,7 +275,7 @@ static object *monster_find_enemy(object *npc, rv_vector *rv) {
     if (tmp == NULL) {
         if (attacker) { /* if we have an attacker, check him */
             /* we want be sure this is the right one! */
-            if (attacker->count == npc->attacked_by_count) {
+            if (npc->attacked_by && attacker == npc->attacked_by->lock().get()) {
                 /* TODO: thats not finished */
                 /* we don't want a fight evil vs evil or good against non evil */
                 if (QUERY_FLAG(npc, FLAG_NEUTRAL)
@@ -873,8 +874,8 @@ int monster_move(object *op) {
         enemy = monster_find_enemy(op, &rv);
         if (enemy != NULL) {
             /* we have an enemy, just tell him we want him dead */
-            enemy->attacked_by = op;       /* our ptr */
-            enemy->attacked_by_count = op->count; /* our tag */
+            delete enemy->attacked_by;
+            enemy->attacked_by = new object_ref(*op->self);
         }
     }
 
