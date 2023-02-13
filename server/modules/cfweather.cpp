@@ -4835,10 +4835,7 @@ void cfweather_init(Settings *settings) {
     // Register the 'weather command
     command_handler = command_register("weather", COMMAND_TYPE_NORMAL, command_weather, 0.0);
     /* Disable the plugin in case it's still there */
-    linked_char *disable = (linked_char *)calloc(1, sizeof(linked_char));
-    disable->next = settings->disabled_plugins;
-    disable->name = strdup("cfweather");
-    settings->disabled_plugins = disable;
+    settings->disabled_plugins.push_back(strdup("cfweather"));
 }
 
 void cfweather_close() {
