@@ -88,7 +88,7 @@
  * with the new values we have assigned.
  */
 
-typedef struct wmapdef {
+struct weathermap_t {
     int16_t	temp;		/**< Base temperature of this tile (F). */
     int16_t	pressure;	/**< Barometric pressure (mb). */
     int8_t	humid;		/**< Humitidy of this tile. */
@@ -102,7 +102,7 @@ typedef struct wmapdef {
     int8_t	forestry;	/**< Range of forestedness. 100 is full forested. 0 is no trees.
     /*Dynamic parts*/
     int16_t  realtemp;		/**< Temperature at a given calculation step for this tile. */
-} weathermap_t;
+};
 
 /**
  * Structure to hold density data entries.
@@ -110,7 +110,7 @@ typedef struct wmapdef {
  * desert data, and is named generically so
  * it makes sense for both.
  */
-typedef struct density {
+struct DensityConfig {
     // Use shared strings so we can do pointer comparisons.
     sstring name;
     // 0 if name is the arch name, 1 if it is the object name.
@@ -120,34 +120,34 @@ typedef struct density {
     // Pointer to the next item in the list
     // We're scanning all of these when we check anyway,
     // so might as well use a structure that works fine that way.
-    struct density *next;
-} DensityConfig;
+    DensityConfig *next;
+};
 
 /**
  * Defines a tile the weather system should avoid.
  */
-typedef struct _weather_avoids {
-    sstring name;                    /**< Tile archetype name. It is always arch name, not object name. */
-    int snow;                        /**< Is this a long-term weather effect, like snow or a puddle?
-                                          Used for various tests. */
-    struct _weather_avoids *next;    /**< The next item in the avoid list. */
-} weather_avoids_t;
+struct weather_avoids_t {
+    sstring name;               /**< Tile archetype name. It is always arch name, not object name. */
+    int snow;                   /**< Is this a long-term weather effect, like snow or a puddle?
+                                     Used for various tests. */
+    weather_avoids_t *next;     /**< The next item in the avoid list. */
+};
 
 /**
  * Defines a tile the weather system can change to another tile.
  */
-typedef struct _weather_replace {
-    sstring tile;                  /**< Tile archetype or object name. */
-    archetype *special_snow;       /**< The archetype name of the tile to place over specified tile. */
-    archetype *doublestack_arch;   /**< If set, this other archetype will be added atop special_snow. */
-    int arch_or_name;              /**< If set, tile matches the archetype name, else the object's name. */
-    struct _weather_replace *next; /**< The next item in the replace list. */
-} weather_replace_t;
+struct weather_replace_t {
+    sstring tile;                 /**< Tile archetype or object name. */
+    archetype *special_snow;      /**< The archetype name of the tile to place over specified tile. */
+    archetype *doublestack_arch;  /**< If set, this other archetype will be added atop special_snow. */
+    int arch_or_name;             /**< If set, tile matches the archetype name, else the object's name. */
+    weather_replace_t *next;      /**< The next item in the replace list. */
+};
 
 /**
  * Defines a tile where something can grow.
  */
-typedef struct _weather_grow {
+struct weather_grow_t {
 	const char *herb;   /**< Arch name of item to grow. */
 	const char *tile;   /**< Arch tile to grow on, NULL if anything. */
 	int random;         /**< Random apparition factor. Min 1, higher = lower chance of appearance. */
@@ -160,7 +160,7 @@ typedef struct _weather_grow {
 	int elevmin;        /**< Minimum elevation for herb to grow. */
 	int elevmax;        /**< Maximum elevation for herb to grow. */
 	int season;         /**< Season the herb can grow. 0=any or 1-5. */
-} weather_grow_t;
+};
 
 /********************************************************************************************
  * Section END -- weather structures
