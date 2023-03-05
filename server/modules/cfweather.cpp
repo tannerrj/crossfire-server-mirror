@@ -1483,6 +1483,9 @@ static void do_precipitation(mapstruct * const m, const int x, const int y, cons
             pct_precip = 99;
             break;
     }
+    // TODO: Move these globally? Pretty sure they will be in a consistent spot in memory for execution duration.
+    sstring snowc = find_string("snow_c");
+    sstring rain = find_string("rain");
     if (rndm(0, 99) + pct_precip >= 100) {
         // Do our weather inserts here.
         // t < -2 == always snow
@@ -1503,8 +1506,8 @@ static void do_precipitation(mapstruct * const m, const int x, const int y, cons
                     avoid++;
                     break;
                 }
-                else if ((!strcmp(tmp->arch->name, "snow_c") && !strcmp(at->name, "rain")) ||
-                         (!strcmp(tmp->arch->name, "rain") && !strcmp(at->name, "snow_c"))) {
+                else if ((tmp->arch->name == snowc && at->name == rain) ||
+                         (tmp->arch->name == rain && at->name == snowc)) {
                           // Remove the wrong precipitation
                           object_remove(tmp);
                           object_free(tmp, 0);
@@ -1519,7 +1522,7 @@ static void do_precipitation(mapstruct * const m, const int x, const int y, cons
         // Look for a rain/snow on this tile and remove it.
         tmp = GET_MAP_OB(m, x, y);
         while (tmp) {
-            if (!strcmp(tmp->arch->name, "rain") || !strcmp(tmp->arch->name, "snow_c")) {
+            if (tmp->arch->name == rain || tmp->arch->name == snowc) {
                 object_remove(tmp);
                 object_free(tmp, 0);
             }
@@ -1563,6 +1566,8 @@ static void let_it_snow(mapstruct * const m) {
     int avoid, temp, sky, gotsnow, found, nodstk;
     object *ob, *tmp, *oldsnow, *topfloor;
     archetype *at, *doublestack, *doublestack2;
+
+    sstring dungmag = find_string("dungeon_magic");
 
     for (nx = 0; nx < settings.worldmaptilesizex; nx++) {
         for (ny = 0; ny < settings.worldmaptilesizey; ny++) {
@@ -1610,7 +1615,7 @@ static void let_it_snow(mapstruct * const m) {
                     /* the bottom floor of scorn is not IS_FLOOR */
                     topfloor = NULL;
                     for (tmp = GET_MAP_OB(m, x, y); tmp; topfloor = tmp, tmp = tmp->above) {
-                        if (strcmp(tmp->arch->name, "dungeon_magic") != 0) {
+                        if (tmp->arch->name != dungmag) {
                             if (!QUERY_FLAG(tmp, FLAG_IS_FLOOR)) {
                                 break;
                             }
@@ -1760,6 +1765,8 @@ static void singing_in_the_rain(mapstruct * const m) {
     object *ob, *tmp, *oldsnow, *topfloor;
     archetype *at, *doublestack, *doublestack2;
 
+    sstring dungmag = find_string("dungeon_magic");
+
     for (nx = 0; nx < settings.worldmaptilesizex; nx++) {
         for (ny = 0; ny < settings.worldmaptilesizey; ny++) {
             /* jitter factor */
@@ -1831,7 +1838,7 @@ static void singing_in_the_rain(mapstruct * const m) {
                 /* the bottom floor of scorn is not IS_FLOOR */
                 topfloor = NULL;
                 for (tmp = GET_MAP_OB(m, x, y); tmp; topfloor = tmp,tmp = tmp->above) {
-                    if (strcmp(tmp->arch->name, "dungeon_magic") != 0) {
+                    if (tmp->arch->name != dungmag) {
                         if (!QUERY_FLAG(tmp, FLAG_IS_FLOOR)) {
                             break;
                         }
