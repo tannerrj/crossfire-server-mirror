@@ -120,13 +120,6 @@ uint64_t price_base(const object *obj) {
         val *= obj->stats.food / 50.0;
     }
 
-    /* we need to multiply these by 4.0 to keep buy costs roughly the same
-     * (otherwise, you could buy a potion of charisma for around 400 pp.
-     * Arguable, the costs in the archetypes should be updated to better
-     * reflect values (potion charisma list for 1250 gold)
-     */
-    val *= 4; // FIXME
-
     return val;
 }
 
