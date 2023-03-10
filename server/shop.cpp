@@ -1107,13 +1107,17 @@ static double shop_specialisation_ratio(const object *item, const mapstruct *map
 }
 
 /**
- * Gets a shop's greed. For historical reasons, this is a number between 0 and 2.
+ * Gets a shop's greed. This is used as a flat multiplier to buy/sell prices.
  * Use this to compute a base efficiency for a shop:
- *  0 ~= 1.0 (shop makes no profit)
- *  1 ~= 0.9 (a reasonably efficient market)
- *  2 ~= 0.5 (2x more expensive items, pays 0.5x for items)
+ *  0.0: Buying is free, and selling price is infinite. Obviously, this shouldn't happen.
+ *  0.9: Buying price is 0.9 of value, sell price is 1.11 of value. This also shouldn't happen.
+ *  1.0: Buy and sell are not affected by greed at all. This is not good, but at least it shouldn't break the game.
+ *  1.1: Buying costs 1.1 of value, selling gives .91 of value. This shop is generous.
+ *  1.3: Buying costs 1.3 of value, selling gives .77 of value. This shop is normal.
+ *  2.0: Buying costs 2.0 of value, selling gives .50 of value. This shop is greedy.
  *
- * Caveat: most shops have greed unset (0), so make that 1
+ * Shops without a set greed default to 0, and a greed of 1.0 is not good balance,
+ * so we'll make sure it's at least 1.1 or higher.
  *
  * @param map
  * map to get greed.
@@ -1122,10 +1126,10 @@ static double shop_specialisation_ratio(const object *item, const mapstruct *map
  */
 static double shop_greed(const mapstruct *map) {
     float greed = map->shopgreed;
-    if (greed == 0) {
-        greed = 1;
+    if (greed < 1.1) {
+        greed = 1.1;
     }
-    return tanh(-greed+2.0)/2 + 0.5;
+    return 1 / greed;
 }
 
 double shop_approval(const mapstruct *map, const object *player) {
