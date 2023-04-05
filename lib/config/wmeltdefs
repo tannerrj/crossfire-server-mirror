@@ -19,5 +19,6 @@
 #   is always set to handle the archetype name.
 
 mountain, mountain1_rivlets_weather, NONE, 1
+s_mountain, mountain1_rivlets_weather, NONE, 1
 mountain2, mountain2_rivlets_weather, NONE, 1
 mountain4, mountain2_rivlets_weather, NONE, 1
