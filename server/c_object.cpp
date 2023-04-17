@@ -1825,8 +1825,6 @@ void examine_fluff(object *op, object *tmp) {
     // is newline-terminated and stripping off the newlines when we don't
     // want them; C string handling makes the latter a lot less convenient.
     if (tmp->msg && strncasecmp(tmp->msg, "@match", 6)) {
-        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
-            "%s has a story:", tmp->nrof > 1 ? "These objects" : "This object");
         StringBuffer *sb = stringbuffer_new();
         stringbuffer_append_string(sb, tmp->msg);
         stringbuffer_trim_whitespace(sb);
@@ -1892,6 +1890,17 @@ void examine_fluff(object *op, object *tmp) {
             free(fluff);
         }
       }
+    }
+
+    if (tmp->lore) {
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
+            "%s a story:", tmp->nrof > 1 ? "These objects have" : "This object has");
+        StringBuffer *sb = stringbuffer_new();
+        stringbuffer_append_string(sb, tmp->msg);
+        stringbuffer_trim_whitespace(sb);
+        char *const msg = stringbuffer_finish(sb);
+        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE, msg);
+        free(msg);
     }
 }
 
