@@ -1701,7 +1701,7 @@ static void let_it_snow(mapstruct * const m) {
                         if (!tmp->below || QUERY_FLAG(tmp, FLAG_IS_FLOOR)) {
                             at = find_archetype("earth");
                             if (at)
-                                do_weather_insert(m, x, y, at, 0, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ABOVE_FLOOR_ONLY);
+                                do_weather_insert(m, x, y, at, WEATHER_NO_SAVE, 0, INS_NO_MERGE|INS_NO_WALK_ON|INS_ABOVE_FLOOR_ONLY);
                         }
                         object_remove(tmp);
                         object_free(tmp,0);
