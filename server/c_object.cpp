@@ -1810,11 +1810,14 @@ void examine_weight_and_material(object *op, object *tmp) {
  * player.
  * @param tmp
  * object to examine.
+ * @param output
+ * if true, output the text. If false, only return true/false indicating whether
+ * text would have been output.
  */
-void examine_fluff(object *op, object *tmp) {
+bool examine_fluff(object *op, object *tmp, bool output) {
     /* No message for stuff the player hasn't IDed. */
     if (!is_identifiable_type(tmp) || !is_identified(tmp)) {
-        return;
+        return false;
     }
 
     // We use stringbuffer throughout this function so that we can use
@@ -1825,6 +1828,7 @@ void examine_fluff(object *op, object *tmp) {
     // is newline-terminated and stripping off the newlines when we don't
     // want them; C string handling makes the latter a lot less convenient.
     if (tmp->msg && strncasecmp(tmp->msg, "@match", 6)) {
+        if (!output) return true;
         StringBuffer *sb = stringbuffer_new();
         stringbuffer_append_string(sb, tmp->msg);
         stringbuffer_trim_whitespace(sb);
@@ -1844,6 +1848,7 @@ void examine_fluff(object *op, object *tmp) {
         if (!tmp->skill) break;  // Blank skill scroll, somehow.
         archetype *skill = get_archetype_by_skill_name(tmp->skill, SKILL);
         if (!skill) {
+            if (!output) break; // Still need to check for lore later.
             // Skill name doesn't correspond to any actual skill.
             draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_SPELL, MSG_TYPE_SPELL_INFO,
                 "Unfortunately, it is damaged beyond %s.",
@@ -1851,6 +1856,7 @@ void examine_fluff(object *op, object *tmp) {
             break;
         }
         if (skill->clone.msg) {
+            if (!output) return true;
             draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
                 "%s lets you %s a skill:",
                 tmp->nrof > 1 ? "These objects" : "This object",
@@ -1877,6 +1883,7 @@ void examine_fluff(object *op, object *tmp) {
       case POTION:
       {
         if (tmp->inv && tmp->inv->msg) {
+            if (!output) return true;
             draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
                 "%s holds%s a spell:",
                 tmp->nrof > 1 ? "These objects" : "This object",
@@ -1893,6 +1900,7 @@ void examine_fluff(object *op, object *tmp) {
     }
 
     if (tmp->lore) {
+        if (!output) return true;
         draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
             "%s a story:", tmp->nrof > 1 ? "These objects have" : "This object has");
         StringBuffer *sb = stringbuffer_new();
@@ -1902,6 +1910,11 @@ void examine_fluff(object *op, object *tmp) {
         draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE, msg);
         free(msg);
     }
+
+    // If we get this far in output=false mode, we didn't hit any of the earlier
+    // escape hatches and thus have nothing to output. In normal use we'll hit
+    // this regardless and assume we output something.
+    return output;
 }
 
 /**
@@ -1914,13 +1927,25 @@ void examine_fluff(object *op, object *tmp) {
  * object to examine.
  */
 void examine(object *op, object *tmp) {
-    char buf[VERY_BIG_BUF] = "";
-    int i;
-
     if (tmp == NULL || tmp->type == CLOSE_CON)
         return;
 
+    /* If the player has examined this twice in a row, do a more detailed
+        examine. last_examined shouldn't get set unless we already know that
+        examine_fluff() will do something interesting. */
+    if (op->contr->last_examined == tmp->count) {
+        op->contr->last_examined = 0;
+        draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
+            "You examine the %s more closely.", tmp->nrof > 1 ? tmp->name_pl : tmp->name);
+        examine_fluff(op, tmp, true);
+        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
+                  " "); /* Blank line */
+        return;
+    }
+
+    int i;
     char prefix[MAX_BUF] = "";
+    char buf[VERY_BIG_BUF] = "";
     if (is_identified(tmp)) {
         snprintf(prefix, MAX_BUF, "%s:", tmp->nrof<=1 ? "That is" : "Those are");
     } else {
@@ -2056,8 +2081,15 @@ void examine(object *op, object *tmp) {
         }
     }
 
-    /* Display msg, embedded spell/skill description, etc. */
-    examine_fluff(op, tmp);
+    /* Does it have fluff text? */
+    if (examine_fluff(op, tmp, false)) {
+        op->contr->last_examined = tmp->count;
+        draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
+            "Examine again for more details.");
+    } else {
+        op->contr->last_examined = 0;
+    }
+
     draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
                   " "); /* Blank line */
 

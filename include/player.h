@@ -162,6 +162,7 @@ struct player {
     uint32_t      last_path_denied;    /**< Last spell denied sent to client. */
     uint32_t      last_character_flags; /**< Last character flags (CS_STAT_CHARACTER_FLAGS) sent to client. */
     uint16_t      last_item_power;      /**< Last value for item_power. */
+    tag_t       last_examined;       /**< Tag of most recently 'examined object. */
     int         swap_first;          /**< First stat player has selected to swap. */
     living      orig_stats;          /**< Permanent real stats of player. */
     living      last_stats;          /**< Last stats as sent to client. */
