@@ -1830,9 +1830,29 @@ void examine_wand_charge_level(object *op, object *tmp) {
     draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE, desc);
 }
 
+/**
+ * Output charge information for a rod.
+ *
+ * @param op
+ * player.
+ * @param tmp
+ * object to examine.
+ */
+void examine_rod_charge_level(object *op, object *tmp) {
     if (!is_identified(tmp)) return;
-    draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
-        "It has %d charges left.", tmp->stats.food);
+    const int castings = tmp->stats.hp/SP_level_spellpoint_cost(tmp, tmp->inv, SPELL_HIGHEST);
+    const char *desc;
+    /* Rods get less precise information than wands/staves as part of balancing
+       out their reusability -- in particular, you can't tell if a rod is *almost*
+       out of shots or *completely* out of shots without trying it. */
+    if (castings <= 1) {
+        desc = "It is nearly depleted.";
+    } else if (castings <= 3) {
+        desc = "It hums with power.";
+    } else {
+        desc = "It crackles with power.";
+    }
+    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE, desc);
 }
 
 /**
@@ -2015,6 +2035,10 @@ void examine(object *op, object *tmp) {
     switch (tmp->type) {
       case WAND:
         examine_wand_charge_level(op, tmp);
+        break;
+
+      case ROD:
+        examine_rod_charge_level(op, tmp);
         break;
 
       case BOOK:
