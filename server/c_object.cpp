@@ -1802,6 +1802,40 @@ void examine_weight_and_material(object *op, object *tmp) {
 }
 
 /**
+ * Output charge information for a wand or staff.
+ *
+ * @param op
+ * player.
+ * @param tmp
+ * object to examine.
+ */
+void examine_wand_charge_level(object *op, object *tmp) {
+    if (!is_identified(tmp)) return;
+    const char *desc;
+    if (tmp->stats.food <= 0) {
+        desc = "It is completely depleted.";
+    } else if (tmp->stats.food <= 2) {
+        desc = "It is nearly depleted.";
+    } else if (tmp->stats.food <= 4) {
+        desc = "It is very low on power.";
+    } else if (tmp->stats.food <= 8) {
+        desc = "It is low on power.";
+    } else if (tmp->stats.food <= 16) {
+        desc = "It is well charged.";
+    } else if (tmp->stats.food <= 32) {
+        desc = "It is fully charged.";
+    } else {
+        desc = "It is overflowing with power.";
+    }
+    draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE, desc);
+}
+
+    if (!is_identified(tmp)) return;
+    draw_ext_info_format(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_EXAMINE,
+        "It has %d charges left.", tmp->stats.food);
+}
+
+/**
  * Emit the "fluff", the non-mechanical flavour text, for a given item. For most
  * items this does nothing, but if it has a msg, that will be output, and if it
  * contains an embedded spell or skill with a msg, it'll show that too.
@@ -1980,9 +2014,7 @@ void examine(object *op, object *tmp) {
 
     switch (tmp->type) {
       case WAND:
-        if (is_identified(tmp)) {
-            snprintf(buf, sizeof(buf), "It has %d charges left.", tmp->stats.food);
-        }
+        examine_wand_charge_level(op, tmp);
         break;
 
       case BOOK:
