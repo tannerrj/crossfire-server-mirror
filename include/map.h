@@ -348,6 +348,7 @@ struct mapstruct {
     double  shopgreed;          /**< How much our shopkeeper overcharges. */
     uint64_t  shopmin;            /**< Minimum price a shop will trade for. */
     uint64_t  shopmax;            /**< MMaximum price a shop will offer. */
+    int       shoptill;           /**< Money, in silver, shop can use to make purchases. */
     char    *msg;               /**< Message map creator may have left. */
     char    *maplore;           /**< Map lore information. */
     char    *tile_path[4];      /**< Path to adjoining maps. */

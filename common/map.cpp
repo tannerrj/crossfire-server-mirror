@@ -989,6 +989,7 @@ static int load_map_header(FILE *fp, mapstruct *m) {
     char buf[HUGE_BUF], *key = NULL, *value;
 
     m->width = m->height = 0;
+
     while (fgets(buf, sizeof(buf), fp) != NULL) {
         char *p;
 
@@ -1123,6 +1124,8 @@ static int load_map_header(FILE *fp, mapstruct *m) {
             m->shopmin = atol(value);
         } else if (!strcmp(key, "shopmax")) {
             m->shopmax = atol(value);
+        } else if (!strcmp(key, "shoptill")) {
+            m->shoptill = atoi(value);
         } else if (!strcmp(key, "shoprace")) {
             m->shoprace = strdup_local(value);
         } else if (!strcmp(key, "outdoor")) {
@@ -1159,6 +1162,17 @@ static int load_map_header(FILE *fp, mapstruct *m) {
         LOG(llevError, "Got premature eof on map header!\n");
         return 1;
     }
+
+    if (!m->shoptill) {
+        // If map header does not specify shop till, set it based on shopmax or
+        // make up a random number.
+        if (m->shopmax) {
+            m->shoptill = m->shopmax * 10;
+        } else {
+            m->shoptill = rndm(500*50, 700*50);
+        }
+    }
+
     return 0;
 }
 
@@ -1460,6 +1474,8 @@ int save_map(mapstruct *m, int flag) {
         fprintf(fp, "shopmin %" FMT64U "\n", m->shopmin);
     if (m->shopmax)
         fprintf(fp, "shopmax %" FMT64U "\n", m->shopmax);
+    if (m->shoptill)
+        fprintf(fp, "shoptill %d\n", m->shoptill);
     if (m->shoprace)
         fprintf(fp, "shoprace %s\n", m->shoprace);
     if (m->darkness)

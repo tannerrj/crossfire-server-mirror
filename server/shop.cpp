@@ -508,6 +508,11 @@ int pay_for_item(object *op, object *pl, uint64_t reduction) {
     if (to_pay > query_money(pl))
         return 0;
 
+    // Add total sum to shop till before it is altered below.
+    if (pl->map) {
+        pl->map->shoptill += to_pay;
+    }
+
     to_pay = pay_from_container(pl, pl, to_pay);
 
     FOR_INV_PREPARE(pl, pouch) {
@@ -989,8 +994,20 @@ void sell_item(object *op, object *pl) {
         return;
     }
 
-    int64_t extra_gain = compute_price_variation_with_bargaining(pl, price, MAX_SELL_EXTRA);
-    char *value_str = cost_str(price + extra_gain);
+    uint64_t extra_gain = compute_price_variation_with_bargaining(pl, price, MAX_SELL_EXTRA);
+    uint64_t total = price + extra_gain;
+    char *value_str = cost_str(total);
+
+    // Check if shop can afford this.
+    if (op->map->shoptill < total) {
+        draw_ext_info_format(NDI_UNIQUE, 0, pl,
+                             MSG_TYPE_SHOP, MSG_TYPE_SHOP_SELL,
+                             "The shop would offer %s for your %s, but cannot afford to buy it now.",
+                             value_str, obj_name);
+        return;
+    } else {
+        op->map->shoptill -= total;
+    }
 
     if (extra_gain > 0) {
         change_exp(pl, extra_gain, "bargaining", SK_EXP_NONE);
