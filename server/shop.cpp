@@ -50,7 +50,7 @@
 #define MAX_SELL_EXTRA      0.1f
 
 static uint64_t pay_from_container(object *pl, object *pouch, uint64_t to_pay);
-static uint64_t value_limit(uint64_t val, int quantity, const object *who, int isshop);
+static uint64_t value_limit(uint64_t val, int quantity, const object *who);
 static double shop_specialisation_ratio(const object *item, const mapstruct *map);
 static double shop_greed(const mapstruct *map);
 
@@ -222,7 +222,7 @@ uint64_t shop_price_sell(const object *tmp, object *who) {
 
     /* Limit amount of money you can get for really great items. */
     int number = NROF(tmp);
-    uint64_t limval = value_limit(adj_val, number, who, 1);
+    uint64_t limval = value_limit(adj_val, number, who);
 
     if (getenv("CF_DEBUG_SHOP")) {
         LOG(llevDebug, "price_sell %s %lu*adj(%.2f)*s(%.2f)*E(%.2f) = %lu limited to %lu\n",
@@ -1156,12 +1156,8 @@ double shop_approval(const mapstruct *map, const object *player) {
 }
 
 /**
- * Limit the value of items based on the wealth of the shop.
- * If the item is close to the maximum value a shop will offer,
- * we start to reduce it, if the item is below the minimum value
- * the shop is prepared to trade in, then we don't want it and
- * offer nothing. If it isn't a shop, check whether we should do
- * generic value reduction.
+ * If the item is below the minimum value the shop is prepared to trade in,
+ * then we don't want it and offer nothing.
  *
  * @param val
  * current price.
@@ -1169,38 +1165,20 @@ double shop_approval(const mapstruct *map, const object *player) {
  * number of items.
  * @param who
  * player selling.
- * @param isshop
- * 0 if not a shop, 1 if a shop.
  * @return
  * maximum global value.
  */
-static uint64_t value_limit(uint64_t val, int quantity, const object *who, int isshop) {
-    uint64_t newval, unit_price;
-    mapstruct *map;
-
-    unit_price = val/quantity;
-    if (!isshop || !who) {
-        if (unit_price > 10000)
-            newval = 8000+isqrt(unit_price)*20;
-        else
-            newval = unit_price;
-    } else {
-        if (!who->map) {
-            LOG(llevError, "value_limit: asked shop price for ob %s on NULL map\n", who->name);
-            return val;
-        }
-        map = who->map;
-        if (map->shopmin && unit_price < map->shopmin)
-            return 0;
-        else if (map->shopmax && unit_price > map->shopmax/2)
-            newval = MIN((map->shopmax/2)+isqrt(unit_price-map->shopmax/2), map->shopmax);
-        else if (unit_price > 10000)
-            newval = 8000+isqrt(unit_price)*20;
-        else
-            newval = unit_price;
+static uint64_t value_limit(uint64_t val, int quantity, const object *who) {
+    uint64_t unit_price = val/quantity;
+    if (!who->map) {
+        LOG(llevError, "value_limit: asked shop price for ob %s on NULL map\n", who->name);
+        return val;
     }
-    newval *= quantity;
-    return newval;
+    if (who->map->shopmin && unit_price < who->map->shopmin) {
+        return 0;
+    } else {
+        return val;
+    }
 }
 
 /**
