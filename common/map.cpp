@@ -1927,7 +1927,7 @@ int calculate_difficulty(mapstruct *m) {
     // seems to overshoot low-level maps and undershoot high-level maps.
     // I also feel comfortable, knowing that generators return
     // sensible values, to up the max diff this calculates from 20 to 25.
-    // - Daniel Hawkins 2021-03-04
+    // - Neila Hawkins 2021-03-04
     exp_pr_sq = (pow(total_exp, 1.75))/(MAP_WIDTH(m)*MAP_HEIGHT(m)+1);
     diff = 25;
     for (i = 1; i < 25; i++)
