@@ -35,6 +35,8 @@
 #include <crypt.h>
 #endif
 
+#include <ecl/ecl.h>
+
 #include "object.h"
 #include "path.h"
 #include "random_maps/random_map.h"
@@ -1261,6 +1263,7 @@ void cleanup(void) {
     write_book_archive();
     accounts_save();
 
+    cl_shutdown();
     close_modules();
 
 #ifdef MEMORY_DEBUG
@@ -1597,6 +1600,11 @@ void server_main(int argc, char *argv[]) {
 #endif
 
     init(argc, argv);
+    if (cl_boot(0, argv)) {
+        LOG(llevDebug, "Booted ECL\n");
+    } else {
+        LOG(llevError, "Failed to boot ECL\n");
+    }
     initPlugins();        /* GROS - Init the Plugins */
     // Give feedback that loading is complete. This prevents confusion on when it is done loading.
     PROFILE_END(diff, LOG(llevInfo, "Initialization complete (%ld ms). Waiting for connections.\n", diff/1000));

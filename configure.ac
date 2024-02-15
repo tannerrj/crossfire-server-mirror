@@ -64,6 +64,11 @@ AC_SEARCH_LIBS([pthread_create], [pthread])
 AC_SEARCH_LIBS([sqrt], [m])
 AC_SEARCH_LIBS([clock_gettime], [rt])
 
+dnl ECL
+AC_PATH_PROG([ECL_CONFIG], [ecl-config])
+AC_SUBST([ECL_CFLAGS], [`$ECL_CONFIG --cflags`])
+AC_SUBST([ECL_LDFLAGS], [`$ECL_CONFIG --ldflags`])
+
 dnl Metaserver2
 LIBCURL_CHECK_CONFIG()
 LIBS="$LIBS $LIBCURL"
