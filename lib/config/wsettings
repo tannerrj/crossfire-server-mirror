@@ -1,0 +1,24 @@
+#
+# Settings for the weather module.
+# By having the weather module's settings separate,
+# we make a disabled weather module have little to no
+# overhead on the game.
+#
+
+# Dimensions of each world map tile.
+# Maybe could be determined by examining a weather map tile, since
+# these values must match the dimensions of a world map tile or
+# undefined behavior occurs.
+
+worldmaptilesizex 50
+worldmaptilesizey 50
+
+
+# dynamiclevel sets the level of change on the worldmaps, this should be 0
+# unless you are using bigworld maps (or set up the above values properly for your maps)
+# and want to run weather.  Differnet values increase the amount of dynamism from
+# weather to growth to erosion.  (see documents for more info).
+# If dynamiclevel is not 0, first run of the server will generate the weather maps
+# which could be a lengthy process.
+
+dynamiclevel 2

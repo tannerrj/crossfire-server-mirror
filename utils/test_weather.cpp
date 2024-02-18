@@ -14,7 +14,10 @@ int main(int argc, char *argv[]) {
     int num = atoi(argv[1]);
 
     init(argc, argv);
-    settings.dynamiclevel = 2; // overwrite settings
+    // With weather settings separate from the main settings,
+    // there is not a good way to override this.
+    // It is expected that we have dynamiclevel 2 or higher here.
+    //settings.dynamiclevel = 2; // overwrite settings
     LOG(llevInfo, "Simulating weather for %d ticks: ", num);
     for (int i = 0; i < num; i++) {
         todtick++;

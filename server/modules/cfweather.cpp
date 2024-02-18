@@ -164,6 +164,16 @@ struct weather_grow_t {
 	int season;         /**< Season the herb can grow. 0=any or 1-5. */
 };
 
+/**
+ * Weather settings definition structure
+ * Stolen from the settings file, as they are unused by everything that isn't weather.
+ */
+struct weather_settings_t {
+    uint32_t  worldmaptilesizex;      /**< Number of squares wide in a wm tile */
+    uint32_t  worldmaptilesizey;      /**< Number of squares high in a wm tile */
+    uint16_t  dynamiclevel;           /**< How dynamic is the world? */
+};
+
 /********************************************************************************************
  * Section END -- weather structures
  ********************************************************************************************/
@@ -196,6 +206,12 @@ static int gulf_stream_direction;
 static int wmperformstartx;
 /** Current weather tile position. */
 static int wmperformstarty;
+
+static weather_settings_t wset = {
+    .worldmaptilesizex = 50,
+    .worldmaptilesizey = 50,
+    .dynamiclevel = 1,
+};
 
 /*
  * @todo
@@ -314,8 +330,8 @@ static const weather_grow_t weather_tile[] = {
  * buffer containing the path to the world map we want, or NULL if were weren't given a corner direction.
  */
 static char *weathermap_to_worldmap_corner(const int wx, const int wy, int * const x, int * const y, const int dir, char * const buffer, const int bufsize) {
-    const int spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX,
-              spwty= (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
+    const int spwtx = (settings.worldmaptilesx * wset.worldmaptilesizex)/WEATHERMAPTILESX,
+              spwty= (settings.worldmaptilesy * wset.worldmaptilesizey)/WEATHERMAPTILESY;
     int tx, ty, nx, ny;
 
     // Load the position on the map the corner of the weathermap takes.
@@ -344,12 +360,12 @@ static char *weathermap_to_worldmap_corner(const int wx, const int wy, int * con
         return NULL;
     }
 
-    nx = (tx/settings.worldmaptilesizex)+settings.worldmapstartx;
-    ny = (ty/settings.worldmaptilesizey)+settings.worldmapstarty;
+    nx = (tx / wset.worldmaptilesizex)+settings.worldmapstartx;
+    ny = (ty / wset.worldmaptilesizey)+settings.worldmapstarty;
     snprintf(buffer, bufsize, "world/world_%d_%d", nx, ny);
 
-    *x = tx%settings.worldmaptilesizex;
-    *y = ty%settings.worldmaptilesizey;
+    *x = tx % wset.worldmaptilesizex;
+    *y = ty % wset.worldmaptilesizey;
     return buffer;
 }
 
@@ -438,9 +454,9 @@ static int get_config_tile(const int x, const int y, const mapstruct *m, const D
  * @return
  * -1 if you give it something it can't figure out. 0 normally.
  */
-int worldmap_to_weathermap(const int x, const int y, int * const wx, int * const wy, mapstruct * const m) {
-    const int spwtx = (settings.worldmaptilesx*settings.worldmaptilesizex)/WEATHERMAPTILESX,
-              spwty = (settings.worldmaptilesy*settings.worldmaptilesizey)/WEATHERMAPTILESY;
+static int worldmap_to_weathermap(const int x, const int y, int * const wx, int * const wy, mapstruct * const m) {
+    const int spwtx = (settings.worldmaptilesx * wset.worldmaptilesizex)/WEATHERMAPTILESX,
+              spwty = (settings.worldmaptilesy * wset.worldmaptilesizey)/WEATHERMAPTILESY;
     int fx, fy;
     int nx, ny;
     const char *filename = m->path;
@@ -486,8 +502,8 @@ int worldmap_to_weathermap(const int x, const int y, int * const wx, int * const
     fx -= settings.worldmapstartx;
     fy -= settings.worldmapstarty;
 
-    nx = fx*settings.worldmaptilesizex+x;
-    ny = fy*settings.worldmaptilesizey+y;
+    nx = fx * wset.worldmaptilesizex+x;
+    ny = fy * wset.worldmaptilesizey+y;
 
     *wx = nx/spwtx;
     *wy = ny/spwty;
@@ -1411,8 +1427,8 @@ void process_rain() {
 static void calculate_temperature(mapstruct *m) {
     int x,y, wx, wy;
     assert(worldmap_to_weathermap(0, 0, &wx, &wy, m) == 0);
-    for (x = 0; x < settings.worldmaptilesizex; x++) {
-        for (y = 0; y < settings.worldmaptilesizey; y++) {
+    for (x = 0; x < wset.worldmaptilesizex; x++) {
+        for (y = 0; y < wset.worldmaptilesizey; y++) {
             worldmap_to_weathermap(x, y, &wx, &wy, m);
             weathermap[wx][wy].realtemp = real_world_temperature(x, y, m);
         }
@@ -1425,7 +1441,7 @@ static void calculate_temperature(mapstruct *m) {
  * Re-ordering these will probably produce unintended side effects.
  */
 void tick_weather() {
-    assert(settings.dynamiclevel > 0);
+    assert(wset.dynamiclevel > 0);
     update_humid();         /* Run the humidity updates based on prior pressure, temperature, and wind */
     perform_pressure();     /* pressure is the random factor */
     smooth_wind();          /* calculate the wind. depends on pressure */
@@ -1571,8 +1587,8 @@ static void let_it_snow(mapstruct * const m) {
 
     sstring dungmag = find_string("dungeon_magic");
 
-    for (nx = 0; nx < settings.worldmaptilesizex; nx++) {
-        for (ny = 0; ny < settings.worldmaptilesizey; ny++) {
+    for (nx = 0; nx < wset.worldmaptilesizex; nx++) {
+        for (ny = 0; ny < wset.worldmaptilesizey; ny++) {
             /* jitter factor */
             if (rndm(0, 2) > 0) {
                 x = y = d = -1;
@@ -1769,8 +1785,8 @@ static void singing_in_the_rain(mapstruct * const m) {
 
     sstring dungmag = find_string("dungeon_magic");
 
-    for (nx = 0; nx < settings.worldmaptilesizex; nx++) {
-        for (ny = 0; ny < settings.worldmaptilesizey; ny++) {
+    for (nx = 0; nx < wset.worldmaptilesizex; nx++) {
+        for (ny = 0; ny < wset.worldmaptilesizey; ny++) {
             /* jitter factor */
             if (rndm(0, 2) > 0) {
                 x = y = d = -1;
@@ -1960,8 +1976,8 @@ static void plant_a_garden(mapstruct *const m) {
     archetype *at;
 
     days = todtick/HOURS_PER_DAY;
-    for (x = 0; x < settings.worldmaptilesizex; x++) {
-        for (y = 0; y < settings.worldmaptilesizey; y++) {
+    for (x = 0; x < wset.worldmaptilesizex; x++) {
+        for (y = 0; y < wset.worldmaptilesizey; y++) {
             (void)worldmap_to_weathermap(x, y, &wx, &wy, m);
             ob = NULL;
             at = NULL;
@@ -2060,8 +2076,8 @@ static void change_the_world(mapstruct * const m) {
     archetype *at, *dat;
 
     days = todtick/HOURS_PER_DAY;
-    for (nx = 0; nx < settings.worldmaptilesizex; nx++) {
-        for (ny = 0; ny < settings.worldmaptilesizey; ny++) {
+    for (nx = 0; nx < wset.worldmaptilesizex; nx++) {
+        for (ny = 0; ny < wset.worldmaptilesizey; ny++) {
             /* jitter factor */
             if (rndm(0, 2) > 0) {
                 x = y = d = -1;
@@ -2190,7 +2206,7 @@ static void weather_effect(mapstruct * const m) {
     int wx, wy, x, y;
 
     /* if the dm shut off weather, go home */
-    if (settings.dynamiclevel < 1) {
+    if (wset.dynamiclevel < 1) {
         return;
     }
 
@@ -2208,14 +2224,14 @@ static void weather_effect(mapstruct * const m) {
     /*First, calculate temperature*/
     calculate_temperature(m);
     /* we change the world first, if needed */
-    if (settings.dynamiclevel >= 5) {
+    if (wset.dynamiclevel >= 5) {
         change_the_world(m);
     }
-    if (settings.dynamiclevel >= 2) {
+    if (wset.dynamiclevel >= 2) {
         let_it_snow(m);
         singing_in_the_rain(m);
     }
-    if (settings.dynamiclevel >= 3) {
+    if (wset.dynamiclevel >= 3) {
         plant_a_garden(m);
     }
 }
@@ -2233,7 +2249,7 @@ void perform_weather() {
     char filename[MAX_BUF];
     FILE *fp;
 
-    if (!settings.dynamiclevel) {
+    if (!wset.dynamiclevel) {
         return;
     }
 
@@ -2731,8 +2747,8 @@ static void init_humid_elev(const Settings *settings) {
     // j: temporary variable for when a specific ny needs to be initialized from within a loop.
     int x, y, tx, ty, nx, ny, ax, ay, j;
     // spwtx, spwty: The number of tiles in a single weathermap in the associated (x or y) direction
-    const int spwtx = (settings->worldmaptilesx*settings->worldmaptilesizex)/WEATHERMAPTILESX,
-              spwty = (settings->worldmaptilesy*settings->worldmaptilesizey)/WEATHERMAPTILESY;
+    const int spwtx = (settings->worldmaptilesx * wset.worldmaptilesizex)/WEATHERMAPTILESX,
+              spwty = (settings->worldmaptilesy * wset.worldmaptilesizey)/WEATHERMAPTILESY;
     int64_t elev;
     int water, space, trees;
     mapstruct *m;
@@ -2753,8 +2769,8 @@ static void init_humid_elev(const Settings *settings) {
             if (load_humidity_map_part(&m, 8, x, y, &tx, &ty) == -1)
                 continue;
 
-            for (nx = 0, ax = tx; nx < spwtx && ax < settings->worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
-                for (ny = 0, ay = ty; ny < spwty && ay < settings->worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
+            for (nx = 0, ax = tx; nx < spwtx && ax < wset.worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
+                for (ny = 0, ay = ty; ny < spwty && ay < wset.worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
                     do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
                     //LOG(llevInfo, "%s %d %d (8)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
                 }
@@ -2778,7 +2794,7 @@ static void init_humid_elev(const Settings *settings) {
                     // Since we are continuing from top left, maintaining our position in the y direction
                     // allows us to correctly check when we reach the end of the weathermap bounds.
                     j = ny;
-                    for (nx = 0, ax = tx; nx < spwtx && ax < settings->worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
+                    for (nx = 0, ax = tx; nx < spwtx && ax < wset.worldmaptilesizex && space < spwtx*spwty; ax++, nx++) {
                         for (ny = j, ay = MAX(0, ty-(spwty-1)); ny < spwty && ay <= ty && space < spwtx*spwty; space++, ay++, ny++) {
                             do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
                             //LOG(llevInfo, "%s %d %d (6)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
@@ -2794,7 +2810,7 @@ static void init_humid_elev(const Settings *settings) {
                         continue;
 
                     for (ax = MAX(0, tx-(spwtx-1)); nx < spwtx && ax <= tx && space < spwtx*spwty; ax++, nx++) {
-                        for (ny = 0, ay = ty; ny < spwty && ay < settings->worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
+                        for (ny = 0, ay = ty; ny < spwty && ay < wset.worldmaptilesizey && space < spwtx*spwty; ay++, ny++, space++) {
                             do_water_elev_calc(m, ax, ay, &water, &elev, &trees);
                             //LOG(llevInfo, "%s %d %d (2)->(%d.%d, %d.%d)\n", m->path, ax, ay, x, nx, y, ny);
                         }
@@ -3023,6 +3039,65 @@ static void init_pressure() {
         weathermap[x][y].pressure = n;
     }
     smooth_pressure();
+}
+
+static void init_weather_settings(Settings *settings) {
+    char buf[MAX_BUF], *cp, dummy[1];
+    FILE *fp;
+    int has_val;
+
+    snprintf(buf, sizeof(buf), "%s/wsettings", settings->confdir);
+
+    if ((fp = fopen(buf, "r")) == NULL) {
+        LOG(llevError, "Warning: No settings file found\n");
+        return;
+    }
+    while (fgets(buf, MAX_BUF-1, fp) != NULL) {
+        if (buf[0] == '#')
+            continue;
+        /* eliminate newline */
+        if ((cp = strrchr(buf, '\n')) != NULL)
+            *cp = '\0';
+
+        /* Skip over empty lines */
+        if (buf[0] == 0)
+            continue;
+
+        /* Skip all the spaces and set them to nulls.  If not space,
+         * set cp to "" to make strcpy's and the like easier down below.
+         */
+        if ((cp = strchr(buf, ' ')) != NULL) {
+            while (*cp == ' ')
+                *cp++ = 0;
+            has_val = 1;
+        } else {
+            cp = dummy;
+            has_val = 0;
+        }
+
+        if (!strcasecmp(buf, "worldmaptilesizex")) {
+            int size = atoi(cp);
+
+            if (size < 1)
+                LOG(llevError, "load_settings: worldmaptilesizex must be greater than 1, %d is invalid\n", size);
+            else
+                wset.worldmaptilesizex = size;
+        } else if (!strcasecmp(buf, "worldmaptilesizey")) {
+            int size = atoi(cp);
+
+            if (size < 1)
+                LOG(llevError, "load_settings: worldmaptilesizey must be greater than 1, %d is invalid\n", size);
+            else
+                wset.worldmaptilesizey = size;
+        } else if (!strcasecmp(buf, "dynamiclevel")) {
+            int lev = atoi(cp);
+
+            if (lev < 0)
+                LOG(llevError, "load_settings: dynamiclevel must be at least 0, %d is invalid\n", lev);
+            else
+                wset.dynamiclevel = lev;
+        }
+    }
 }
 
 /********************************************************************************************
@@ -4563,7 +4638,7 @@ static void command_weather (object *op, const char *params) {
     int wx, wy, temp, sky;
     const char *buf;
 
-    if (settings.dynamiclevel < 1) {
+    if (wset.dynamiclevel < 1) {
         draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_WEATHER,
             "The weather is perpetually great around here.");
         return;
@@ -4747,17 +4822,21 @@ static command_registration command_handler = 0;
  */
 void cfweather_init(Settings *settings) {
     int x, tx, ty;
+
+    // Initialize weather settings
+    init_weather_settings(settings);
+
     /* all this stuff needs to be set, otherwise this function will cause
      * chaos and destruction.
      */
-    if (settings->dynamiclevel < 1) {
-        LOG(llevInfo, "cfweather_init: dynamic level set to %d. Not loading weather.\n", settings->dynamiclevel);
+    if (wset.dynamiclevel < 1) {
+        LOG(llevInfo, "cfweather_init: dynamic level set to %d. Not loading weather.\n", wset.dynamiclevel);
         return;
     }
 
     if (settings->worldmapstartx < 1 || settings->worldmapstarty < 1 ||
         settings->worldmaptilesx < 1 || settings->worldmaptilesy < 1 ||
-        settings->worldmaptilesizex < 1 || settings->worldmaptilesizex < 1) {
+        wset.worldmaptilesizex < 1 || wset.worldmaptilesizex < 1) {
         return;
     }
     // Initialize the forestry information from file.
