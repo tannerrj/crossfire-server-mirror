@@ -33,7 +33,8 @@ CONF_FILES = \
 	config/wavoiddefs \
 	config/wevapdefs \
 	config/wmeltdefs \
-	config/wreplacedefs
+	config/wreplacedefs \
+	config/wsettings
 
 VAR_FILES = highscore banish_file bookarch temp.maps clockdata
 EXTRA_DIST = README .collect-stamp $(CONF_FILES)

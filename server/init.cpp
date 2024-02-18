@@ -687,27 +687,6 @@ void load_settings(void) {
                 LOG(llevError, "load_settings: worldmaptilesy must be greater than 1, %d is invalid\n", size);
             else
                 settings.worldmaptilesy = size;
-        } else if (!strcasecmp(buf, "worldmaptilesizex")) {
-            int size = atoi(cp);
-
-            if (size < 1)
-                LOG(llevError, "load_settings: worldmaptilesizex must be greater than 1, %d is invalid\n", size);
-            else
-                settings.worldmaptilesizex = size;
-        } else if (!strcasecmp(buf, "worldmaptilesizey")) {
-            int size = atoi(cp);
-
-            if (size < 1)
-                LOG(llevError, "load_settings: worldmaptilesizey must be greater than 1, %d is invalid\n", size);
-            else
-                settings.worldmaptilesizey = size;
-        } else if (!strcasecmp(buf, "dynamiclevel")) {
-            int lev = atoi(cp);
-
-            if (lev < 0)
-                LOG(llevError, "load_settings: dynamiclevel must be at least 0, %d is invalid\n", lev);
-            else
-                settings.dynamiclevel = lev;
         } else if (!strcasecmp(buf, "fastclock")) {
             int lev = atoi(cp);
 
