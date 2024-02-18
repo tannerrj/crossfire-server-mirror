@@ -621,7 +621,6 @@ void tick_the_clock(void);
 /* modules/cfweather.c */
 void tick_weather(void);
 void process_rain(void);
-int worldmap_to_weathermap(int x, int y, int *wx, int *wy, mapstruct *m);
 int real_world_temperature(int x, int y, mapstruct *m);
 int write_rainfallmap(const Settings *settings);
 int write_skymap(void);

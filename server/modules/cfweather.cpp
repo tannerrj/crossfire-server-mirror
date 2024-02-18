@@ -74,6 +74,8 @@
 #define WEATHERMAPTILESX		100
 #define WEATHERMAPTILESY		100
 
+static int worldmap_to_weathermap(const int x, const int y, int * const wx, int * const wy, mapstruct * const m);
+
 /********************************************************************************************
  * Section -- weather structures
  * Structures to handle various aspects of the weather system.
