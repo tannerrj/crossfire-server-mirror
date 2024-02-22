@@ -432,7 +432,6 @@ struct object {
     uint8_t       temp_anim_speed; /**< Ticks between temporary animation-frames */
     uint8_t       smoothlevel;    /**< how to smooth this square around*/
     uint8_t       map_layer;      /**< What level to draw this on the map */
-    int32_t       elevation;      /** Map tile elevation -- used by weather code */
 
     MoveType    move_type;      /**< Type of movement this object uses */
     MoveType    move_block;     /**< What movement types this blocks */
@@ -448,7 +447,7 @@ struct object {
     uint64_t    event_bitmask;  /**< Bitmask of events this object has a handler for, see events.h */
 
     /* This used to be a key/value, but this is on all world maps and needs to be fast. */
-    int elevation;
+    int elevation;               /** Map tile elevation -- used by weather code */
 
     /** Computing whether or not an item is in the light is very expensive, so cache it. */
     uint32_t light_cached_time; //< tick this was cached
