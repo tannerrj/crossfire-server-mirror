@@ -1355,8 +1355,27 @@ static int check_probe(int ax, int ay, const object *ob, SockList *sl, socket_st
     return got_one;
 }
 
-static int annotate_ob(int ax, int ay, const object *ob, SockList *sl, socket_struct *ns, int *has_obj, int *alive_layer) {
+static void map2_add_label(socket_struct *ns, SockList *sl, enum map2_label subtype, const char *label) {
+    // protect old clients from label with additive length, which can cause them to crash
+    if (ns->sc_version < 1030)
+        return;
+
+    int len = strlen(label);
+    if (len > 256 - 2 - 1) {
+        LOG(llevError, "The label '%s' is too long to send to the client.", label);
+        return;
+    }
+    SockList_AddChar(sl, MAP2_ADD_LENGTH | MAP2_TYPE_LABEL); // label with additive length
+    SockList_AddChar(sl, len + 2); // length of payload (subtype + lstring)
+    SockList_AddChar(sl, subtype);
+    SockList_AddChar(sl, len); // lstring length prefix
+    SockList_AddString(sl, label);
+}
+
+static int annotate_ob(int ax, int ay, const object *ob, SockList *sl, player *plyr, int *has_obj, int *alive_layer) {
+    socket_struct *ns = plyr->socket;
     int got_one = check_probe(ax, ay, ob, sl, ns, has_obj, alive_layer);
+    // add NPC speech bubble
     if (QUERY_FLAG(ob, FLAG_ALIVE) && (QUERY_FLAG(ob, FLAG_UNAGGRESSIVE) || QUERY_FLAG(ob, FLAG_FRIENDLY)) && ob->type != PLAYER) {
         if (ob->msg != NULL || object_find_by_arch_name(ob, "npc_dialog")) {
             archetype *dummy = try_find_archetype("speechbubble");
@@ -1365,6 +1384,19 @@ static int annotate_ob(int ax, int ay, const object *ob, SockList *sl, socket_st
                 (*alive_layer) = MAP_LAYER_FLY2;
             }
         }
+    }
+    // add player name label
+    if (ob->type == PLAYER) {
+        enum map2_label subtype = MAP2_LABEL_PLAYER;
+        if (QUERY_FLAG(ob, FLAG_WIZ)) {
+            subtype = MAP2_LABEL_DM;
+        } else if (plyr->party) {
+            if (ob->contr && ob->contr->party == plyr->party) {
+                subtype = MAP2_LABEL_PLAYER_PARTY;
+            }
+        }
+        map2_add_label(ns, sl, subtype, ob->name);
+        got_one += 1;
     }
     return got_one;
 }
@@ -1568,7 +1600,7 @@ static void draw_client_map2(object *pl) {
 
                             /* if we added the face, or it is a monster's head, check probe spell */
                             if (got_one != old_got || ob->head == NULL)
-                                got_one += annotate_ob(ax, ay, ob, &sl, plyr->socket, &has_obj, &alive_layer);
+                                got_one += annotate_ob(ax, ay, ob, &sl, plyr, &has_obj, &alive_layer);
 
                             /* If we are just storing away the head
                              * for future use, then effectively this

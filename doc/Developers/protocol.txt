@@ -1316,10 +1316,11 @@ equal to the termination byte 255, end data for the last _coord_. The next
 field should be a different _coord_. Otherwise, this consists of (from MSB to
 LSB):
 
-* 3 bits: Number of bytes that follow - it is possible that this is zero, to
-  denote all the relevant information is included in the type. If this is 7
-  (all bits set) then the following byte is an additive length value.
-  Currently, nothing has a 7+ bit length.
+* 3 bits: Number of bytes that follow, or (only for SC >= 1030) 7. 0 indicates
+  no additional bytes, i.e.  all the relevant information is included in the
+  type. For SC >= 1030: If it is 7 (all bits set), then the next byte contains
+  a 1-byte length field that denotes the actual number of bytes that follow
+  (and the 7 should be ignored).
 
 * 5 bits: Type, which is one of:
 ** 0x0: Clear: Clear this tile because it is no longer visible. The client may
@@ -1330,7 +1331,30 @@ LSB):
    completely dark and 255 is fully lit. Note that 0 will never be sent - if
    the space is completely dark, players won't be able to see it.
 
-** 0x2 - 0xf: Reserved for future extensions.
+** (SC >= 1030) 0x2: Label, a textual label that describes the tile, e.g. a
+   place name, sign label, or player name. This must be sent with the 3-bit
+   length field set to 7 (all bits set). The data consists of:
+
+       <len><subtype><label>
+
+   *** len: _int8_, actual length of message, including 1-byte subtype, 1-byte label
+   prefix, and actual label text
+
+   *** subtype: _int8_, extra data about the type of label. The client can use
+   this to color the text or display it differently.
+
+   **** 1: Player
+   **** 2: Player in the same party
+   **** 3: DM
+   **** 4: NPC
+   **** 5: Sign
+   **** 6: Say message
+   **** 7: Chat message
+
+   *** label: _lstring_, the label text. Note that the length prefix is still
+   required even though it equals _len - 2_.
+
+** 0x3 - 0xf: Reserved for future extensions.
 
 ** 0x10 - 0x19: Image information. Layer 0x10 is the lowest, 0x19 is the
    highest.
@@ -2177,6 +2201,11 @@ SC version 1028 -> 1029: Changes the way weapon_speed is reported for
   the player - version 1028 needed the client to divide weapon speed
   by player speed to get actual value, version 1029 just reports weapon
   speed as it should be displayed.
+
+SC version 1029 -> 1030: Clarify the additive length byte in the map2 command
+type field and add map text label support. This was needed because some
+clients did not correctly handle the additive length byte for map2 types that
+they did not support.
 
 Todo
 ----

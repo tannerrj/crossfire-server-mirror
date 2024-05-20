@@ -147,7 +147,7 @@ struct Socket_Info {
 extern Socket_Info socket_info;
 
 #define VERSION_CS 1023    /**< Version >= 1023 understand setup cmd */
-#define VERSION_SC 1029
+#define VERSION_SC 1030
 #define VERSION_INFO "Crossfire Server"
 
 #endif /* NEWSERVER_H */
