@@ -5033,6 +5033,10 @@ void get_ob_diff(StringBuffer *sb, const object *op, const object *op2) {
     if (op->msg && op->msg != op2->msg) {
         stringbuffer_append_string(sb, "msg\n");
         stringbuffer_append_string(sb, op->msg);
+        // our last chance to check that op->msg ends in a newline before we corrupt save files
+        if (op->msg[strlen(op->msg) - 1] != '\n') {
+            stringbuffer_append_string(sb, "\n");
+        }
         stringbuffer_append_string(sb, "endmsg\n");
     }
     if (op->lore && op->lore != op2->lore) {
