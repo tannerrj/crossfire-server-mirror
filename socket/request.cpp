@@ -1397,6 +1397,16 @@ static int annotate_ob(int ax, int ay, const object *ob, SockList *sl, player *p
         }
         map2_add_label(ns, sl, subtype, ob->name);
         got_one += 1;
+
+        // add say labels
+        const char *name_shared = add_string("say_popup_force");
+        for (object *tmp = ob->inv; tmp; tmp = tmp->below) {
+            if (tmp->name == name_shared) {
+                map2_add_label(ns, sl, MAP2_LABEL_SAY, tmp->msg);
+                got_one += 1;
+            }
+        }
+        free_string(name_shared);
     }
     return got_one;
 }

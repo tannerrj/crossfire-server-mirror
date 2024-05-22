@@ -2375,7 +2375,7 @@ void monster_communicate(object *op, const char *txt) {
     int i, mflags;
     int16_t x, y;
     mapstruct *mp, *orig_map = op->map;
-    char own[MAX_BUF], others[MAX_BUF];
+    char own[MAX_BUF], others[MAX_BUF], text[MAX_BUF];
     talk_info info;
 
     info.text = txt;
@@ -2410,15 +2410,25 @@ void monster_communicate(object *op, const char *txt) {
 
     /* First, what the player says. */
     if (info.message != NULL) {
+        snprintf(text, sizeof(text), "%s", info.message);
         snprintf(own, sizeof(own), "You %s: %s", get_reply_text_own(info.message_type), info.message);
         snprintf(others, sizeof(others), "%s %s: %s", op->name, get_reply_text_other(info.message_type), info.message);
         free_string(info.message);
     } else {
+        snprintf(text, sizeof(text), "%s", txt);
         snprintf(own, sizeof(own), "You say: %s", txt);
         snprintf(others, sizeof(others), "%s says: %s", op->name, txt);
     }
     draw_ext_info(NDI_WHITE, 0, op, MSG_TYPE_COMMUNICATION, MSG_TYPE_COMMUNICATION_SAY, own);
     ext_info_map_except(NDI_WHITE, op->map, op, MSG_TYPE_COMMUNICATION, MSG_TYPE_COMMUNICATION_SAY, others);
+
+    // add popup
+    object *popup = create_archetype(FORCE_NAME);
+    popup->name = add_string("say_popup_force");
+    popup->msg = add_string(text);
+    SET_FLAG(popup, FLAG_IS_USED_UP);
+    popup->stats.food = 100;
+    object_insert_in_ob(popup, op);
 
     /* Then NPCs can actually talk. */
     for (i = 0; i < info.npc_msg_count; i++) {
