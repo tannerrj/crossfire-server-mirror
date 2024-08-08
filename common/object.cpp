@@ -1042,6 +1042,8 @@ void object_clear(object *op) {
     op->attacked_by_count = -1;
     if (settings.casting_time)
         op->casting_time = -1;
+
+    op->event_bitmask = BITMASK_VALID;
 }
 
 /**
@@ -1259,29 +1261,12 @@ static void expand_objects(void) {
 #endif
 
 /**
- * Grabs an object from the list of unused objects, makes
- * sure it is initialised, and returns it.
- *
- * If there are no free objects, expand_objects() is called to get more.
- *
- * @return
- * cleared and ready to use object*.
- *
- * @note
- * will never fail, as expand_objects() will fatal() if memory allocation error.
+ * Return a pointer to the next free object in the global free list, expanding
+ * the free list if needed. Not thread safe. Caller may need to
+ * object_reset()/object_clear() the returned object.
  */
-object *object_new(void) {
+object *object_alloc(void) {
     object *op;
-#ifdef MEMORY_DEBUG
-    /* FIXME: However this doesn't work since object_free() sometimes add
-     * objects back to the free_objects linked list, and some functions mess
-     * with the object after return of object_free(). This is bad and should be
-     * fixed. But it would need fairly extensive changes and a lot of debugging.
-     */
-    op = static_cast<object *>(calloc(1, sizeof(object)));
-    if (op == NULL)
-        fatal(OUT_OF_MEMORY);
-#else
     if (free_objects == NULL) {
         expand_objects();
     }
@@ -1296,27 +1281,60 @@ object *object_new(void) {
     if (free_objects != NULL)
         free_objects->prev = NULL;
     nroffreeobjects--;
-#endif
-    op->count = ++ob_count;
-    op->name = NULL;
-    op->name_pl = NULL;
-    op->title = NULL;
-    op->race = NULL;
-    op->slaying = NULL;
-    op->skill = NULL;
-    op->lore = NULL;
-    op->msg = NULL;
-    op->materialname = NULL;
+    return op;
+}
+
+/**
+ * Allocate an object. Thread safe. Memory starts cleared.
+ */
+object *object_alloc_s(void) {
+    object *op = static_cast<object *>(calloc(1, sizeof(object)));
+    if (op == NULL)
+        fatal(OUT_OF_MEMORY);
+    return op;
+}
+
+/**
+ * Add the given object to the global list of objects. Any object that is added
+ * to this list is no longer thread-safe.
+ */
+void object_link(object *op) {
     op->next = objects;
     op->prev = NULL;
-    op->active_next = NULL;
-    op->active_prev = NULL;
-    op->spell_tags = NULL;
-    op->event_bitmask = BITMASK_VALID;
     if (objects != NULL)
         objects->prev = op;
     objects = op;
+}
+
+/**
+ * Grabs an object from the list of unused objects, makes
+ * sure it is initialised, and returns it.
+ *
+ * If there are no free objects, expand_objects() is called to get more.
+ *
+ * @return
+ * cleared and ready to use object*.
+ *
+ * @note
+ * will never fail, as expand_objects() will fatal() if memory allocation error.
+ */
+object *object_new(void) {
+    object *op = object_alloc();
+    object_reset(op);
+    op->count = ++ob_count;
+    SET_FLAG(op, FLAG_REMOVED);
+    object_link(op);
+    return op;
+}
+
+/**
+ * Like object_new(), but allocates thread-safe memory and does not link the
+ * object to the global objects list. Safe for use in a separate thread.
+ */
+object *object_new_s(void) {
+    object *op = object_alloc_s();
     object_clear(op);
+    op->count = ++ob_count;
     SET_FLAG(op, FLAG_REMOVED);
     return op;
 }

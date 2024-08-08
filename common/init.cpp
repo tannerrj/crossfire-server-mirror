@@ -120,7 +120,7 @@ archetype *empty_archetype;       /**< Nice to have fast access to it. */
 char first_map_path[MAX_BUF];     /**< The start-level. */
 char first_map_ext_path[MAX_BUF]; /**< Path used for per-race start maps. */
 
-long ob_count;
+atomic_long ob_count;
 
 const char *undead_name; /* Used in hit_player() in main.c */
 sstring blocks_prayer;   /**< For update_position() mostly. */
