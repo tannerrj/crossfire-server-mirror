@@ -61,10 +61,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 </xsl:stylesheet>
 EOF
     AC_MSG_CHECKING([xslt compliance of $1])
-    to_run=$1
-    to_run=${to_run/\%1/configtest.xml}
-    to_run=${to_run/\%2/configtest.xsl}
-    to_run=${to_run/\%3/configtest.out}
+    to_run=$(echo "$1" | sed -e 's/%1/configtest.xml/' -e 's/%2/configtest.xsl/' -e 's/%3/configtest.out/')
     if AC_TRY_COMMAND([$to_run]);then
     	AC_MSG_RESULT([yes]);
         [$2]
