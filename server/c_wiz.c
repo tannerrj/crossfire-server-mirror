@@ -1698,13 +1698,13 @@ int command_reset(object *op, char *params) {
                                  "Can't reset a player unique map while on it, use 'reset full-reset %s' while not on it.",
                                  "Can't reset a player unique map while on it, use 'reset full-reset %s' while not on it.",
                                  m->path);
-            return;
+            return 1;
         }
 
         if (strncmp("full-reset", confirmation, strlen("full-reset"))) {
             draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_ERROR,
                           "Invalid confirmation, must be 'full-reset'.", "Invalid confirmation, must be 'full-reset'.");
-            return;
+            return 1;
         }
     }
 
