@@ -1258,6 +1258,7 @@ void clean_tmp_files(void) {
 /** Clean up everything and exit. */
 void cleanup(void) {
     metaserver2_exit();
+    fileserver_exit();
     LOG(llevInfo, "Cleaning up...\n");
     clean_tmp_files();
     write_book_archive();

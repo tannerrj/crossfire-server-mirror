@@ -71,6 +71,9 @@ int count_players(void);
 void metaserver_update(void);
 int metaserver2_init(void);
 void metaserver2_exit();
+/* fileserver.cpp */
+int fileserver_init(void);
+void fileserver_exit();
 /* request.c */
 void set_up_cmd(char *buf, int len, socket_struct *ns);
 void add_me_cmd(char *buf, int len, socket_struct *ns);
@@ -114,6 +117,7 @@ void account_password(char *buf, int len, socket_struct *ns);
 /* requestinfo.c */
 void send_new_char_info(socket_struct *ns);
 void send_map_info(socket_struct *ns);
+void send_fileport(socket_struct *ns);
 /* sounds.c */
 void play_sound_player_only(player *pl, int8_t sound_type, object *emitter, int dir, const char *action);
 void play_sound_map(int8_t sound_type, object *emitter, int dir, const char *action);

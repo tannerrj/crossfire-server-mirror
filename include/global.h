@@ -288,6 +288,8 @@ struct Settings {
     uint16_t  meta_port;              /**< Port number to use for updates */
     char    meta_comment[MAX_BUF];  /**< Comment we send to the metaserver */
 
+    uint16_t file_port; /**< Port number to use for the file server, if 0 csport+1 */
+
     uint32_t  worldmapstartx;         /**< Starting x tile for the worldmap */
     uint32_t  worldmapstarty;         /**< Starting y tile for the worldmap */
     uint32_t  worldmaptilesx;         /**< Number of tiles wide the worldmap is */

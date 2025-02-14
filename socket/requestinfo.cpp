@@ -557,3 +557,13 @@ void send_new_char_info(socket_struct *ns) {
     Send_With_Handling(ns, &sl);
     SockList_Term(&sl);
 }
+
+void send_fileport(socket_struct *ns) {
+    SockList sl;
+
+    SockList_Init(&sl);
+    SockList_AddString(&sl, "replyinfo fileport\n");
+    SockList_AddInt(&sl, settings.file_port);
+    Send_With_Handling(ns, &sl);
+    SockList_Term(&sl);
+}

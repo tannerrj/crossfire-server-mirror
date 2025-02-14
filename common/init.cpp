@@ -182,6 +182,7 @@ struct Settings settings = {
     .meta_host = { 0 },
     .meta_port = 0,
     .meta_comment = { 0 },
+    .file_port = 0,
     .worldmapstartx = 0,
     .worldmapstarty = 0,
     .worldmaptilesx = 0,

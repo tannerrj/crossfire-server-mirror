@@ -328,6 +328,11 @@ log_timestamp_format %y/%m/%d %H:%M:%S
 # this
 port 13327
 
+# fileserver_port is the port that the large file server listens on. If set to 0,
+# it defaults to the above port+1. If set to any other reasonable port value,
+# that will be used instead.
+fileserver_port 0
+
 # When generating random maps, can a special map break the map's layout to be inserted?
 # TRUE by default for historical purposes
 special_break_map TRUE

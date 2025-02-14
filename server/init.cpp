@@ -658,6 +658,13 @@ static void load_settings(void) {
                 settings.meta_port = port;
         } else if (!strcasecmp(buf, "metaserver_comment")) {
             safe_strncpy(settings.meta_comment, cp, sizeof(settings.meta_comment));
+        } else if (!strcasecmp(buf, "fileserver_port")) {
+            int port = atoi(cp);
+
+            if (port < 0 || port > 65535)
+                LOG(llevError, "load_settings: fileserver_port must be between 0 and 65535, %d is invalid\n", port);
+            else
+                settings.file_port = port;
         } else if (!strcasecmp(buf, "worldmapstartx")) {
             int size = atoi(cp);
 
@@ -1111,6 +1118,7 @@ void init(int argc, char **argv) {
     init_beforeplay();
     init_server();
     metaserver2_init();
+    fileserver_init();
     accounts_load();
     reset_sleep();
 }
