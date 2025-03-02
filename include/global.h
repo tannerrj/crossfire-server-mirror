@@ -375,11 +375,20 @@ extern Statistics statistics;
 
 #define PROFILE_BEGIN(expr) { \
     struct timespec _begin, _end; \
-    clock_gettime(CLOCK_MONOTONIC, &_begin); \
+    std::chrono::time_point<std::chrono::steady_clock> _now = std::chrono::steady_clock::now(); \
+    auto _duration = _now.time_since_epoch(); \
+    auto _seconds = std::chrono::duration_cast<std::chrono::seconds>(_duration); \
+    _duration -= _seconds; \
+    _begin.tv_sec = _seconds.count(); \
+    _begin.tv_nsec = _duration.count(); \
     expr;
-
 #define PROFILE_END(var, expr) \
-    clock_gettime(CLOCK_MONOTONIC, &_end); \
+    _now = std::chrono::steady_clock::now(); \
+    _duration = _now.time_since_epoch(); \
+    _seconds = std::chrono::duration_cast<std::chrono::seconds>(_duration); \
+    _duration -= _seconds; \
+    _end.tv_sec = _seconds.count(); \
+    _end.tv_nsec = _duration.count(); \
     long var = timespec_diff(&_end, &_begin); \
     expr; }
 
