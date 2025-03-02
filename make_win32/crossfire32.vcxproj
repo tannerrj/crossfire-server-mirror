@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FullDebug|Win32">
+      <Configuration>FullDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="FullDebug|x64">
+      <Configuration>FullDebug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseLog|Win32">
+      <Configuration>ReleaseLog</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseLog|x64">
+      <Configuration>ReleaseLog</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseQuit|Win32">
+      <Configuration>ReleaseQuit</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseQuit|x64">
+      <Configuration>ReleaseQuit</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+    <ProjectGuid>{BAEAA4B9-1D03-45E8-BC2F-21E010014EE2}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLog|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLog|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FullDebug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FullDebug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQuit|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQuit|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLog|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLog|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='FullDebug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='FullDebug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQuit|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQuit|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQuit|Win32'">
+    <OutDir>.\ReleaseQuit\</OutDir>
+    <IntDir>.\ReleaseQuit\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQuit|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FullDebug|Win32'">
+    <OutDir>.\FullDebug\</OutDir>
+    <IntDir>.\FullDebug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLog|Win32'">
+    <OutDir>.\ReleaseLog\</OutDir>
+    <IntDir>.\ReleaseLog\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLog|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQuit|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>.\include;.\random_maps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\ReleaseQuit\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\ReleaseQuit\crossfire32.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader />
+      <ObjectFileName>.\ReleaseQuit\</ObjectFileName>
+      <ProgramDataBaseFileName>.\ReleaseQuit\</ProgramDataBaseFileName>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy ReleaseQuit\crossfire32.exe ..\crossfire32.exe</Command>
+    </PostBuildEvent>
+    <Midl>
+      <TypeLibraryName>.\ReleaseQuit\crossfire32.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0407</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\ReleaseQuit\crossfire32.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>.\ReleaseQuit\crossfire32.exe</OutputFile>
+      <AdditionalLibraryDirectories>d:\python21\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseQuit|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>.\include;.\random_maps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\ReleaseQuit\</AssemblerListingLocation>
+      <PrecompiledHeaderOutputFile>.\ReleaseQuit\crossfire32.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ObjectFileName>.\ReleaseQuit\</ObjectFileName>
+      <ProgramDataBaseFileName>.\ReleaseQuit\</ProgramDataBaseFileName>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy ReleaseQuit\crossfire32.exe ..\crossfire32.exe</Command>
+    </PostBuildEvent>
+    <Midl>
+      <TypeLibraryName>.\ReleaseQuit\crossfire32.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0407</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\ReleaseQuit\crossfire32.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>.\ReleaseQuit\crossfire32.exe</OutputFile>
+      <AdditionalLibraryDirectories>d:\python21\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FullDebug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\include;.\;..\include\random_maps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;DEBUG;ESRV_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\FullDebug\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\FullDebug\crossfire32.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\FullDebug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\FullDebug\</ProgramDataBaseFileName>
+      <PreprocessToFile>true</PreprocessToFile>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <AdditionalOptions> /I./include /I./random_maps </AdditionalOptions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy FullDebug\crossfire32.exe ..\crossfire32.exe</Command>
+    </PostBuildEvent>
+    <Midl>
+      <TypeLibraryName>.\FullDebug\crossfire32.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0407</Culture>
+      <AdditionalIncludeDirectories>../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\FullDebug\crossfire32.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>.\FullDebug\crossfire32.exe</OutputFile>
+      <AdditionalLibraryDirectories>d:\python21\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FullDebug|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level1</WarningLevel>
+      <AdditionalIncludeDirectories>..\include;.\;..\include\random_maps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>LOCALDIR="./var";CONFDIR="./etc";DATADIR="./share";LIBDIR="./lib";PLUGIN_SUFFIX=".dll";WIN32;_DEBUG;_CONSOLE;DEBUG;ESRV_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BrowseInformation>true</BrowseInformation>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <AdditionalOptions> /I./include /I./random_maps </AdditionalOptions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) ..\$(TargetName)$(TargetExt)</Command>
+    </PostBuildEvent>
+    <Midl>
+      <TypeLibraryName>.\FullDebug\crossfire32.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0407</Culture>
+      <AdditionalIncludeDirectories>../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\FullDebug\crossfire32.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>"C:\Program Files\Python313\python.exe" ../common/is_valid_types_gen.py ../include/object.h &gt; ../common/arch_types_valid.cpp</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLog|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>..\include;..\random_maps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CONSOLE;DEBUG;WIN32;NDEBUG;DEBUG_MOVEATTACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\ReleaseLog\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\ReleaseLog\crossfire32.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\ReleaseLog\</ObjectFileName>
+      <ProgramDataBaseFileName>.\ReleaseLog\</ProgramDataBaseFileName>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy ReleaseLog\crossfire32.exe ..\crossfire32.exe</Command>
+    </PostBuildEvent>
+    <Midl>
+      <TypeLibraryName>.\ReleaseLog\crossfire32.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0407</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\ReleaseLog\crossfire32.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>.\ReleaseLog\crossfire32.exe</OutputFile>
+      <AdditionalLibraryDirectories>d:\python21\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;winmm.lib;pthreadVC2.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLog|x64'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>..\include;..\random_maps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CONSOLE;DEBUG;WIN32;NDEBUG;DEBUG_MOVEATTACK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\ReleaseLog\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\ReleaseLog\crossfire32.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\ReleaseLog\</ObjectFileName>
+      <ProgramDataBaseFileName>.\ReleaseLog\</ProgramDataBaseFileName>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy ReleaseLog\crossfire32.exe ..\crossfire32.exe</Command>
+    </PostBuildEvent>
+    <Midl>
+      <TypeLibraryName>.\ReleaseLog\crossfire32.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0407</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\ReleaseLog\crossfire32.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>.\ReleaseLog\crossfire32.exe</OutputFile>
+      <AdditionalLibraryDirectories>d:\python21\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;wsock32.lib;winmm.lib;pthreadVC2.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\common\anim.cpp" />
+    <ClCompile Include="..\common\arch.cpp" />
+    <ClCompile Include="..\common\arch_types_valid.cpp" />
+    <ClCompile Include="..\common\artifact.cpp" />
+    <ClCompile Include="..\common\assets\Animations.cpp" />
+    <ClCompile Include="..\common\assets\AnimationWriter.cpp" />
+    <ClCompile Include="..\common\assets\ArchetypeLoader.cpp" />
+    <ClCompile Include="..\common\assets\Archetypes.cpp" />
+    <ClCompile Include="..\common\assets\ArchetypeWriter.cpp" />
+    <ClCompile Include="..\common\assets\ArtifactLoader.cpp" />
+    <ClCompile Include="..\common\assets\ArtifactWriter.cpp" />
+    <ClCompile Include="..\common\assets\AssetCollector.cpp" />
+    <ClCompile Include="..\common\assets\assets.cpp" />
+    <ClCompile Include="..\common\assets\AssetsManager.cpp" />
+    <ClCompile Include="..\common\assets\FaceLoader.cpp" />
+    <ClCompile Include="..\common\assets\Faces.cpp" />
+    <ClCompile Include="..\common\assets\FacesetLoader.cpp" />
+    <ClCompile Include="..\common\assets\Facesets.cpp" />
+    <ClCompile Include="..\common\assets\FacesetWriter.cpp" />
+    <ClCompile Include="..\common\assets\FaceWriter.cpp" />
+    <ClCompile Include="..\common\assets\FormulaeWriter.cpp" />
+    <ClCompile Include="..\common\assets\MessageLoader.cpp" />
+    <ClCompile Include="..\common\assets\Messages.cpp" />
+    <ClCompile Include="..\common\assets\MessageWriter.cpp" />
+    <ClCompile Include="..\common\assets\microtar.cpp" />
+    <ClCompile Include="..\common\assets\PngLoader.cpp" />
+    <ClCompile Include="..\common\assets\QuestLoader.cpp" />
+    <ClCompile Include="..\common\assets\Quests.cpp" />
+    <ClCompile Include="..\common\assets\QuestWriter.cpp" />
+    <ClCompile Include="..\common\assets\TarLoader.cpp" />
+    <ClCompile Include="..\common\assets\TreasureLoader.cpp" />
+    <ClCompile Include="..\common\assets\Treasures.cpp" />
+    <ClCompile Include="..\common\assets\TreasureWriter.cpp" />
+    <ClCompile Include="..\common\assets\Utils.cpp" />
+    <ClCompile Include="..\common\bufferreader.cpp" />
+    <ClCompile Include="..\common\button.cpp" />
+    <ClCompile Include="..\common\cf_random.cpp" />
+    <ClCompile Include="..\common\dialog.cpp" />
+    <ClCompile Include="..\common\events.cpp" />
+    <ClCompile Include="..\common\exp.cpp" />
+    <ClCompile Include="..\common\friend.cpp" />
+    <ClCompile Include="..\common\holy.cpp" />
+    <ClCompile Include="..\common\image.cpp" />
+    <ClCompile Include="..\common\info.cpp" />
+    <ClCompile Include="..\common\init.cpp" />
+    <ClCompile Include="..\common\item.cpp" />
+    <ClCompile Include="..\common\languages.cpp" />
+    <ClCompile Include="..\common\links.cpp" />
+    <ClCompile Include="..\common\living.cpp" />
+    <ClCompile Include="..\common\loader.cpp" />
+    <ClCompile Include="..\common\logger.cpp" />
+    <ClCompile Include="..\common\los.cpp" />
+    <ClCompile Include="..\common\map.cpp" />
+    <ClCompile Include="..\common\minheap.cpp" />
+    <ClCompile Include="..\common\object.cpp" />
+    <ClCompile Include="..\common\ob_methods.cpp" />
+    <ClCompile Include="..\common\ob_types.cpp" />
+    <ClCompile Include="..\common\output_file.cpp" />
+    <ClCompile Include="..\common\path.cpp" />
+    <ClCompile Include="..\common\player.cpp" />
+    <ClCompile Include="..\common\porting.cpp" />
+    <ClCompile Include="..\common\re-cmp.cpp" />
+    <ClCompile Include="..\common\readable.cpp" />
+    <ClCompile Include="..\common\recipe.cpp" />
+    <ClCompile Include="..\common\region.cpp" />
+    <ClCompile Include="..\common\shstr.cpp" />
+    <ClCompile Include="..\common\stringbuffer.cpp" />
+    <ClCompile Include="..\common\time.cpp" />
+    <ClCompile Include="..\common\treasure.cpp" />
+    <ClCompile Include="..\common\utils.cpp" />
+    <ClCompile Include="..\random_maps\decor.cpp" />
+    <ClCompile Include="..\random_maps\door.cpp" />
+    <ClCompile Include="..\random_maps\exit.cpp" />
+    <ClCompile Include="..\random_maps\expand2x.cpp" />
+    <ClCompile Include="..\random_maps\floor.cpp" />
+    <ClCompile Include="..\random_maps\maze_gen.cpp" />
+    <ClCompile Include="..\random_maps\monster.cpp" />
+    <ClCompile Include="..\random_maps\random_map.cpp" />
+    <ClCompile Include="..\random_maps\reader.cpp" />
+    <ClCompile Include="..\random_maps\rogue_layout.cpp" />
+    <ClCompile Include="..\random_maps\room_gen_onion.cpp" />
+    <ClCompile Include="..\random_maps\room_gen_spiral.cpp" />
+    <ClCompile Include="..\random_maps\snake.cpp" />
+    <ClCompile Include="..\random_maps\special.cpp" />
+    <ClCompile Include="..\random_maps\square_spiral.cpp" />
+    <ClCompile Include="..\random_maps\style.cpp" />
+    <ClCompile Include="..\random_maps\treasure.cpp" />
+    <ClCompile Include="..\random_maps\wall.cpp" />
+    <ClCompile Include="..\server\account.cpp" />
+    <ClCompile Include="..\server\account_char.cpp" />
+    <ClCompile Include="..\server\alchemy.cpp" />
+    <ClCompile Include="..\server\apply.cpp" />
+    <ClCompile Include="..\server\attack.cpp" />
+    <ClCompile Include="..\server\ban.cpp" />
+    <ClCompile Include="..\server\build_map.cpp" />
+    <ClCompile Include="..\server\commands.cpp" />
+    <ClCompile Include="..\server\c_chat.cpp" />
+    <ClCompile Include="..\server\c_misc.cpp" />
+    <ClCompile Include="..\server\c_move.cpp" />
+    <ClCompile Include="..\server\c_new.cpp" />
+    <ClCompile Include="..\server\c_object.cpp" />
+    <ClCompile Include="..\server\c_party.cpp" />
+    <ClCompile Include="..\server\c_range.cpp" />
+    <ClCompile Include="..\server\c_wiz.cpp" />
+    <ClCompile Include="..\server\disease.cpp" />
+    <ClCompile Include="..\server\gods.cpp" />
+    <ClCompile Include="..\server\hiscore.cpp" />
+    <ClCompile Include="..\server\init.cpp" />
+    <ClCompile Include="..\server\knowledge.cpp" />
+    <ClCompile Include="..\server\login.cpp" />
+    <ClCompile Include="..\server\main.cpp" />
+    <ClCompile Include="..\server\modules\cfcitybell.cpp" />
+    <ClCompile Include="..\server\modules\citylife.cpp" />
+    <ClCompile Include="..\server\modules\random_house_generator.cpp" />
+    <ClCompile Include="..\server\monster.cpp" />
+    <ClCompile Include="..\server\move.cpp" />
+    <ClCompile Include="..\server\ob_methods.cpp" />
+    <ClCompile Include="..\server\ob_types.cpp" />
+    <ClCompile Include="..\server\party.cpp" />
+    <ClCompile Include="..\server\pets.cpp" />
+    <ClCompile Include="..\server\player.cpp" />
+    <ClCompile Include="..\server\plugins.cpp" />
+    <ClCompile Include="..\server\quest.cpp" />
+    <ClCompile Include="..\server\races.cpp" />
+    <ClCompile Include="..\server\resurrection.cpp" />
+    <ClCompile Include="..\server\rune.cpp" />
+    <ClCompile Include="..\server\server.cpp" />
+    <ClCompile Include="..\server\shop.cpp" />
+    <ClCompile Include="..\server\skills.cpp" />
+    <ClCompile Include="..\server\skill_util.cpp" />
+    <ClCompile Include="..\server\spell_attack.cpp" />
+    <ClCompile Include="..\server\spell_effect.cpp" />
+    <ClCompile Include="..\server\spell_util.cpp" />
+    <ClCompile Include="..\server\swap.cpp" />
+    <ClCompile Include="..\server\time.cpp" />
+    <ClCompile Include="..\server\timers.cpp" />
+    <ClCompile Include="..\server\weather.cpp" />
+    <ClCompile Include="..\server\win32.cpp" />
+    <ClCompile Include="..\socket\image.cpp" />
+    <ClCompile Include="..\socket\info.cpp" />
+    <ClCompile Include="..\socket\init.cpp" />
+    <ClCompile Include="..\socket\item.cpp" />
+    <ClCompile Include="..\socket\loop.cpp" />
+    <ClCompile Include="..\socket\lowlevel.cpp" />
+    <ClCompile Include="..\socket\metaserver.cpp" />
+    <ClCompile Include="..\socket\request.cpp" />
+    <ClCompile Include="..\socket\requestinfo.cpp" />
+    <ClCompile Include="..\socket\sounds.cpp" />
+    <ClCompile Include="..\types\altar\altar.cpp" />
+    <ClCompile Include="..\types\armour_improver\armour_improver.cpp" />
+    <ClCompile Include="..\types\arrow\arrow.cpp" />
+    <ClCompile Include="..\types\blindness\blindness.cpp" />
+    <ClCompile Include="..\types\book\book.cpp" />
+    <ClCompile Include="..\types\button\button.cpp" />
+    <ClCompile Include="..\types\cf_handle\cf_handle.cpp" />
+    <ClCompile Include="..\types\check_inv\check_inv.cpp" />
+    <ClCompile Include="..\types\clock\clock.cpp" />
+    <ClCompile Include="..\types\common\common_apply.cpp" />
+    <ClCompile Include="..\types\common\describe.cpp" />
+    <ClCompile Include="..\types\common\light_object.cpp" />
+    <ClCompile Include="..\types\common\projectile.cpp" />
+    <ClCompile Include="..\types\container\container.cpp" />
+    <ClCompile Include="..\types\converter\converter.cpp" />
+    <ClCompile Include="..\types\creator\creator.cpp" />
+    <ClCompile Include="..\types\deep_swamp\deep_swamp.cpp" />
+    <ClCompile Include="..\types\detector\detector.cpp" />
+    <ClCompile Include="..\types\director\director.cpp" />
+    <ClCompile Include="..\types\dragon_focus\dragon_focus.cpp" />
+    <ClCompile Include="..\types\duplicator\duplicator.cpp" />
+    <ClCompile Include="..\types\exit\exit.cpp" />
+    <ClCompile Include="..\types\food\food.cpp" />
+    <ClCompile Include="..\types\gate\gate.cpp" />
+    <ClCompile Include="..\types\hole\hole.cpp" />
+    <ClCompile Include="..\types\identify_altar\identify_altar.cpp" />
+    <ClCompile Include="..\types\lamp\lamp.cpp" />
+    <ClCompile Include="..\types\legacy\apply.cpp" />
+    <ClCompile Include="..\types\legacy\legacy_describe.cpp" />
+    <ClCompile Include="..\types\legacy\process.cpp" />
+    <ClCompile Include="..\types\lightable\lightable.cpp" />
+    <ClCompile Include="..\types\lighter\lighter.cpp" />
+    <ClCompile Include="..\types\marker\marker.cpp" />
+    <ClCompile Include="..\types\mimic\mimic.cpp" />
+    <ClCompile Include="..\types\mood_floor\mood_floor.cpp" />
+    <ClCompile Include="..\types\peacemaker\peacemaker.cpp" />
+    <ClCompile Include="..\types\pedestal\pedestal.cpp" />
+    <ClCompile Include="..\types\player_changer\player_changer.cpp" />
+    <ClCompile Include="..\types\player_mover\player_mover.cpp" />
+    <ClCompile Include="..\types\poisoning\poisoning.cpp" />
+    <ClCompile Include="..\types\poison\poison.cpp" />
+    <ClCompile Include="..\types\potion\potion.cpp" />
+    <ClCompile Include="..\types\power_crystal\power_crystal.cpp" />
+    <ClCompile Include="..\types\savebed\savebed.cpp" />
+    <ClCompile Include="..\types\scroll\scroll.cpp" />
+    <ClCompile Include="..\types\shop_inventory\shop_inventory.cpp" />
+    <ClCompile Include="..\types\shop_mat\shop_mat.cpp" />
+    <ClCompile Include="..\types\sign\sign.cpp" />
+    <ClCompile Include="..\types\skillscroll\skillscroll.cpp" />
+    <ClCompile Include="..\types\spellbook\spellbook.cpp" />
+    <ClCompile Include="..\types\spell_effect\spell_effect.cpp" />
+    <ClCompile Include="..\types\spinner\spinner.cpp" />
+    <ClCompile Include="..\types\teleporter\teleporter.cpp" />
+    <ClCompile Include="..\types\thrown_object\thrown_object.cpp" />
+    <ClCompile Include="..\types\transport\transport.cpp" />
+    <ClCompile Include="..\types\trapdoor\trapdoor.cpp" />
+    <ClCompile Include="..\types\trap\common_trap.cpp" />
+    <ClCompile Include="..\types\trap\rune.cpp" />
+    <ClCompile Include="..\types\trap\trap.cpp" />
+    <ClCompile Include="..\types\treasure\treasure.cpp" />
+    <ClCompile Include="..\types\trigger\trigger.cpp" />
+    <ClCompile Include="..\types\trigger_altar\trigger_altar.cpp" />
+    <ClCompile Include="..\types\trigger_button\trigger_button.cpp" />
+    <ClCompile Include="..\types\trigger_pedestal\trigger_pedestal.cpp" />
+    <ClCompile Include="..\types\weapon_improver\weapon_improver.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\account_char.h" />
+    <ClInclude Include="..\include\Animations.h" />
+    <ClInclude Include="..\include\AnimationWriter.h" />
+    <ClInclude Include="..\include\ArchetypeLoader.h" />
+    <ClInclude Include="..\include\Archetypes.h" />
+    <ClInclude Include="..\include\ArchetypeWriter.h" />
+    <ClInclude Include="..\include\artifact.h" />
+    <ClInclude Include="..\include\ArtifactLoader.h" />
+    <ClInclude Include="..\include\ArtifactWriter.h" />
+    <ClInclude Include="..\include\AssetCollector.h" />
+    <ClInclude Include="..\include\AssetLoader.h" />
+    <ClInclude Include="..\include\assets.h" />
+    <ClInclude Include="..\include\AssetsCollection.h" />
+    <ClInclude Include="..\include\AssetsManager.h" />
+    <ClInclude Include="..\include\AssetsTracker.h" />
+    <ClInclude Include="..\include\AssetWriter.h" />
+    <ClInclude Include="..\include\attack.h" />
+    <ClInclude Include="..\include\book.h" />
+    <ClInclude Include="..\include\bufferreader.h" />
+    <ClInclude Include="..\include\commands.h" />
+    <ClInclude Include="..\include\compat.h" />
+    <ClInclude Include="..\include\config.h" />
+    <ClInclude Include="..\include\define.h" />
+    <ClInclude Include="..\include\dialog.h" />
+    <ClInclude Include="..\include\events.h" />
+    <ClInclude Include="..\include\face.h" />
+    <ClInclude Include="..\include\FaceLoader.h" />
+    <ClInclude Include="..\include\Faces.h" />
+    <ClInclude Include="..\include\FacesetLoader.h" />
+    <ClInclude Include="..\include\Facesets.h" />
+    <ClInclude Include="..\include\FacesetWriter.h" />
+    <ClInclude Include="..\include\FaceWriter.h" />
+    <ClInclude Include="..\include\FormulaeWriter.h" />
+    <ClInclude Include="..\include\global.h" />
+    <ClInclude Include="..\include\god.h" />
+    <ClInclude Include="..\include\image.h" />
+    <ClInclude Include="..\include\libproto.h" />
+    <ClInclude Include="..\include\living.h" />
+    <ClInclude Include="..\include\loader.h" />
+    <ClInclude Include="..\include\logger.h" />
+    <ClInclude Include="..\include\map.h" />
+    <ClInclude Include="..\include\material.h" />
+    <ClInclude Include="..\include\MessageLoader.h" />
+    <ClInclude Include="..\include\Messages.h" />
+    <ClInclude Include="..\include\MessageWriter.h" />
+    <ClInclude Include="..\include\metaserver2.h" />
+    <ClInclude Include="..\include\microtar.h" />
+    <ClInclude Include="..\include\minheap.h" />
+    <ClInclude Include="..\include\modules.h" />
+    <ClInclude Include="..\include\newserver.h" />
+    <ClInclude Include="..\include\object.h" />
+    <ClInclude Include="..\include\ob_methods.h" />
+    <ClInclude Include="..\include\ob_types.h" />
+    <ClInclude Include="..\include\output_file.h" />
+    <ClInclude Include="..\include\party.h" />
+    <ClInclude Include="..\include\path.h" />
+    <ClInclude Include="..\include\player.h" />
+    <ClInclude Include="..\include\plugin.h" />
+    <ClInclude Include="..\include\PngLoader.h" />
+    <ClInclude Include="..\include\quest.h" />
+    <ClInclude Include="..\include\QuestLoader.h" />
+    <ClInclude Include="..\include\Quests.h" />
+    <ClInclude Include="..\include\QuestWriter.h" />
+    <ClInclude Include="..\include\random_maps\expand2x.h" />
+    <ClInclude Include="..\include\random_maps\maze_gen.h" />
+    <ClInclude Include="..\include\random_maps\random_map.h" />
+    <ClInclude Include="..\include\random_maps\room_gen.h" />
+    <ClInclude Include="..\include\random_maps\rproto.h" />
+    <ClInclude Include="..\include\re-cmp.h" />
+    <ClInclude Include="..\include\recipe.h" />
+    <ClInclude Include="..\include\server.h" />
+    <ClInclude Include="..\include\shared\newclient.h" />
+    <ClInclude Include="..\include\shop.h" />
+    <ClInclude Include="..\include\shstr.h" />
+    <ClInclude Include="..\include\skills.h" />
+    <ClInclude Include="..\include\sockproto.h" />
+    <ClInclude Include="..\include\sounds.h" />
+    <ClInclude Include="..\include\spellist.h" />
+    <ClInclude Include="..\include\spells.h" />
+    <ClInclude Include="..\include\sproto.h" />
+    <ClInclude Include="..\include\sstring.h" />
+    <ClInclude Include="..\include\stats.h" />
+    <ClInclude Include="..\include\stringbuffer.h" />
+    <ClInclude Include="..\include\svnversion.h" />
+    <ClInclude Include="..\include\TarLoader.h" />
+    <ClInclude Include="..\include\timers.h" />
+    <ClInclude Include="..\include\tod.h" />
+    <ClInclude Include="..\include\treasure.h" />
+    <ClInclude Include="..\include\TreasureLoader.h" />
+    <ClInclude Include="..\include\Treasures.h" />
+    <ClInclude Include="..\include\TreasureWriter.h" />
+    <ClInclude Include="..\include\typesproto.h" />
+    <ClInclude Include="..\include\Utils.h" />
+    <ClInclude Include="..\include\version.h" />
+    <ClInclude Include="..\include\win32.h" />
+    <ClInclude Include="..\include\WrapperLoader.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="crossfire.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\ChangeLog" />
+    <CustomBuild Include="..\share\settings" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\include\Makefile.am" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

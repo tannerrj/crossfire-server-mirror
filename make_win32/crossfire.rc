@@ -7,7 +7,8 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+//#include "afxres.h"
+#include "windows.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -75,7 +76,7 @@ BEGIN
             VALUE "FileDescription", "Crossfire server for Windows.\0"
             VALUE "FileVersion", "1, 9, 1, 0\0"
             VALUE "InternalName", "crossfire32\0"
-            VALUE "LegalCopyright", "Copyright © 2002-2005 by the Crossfire developers\0"
+            VALUE "LegalCopyright", "Copyright   2002-2005 by the Crossfire developers\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "crossfire32.exe\0"
             VALUE "PrivateBuild", "\0"
