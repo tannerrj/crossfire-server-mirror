@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <chrono>
 
 #include "tod.h"
 
@@ -129,6 +130,20 @@ const char *get_season_name(const int index) {
 }
 
 /**
+ * Our replacement for clock_gettime(CLOCK_MONOTONIC, ...).
+ * This enables support for non-POSIX platforms that support C++11.
+ */
+static void getmonotonic(timespec* t) {
+    std::chrono::time_point<std::chrono::steady_clock> now = std::chrono::steady_clock::now();
+    auto duration = now.time_since_epoch();
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    duration -= seconds;
+    t->tv_sec = seconds.count();
+    t->tv_nsec = duration.count();
+    return;
+}
+
+/**
  * Initialise all variables used in the timing routines.
  */
 void reset_sleep(void) {
@@ -142,7 +157,7 @@ void reset_sleep(void) {
     process_tot_mtime = 0;
     pticks = 0;
 
-    clock_gettime(CLOCK_MONOTONIC, &game_time);
+    getmonotonic(&game_time);
 }
 
 /**
@@ -188,7 +203,7 @@ void tick_game_time() {
 
 long get_sleep_remaining() {
     struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
+    getmonotonic(&now);
     long time_since_last_sleep = timespec_diff(&now, &game_time);
     if (time_since_last_sleep >= 0)
         log_time(time_since_last_sleep);
@@ -197,7 +212,7 @@ long get_sleep_remaining() {
 
 void jump_time() {
     process_utime_long_count++;
-    clock_gettime(CLOCK_MONOTONIC, &game_time);
+    getmonotonic(&game_time);
 }
 
 /**
@@ -347,7 +362,7 @@ void time_info(object *op) {
  */
 long seconds(void) {
     struct timespec now;
-    clock_gettime(CLOCK_REALTIME, &now);
+    getmonotonic(&now);
     return now.tv_sec;
 }
 

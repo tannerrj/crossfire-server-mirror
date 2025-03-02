@@ -33,6 +33,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <chrono>
 
 #include "cfanim.h"
 #include "svnversion.h"
@@ -1164,7 +1165,13 @@ static void animate(void) {
     static int already_passed = 0;
     long int delta_milli;
 
-    clock_gettime(CLOCK_MONOTONIC, &now);
+    std::chrono::time_point<std::chrono::steady_clock> time_point = std::chrono::steady_clock::now();
+    auto duration = time_point.time_since_epoch();
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration);
+    duration -= seconds;
+    now.tv_sec = seconds.count();
+    now.tv_nsec = duration.count();
+
     if (!already_passed) {
         already_passed = 1;
         yesterday = now;

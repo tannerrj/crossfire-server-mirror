@@ -40,6 +40,9 @@
 #include <stdarg.h>
 #include <algorithm>
 
+/** For profiling */
+#include <chrono>
+
 /** Used for printf-like functions, mostly LOG and draw_ext_info_format */
 #define PRINTF_ARGS(x, y) __attribute__ ((format (printf, x, y)))
 
