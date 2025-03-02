@@ -44,8 +44,11 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#else
 #include <unistd.h>
+#endif
 
 /* This block is basically taken from socket.c - I assume if it works there,
  * it should work here.

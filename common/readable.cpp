@@ -30,6 +30,10 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#ifdef _MSC_VER
+#include <iterator> // For std::back_inserter
+#endif
+
 #include "book.h"
 #include "living.h"
 #include "output_file.h"

@@ -28,6 +28,8 @@
 
 #ifndef WIN32 /* ---win32 exclude header */
 #include <unistd.h>
+#else if _MSC_VER
+#define R_OK 4
 #endif /* win32 */
 
 #include "sproto.h"

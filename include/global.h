@@ -44,8 +44,10 @@
 #include <chrono>
 
 /** Used for printf-like functions, mostly LOG and draw_ext_info_format */
+#ifndef __GNUC__
+#define __attribute__(a)
+#endif
 #define PRINTF_ARGS(x, y) __attribute__ ((format (printf, x, y)))
-
 /** Strings that should be manipulated through add_string() and free_string(). */
 #include "sstring.h"
 

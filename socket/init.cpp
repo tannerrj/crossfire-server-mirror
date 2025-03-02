@@ -97,7 +97,7 @@ void init_connection(socket_struct *ns, const char *from_ip) {
     SockList sl;
 
 #ifdef WIN32 /* ***WIN32 SOCKET: init win32 non blocking socket */
-#ifdef CF_MXE_CROSS_COMPILE
+#if defined(CF_MXE_CROSS_COMPILE) || defined(_MSC_VER)
     u_long temp = 1;
 #else
     long temp = 1;

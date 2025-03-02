@@ -1600,11 +1600,11 @@ void server_main(int argc, char *argv[]) {
     initPlugins();        /* GROS - Init the Plugins */
     // Give feedback that loading is complete. This prevents confusion on when it is done loading.
     PROFILE_END(diff, LOG(llevInfo, "Initialization complete (%ld ms). Waiting for connections.\n", diff/1000));
-#ifdef WIN32
-    while (bRunning) {
-#else
+//#ifdef WIN32
+//    while (bRunning) {
+//#else
     while (TRUE) {
-#endif
+//#endif
         nroferrors = 0;
 
         tick_game_time();

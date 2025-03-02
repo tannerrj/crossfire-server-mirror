@@ -26,6 +26,8 @@
 /* Needed for strcasecmp(). */
 #ifndef WIN32
 #include <strings.h>
+#else
+#include "win32.h"
 #endif
 
 #include "loader.h"
@@ -604,7 +606,7 @@ static void load_settings(void) {
         if (buf[0] == '#')
             continue;
         /* eliminate newline */
-        if ((cp = strrchr(buf, '\n')) != NULL)
+        if ((cp = strrchr(buf, '\r')) != NULL || (cp = strrchr(buf, '\n')) != NULL)
             *cp = '\0';
 
         /* Skip over empty lines */

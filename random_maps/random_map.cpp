@@ -23,7 +23,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#else
+#include <string>
+#endif
 #include <time.h>
 
 #include "global.h"

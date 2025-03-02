@@ -8,6 +8,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#ifdef _MSC_VER
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#define strtok_r strtok_s
+#endif
+
 #include <dirent.h>
 #include <time.h>
 #include <direct.h>
@@ -28,7 +34,9 @@ extern DIR *opendir(const char *);
 extern struct dirent *readdir(DIR *);
 extern int closedir(DIR *);
 extern void rewinddir(DIR *);
+#ifndef _MSC_VER
 extern int strcasecmp(const char *s1, const char *s2);
+#endif
 extern const char *strcasestr(const char *s, const char *find);
 extern void service_register();
 extern void service_unregister();

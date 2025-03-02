@@ -39,7 +39,15 @@
 #include "sproto.h"
 #include "stringbuffer.h"
 
-#ifdef CF_MXE_CROSS_COMPILE
+#ifdef _MSC_VER
+int ffs(unsigned long v) {
+    unsigned long index;
+    if (_BitScanForward(&index, v)) {
+        return (int)index + 1;
+    }
+    return 0;
+}
+#elif CF_MXE_CROSS_COMPILE
 #   define ffs(word) (__builtin_constant_p (word)                             \
                       ? __builtin_ffs (word)                                  \
                       : ({ int __cnt, __tmp;                                  \

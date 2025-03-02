@@ -9,6 +9,10 @@
 #ifndef NEWSERVER_H
 #define NEWSERVER_H
 
+#ifdef WIN32
+#include "winsock2.h" // for timeval
+#endif
+
 /**
  * The lower bound for the number of objects to send for the 'look' window
  * (container or ground view).
