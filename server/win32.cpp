@@ -180,7 +180,7 @@ void service_register(void) {
     TCHAR strDir[MAX_PATH];
     SC_HANDLE schSCManager;
     SC_HANDLE schService;
-    wchar_t *strDescription = SERVICE_DESCRIPTION;
+    const wchar_t *strDescription = SERVICE_DESCRIPTION;
 
     GetModuleFileName(NULL, strDir, MAX_PATH);
     wcscat(strDir, L" -srv");
@@ -342,7 +342,7 @@ void WINAPI ServiceMain(DWORD argc, LPTSTR *argv) {
  */
 void service_handle(void) {
     SERVICE_TABLE_ENTRY DispatchTable[] = {
-        { SERVICE_NAME, ServiceMain },
+        { (wchar_t*)SERVICE_NAME, ServiceMain },
         { NULL, NULL }
     };
     StartServiceCtrlDispatcher(DispatchTable);
