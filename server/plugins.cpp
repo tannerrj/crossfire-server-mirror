@@ -390,7 +390,7 @@ int plugins_init_plugin(const char *libfile) {
     }
     svn_rev = (char*) plugins_dlsym(ptr, "SvnRevPlugin");
     if (svn_rev == NULL) {
-        LOG(llevError, "Unable to find SvnRevPlugin in %s\n", libfile);
+        LOG(llevError, "Unable to find SvnRevPlugin in %s: %s\n", libfile, plugins_dlerror());
         plugins_dlclose(ptr);
         return -1;
     }
