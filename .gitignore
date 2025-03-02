@@ -3,7 +3,11 @@
 *.kdev4
 *.la
 *.lo
+*.i
+*.sbr
+*.obj
 *.log
+*.tlog
 *.o
 *.swp
 *.trs
@@ -555,6 +559,8 @@ test/unit/common/check_asset_load_write
 plugins/cfpython/pyi-generate
 test/unit/common/check_artifact
 test/unit/common/check_mapsave
+/make_win32/.vs
+*.vcxproj.user
 configure~
 *.qm
 *.gmon
