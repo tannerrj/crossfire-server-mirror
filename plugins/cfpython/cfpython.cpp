@@ -66,7 +66,7 @@
 #endif
 #include <svnversion.h>
 
-CF_PLUGIN char SvnRevPlugin[] = SVN_REV;
+extern "C" CF_PLUGIN char SvnRevPlugin[] = SVN_REV;
 
 //#define PYTHON_DEBUG   /**< Give us some general infos out. */
 #define PYTHON_CACHE_SIZE 256   /**< Number of python scripts to store the bytecode of at a time. */

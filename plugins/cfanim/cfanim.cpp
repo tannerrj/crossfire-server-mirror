@@ -38,7 +38,7 @@
 #include "cfanim.h"
 #include "svnversion.h"
 
-CF_PLUGIN char SvnRevPlugin[] = SVN_REV;
+extern "C" CF_PLUGIN char SvnRevPlugin[] = SVN_REV;
 
 static CFanimation *first_animation = NULL;  /**< Animations we're currently processing. */
 
