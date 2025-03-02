@@ -843,14 +843,15 @@ static object *find_by_name(object *origin, const char *name) {
     w = cf_map_get_width(map);
     h = cf_map_get_height(map);
 
-    for (x = 0; x < w; x++) {
-        for (y = 0; y < h; y++) {
-            FOR_MAP_PREPARE(map, x, y, ob) {
-                if (/*cf_object_get_sstring_property(ob, CFAPI_OBJECT_PROP_NAME)*/ob->name == sname)
-                    return ob;
-            } FOR_MAP_FINISH();
-        }
-    }
+    // FIXME: Temporarily disabled, as we have some deeply nested symbols missing from this!
+    //for (x = 0; x < w; x++) {
+    //    for (y = 0; y < h; y++) {
+    //        FOR_MAP_PREPARE(map, x, y, ob) {
+    //            if (/*cf_object_get_sstring_property(ob, CFAPI_OBJECT_PROP_NAME)*/ob->name == sname)
+    //                return ob;
+    //        } FOR_MAP_FINISH();
+    //    }
+    //}
 
     return NULL;
 }
