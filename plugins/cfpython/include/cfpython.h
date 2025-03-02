@@ -31,6 +31,7 @@
 
 /* First the required header files - only the CF module interface and Python */
 #ifdef WIN32
+#include <corecrt.h> // Needed in VS2022 :S
     #ifdef _DEBUG
         #undef _DEBUG
         #include <Python.h>
