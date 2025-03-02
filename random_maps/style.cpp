@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 #ifndef WIN32 /* ---win32 exclude headers */
 #include <dirent.h>
@@ -76,7 +77,9 @@ int load_dir(const char *dir, char ***namelist, int skip_dirs)
     DIR *dp;
     struct dirent *d;
     int entries = 0, entry_size = 0;
-    char name[strlen(dir) + sizeof(dirent::d_name) + 1], **rn = NULL;
+    std::string name;
+
+    char **rn = NULL;
     struct stat sb;
 
     dp = opendir(dir);
@@ -86,8 +89,8 @@ int load_dir(const char *dir, char ***namelist, int skip_dirs)
 
     while ((d = readdir(dp)) != NULL) {
         if (skip_dirs) {
-            snprintf(name, sizeof(name), "%s/%s", dir, d->d_name);
-            stat(name, &sb);
+            name = dir + std::string("/") + d->d_name;
+            stat(name.c_str(), &sb);
             if (S_ISDIR(sb.st_mode)) {
                 continue;
             }
@@ -180,7 +183,7 @@ mapstruct *load_style_map(char *style_name)
 mapstruct *find_style(const char *dirname, const char *stylename, int difficulty)
 {
     char style_file_path[256];
-    char style_file_full_path[strlen(settings.datadir) + 5 + sizeof(style_file_path)];
+    std::string style_file_full_path;
     mapstruct *style_map = NULL;
     struct stat file_stat;
     int i, only_subdirs = 0;
@@ -197,25 +200,25 @@ mapstruct *find_style(const char *dirname, const char *stylename, int difficulty
     }
 
     /* is what we were given a directory, or a file? */
-    snprintf(style_file_full_path, sizeof(style_file_full_path), "%s/maps%s", settings.datadir, style_file_path);
-    if (stat(style_file_full_path, &file_stat) == 0
+    style_file_full_path = settings.datadir + std::string("/maps") + style_file_path;
+    if (stat(style_file_full_path.c_str(), &file_stat) == 0
             && !S_ISDIR(file_stat.st_mode)) {
         style_map = load_style_map(style_file_path);
     }
     if (style_map == NULL) { /* maybe we were given a directory! */
         char **namelist;
         int n;
-        char style_dir_full_path[strlen(settings.datadir) + 5 + sizeof(style_file_path)];
+        std::string style_dir_full_path;
 
         /* get the names of all the files in that directory */
-        snprintf(style_dir_full_path, sizeof(style_dir_full_path), "%s/maps%s", settings.datadir, style_file_path);
+        style_dir_full_path = settings.datadir + std::string("/maps") + style_file_path;
 
         /* First, skip subdirectories.  If we don't find anything, then try again
          * without skipping subdirs.
          */
-        n = load_dir(style_dir_full_path, &namelist, 1);
+        n = load_dir(style_dir_full_path.c_str(), &namelist, 1);
         if (n <= 0) {
-            n = load_dir(style_dir_full_path, &namelist, 0);
+            n = load_dir(style_dir_full_path.c_str(), &namelist, 0);
             only_subdirs = 1;
         }
 

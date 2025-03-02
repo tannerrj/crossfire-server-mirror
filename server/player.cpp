@@ -1346,15 +1346,14 @@ void key_change_class(object *op, char key) {
          */
         if (*first_map_ext_path) {
             object *tmp;
-            char mapname[MAX_BUF + strlen(op->arch->name) + 1];
+            std::string mapname;
             mapstruct *oldmap;
 
             oldmap = op->map;
 
-            snprintf(mapname, sizeof(mapname), "%s/%s", first_map_ext_path, op->arch->name);
-            /*printf("%s\n", mapname);*/
+            mapname = first_map_ext_path + std::string("/") + op->arch->name;
             tmp = object_new();
-            EXIT_PATH(tmp) = add_string(mapname);
+            EXIT_PATH(tmp) = add_string(mapname.c_str());
             EXIT_X(tmp) = op->x;
             EXIT_Y(tmp) = op->y;
             enter_exit(op, tmp);
@@ -1363,7 +1362,7 @@ void key_change_class(object *op, char key) {
                 /* map exists, update bed of reality location, in case player dies */
                 op->contr->bed_x = op->x;
                 op->contr->bed_y = op->y;
-                strlcpy(op->contr->savebed_map, mapname, sizeof(op->contr->savebed_map));
+                strlcpy(op->contr->savebed_map, mapname.c_str(), sizeof(op->contr->savebed_map));
             }
 
             object_free_drop_inventory(tmp);

@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 
 #ifdef WIN32 /* ---win32 exclude/include headers */
 #include "process.h"
@@ -116,7 +117,7 @@ FILE *tempnam_secure(const char *dir, const char *pfx, char **filename) {
  */
 void remove_directory(const char *path) {
     DIR *dirp;
-    char buf[strlen(path) + sizeof(dirent::d_name) + 1];
+    std::string buf;
     struct stat statbuf;
     int status;
 
@@ -136,12 +137,12 @@ void remove_directory(const char *path) {
              */
             status = stat(de->d_name, &statbuf);
             if ((status != -1) && (S_ISDIR(statbuf.st_mode))) {
-                snprintf(buf, sizeof(buf), "%s/%s", path, de->d_name);
-                remove_directory(buf);
+                buf = path + std::string("/") + de->d_name;
+                remove_directory(buf.c_str());
                 continue;
             }
-            snprintf(buf, sizeof(buf), "%s/%s", path, de->d_name);
-            if (unlink(buf)) {
+            buf = path + std::string("/") + de->d_name;
+            if (unlink(buf.c_str())) {
                 LOG(llevError, "Unable to remove %s\n", path);
             }
         }
