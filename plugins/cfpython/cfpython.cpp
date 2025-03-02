@@ -84,6 +84,14 @@ struct pycode_cache_entry {
 #define MAX_COMMANDS    1024
 static command_registration registered_commands[MAX_COMMANDS];
 
+#if defined(IS_PY3K9) || defined(IS_PY3K10)
+/**
+ * A Python object so that we only need to import the io module once.
+ * The recommended way to load a file to compile in 3.10 and later involves importing the io module, so we really just do that once.
+ */
+static PyObject* io_module = NULL;
+#endif
+
 /** Cached compiled scripts. */
 static pycode_cache_entry pycode_cache[PYTHON_CACHE_SIZE];
 
@@ -863,6 +871,21 @@ static PyObject* cfpython_openpyfile(char *filename) {
 }
 
 /**
+ * Opens a file using Python's io module. As used in postInitPlugin().
+ */
+static PyObject* cfpython_ioopenfile(char* filename) {
+    PyObject *scriptfile;
+    if (!io_module)
+        io_module = PyImport_ImportModule("io");
+    scriptfile = PyObject_CallMethod(io_module, "open", "ss", filename, "rb");
+    if (!scriptfile) {
+        cf_log(llevDebug, "CFPython: script file %s can't be opened\n", filename);
+        return NULL;
+    }
+    return scriptfile;
+}
+
+/**
  * Return a file object from a Python file (as needed for compilePython() and
  * postInitPlugin())
  */
@@ -876,14 +899,6 @@ static FILE* cfpython_pyfile_asfile(PyObject* obj) {
  */
 static PyObject *catcher = NULL;
 
-#if defined(IS_PY3K9) || defined(IS_PY3K10)
-/**
- * A Python object so that we only need to import the io module once.
- * The recommended way to load a file to compile in 3.10 and later involves importing the io module, so we really just do that once.
- */
-static PyObject *io_module = NULL;
-#endif
-
 /**
  * Trace a Python error to the Crossfire log.
  * This uses code from:
@@ -891,7 +906,6 @@ static PyObject *io_module = NULL;
  * See also in initPlugin() the parts about stdOutErr.
  */
 static void log_python_error(void) {
-
     PyErr_Print();
 
     if (catcher != NULL) {
@@ -1678,10 +1692,22 @@ CF_PLUGIN int postInitPlugin(void) {
     for (i = 0; GECodes[i] != 0; i++)
         cf_system_register_global_event(GECodes[i], PLUGIN_NAME, cfpython_globalEventListener);
 
+#if defined (IS_PY3K9) || defined(IS_PY3K10)
+    scriptfile = cfpython_ioopenfile(cf_get_maps_directory("python/events/python_init.py", path, sizeof(path)));
+#else
     scriptfile = cfpython_openpyfile(cf_get_maps_directory("python/events/python_init.py", path, sizeof(path)));
+#endif
+
     if (scriptfile != NULL) {
+#if defined (IS_PY3K9) || defined(IS_PY3K10)
+        PyObject* source_bytes = PyObject_CallMethod(scriptfile, "read", "");
+        (void)PyObject_CallMethod(scriptfile, "close", "");
+        PyRun_SimpleString(PyBytes_AsString(source_bytes));
+        Py_DECREF(source_bytes); // Is this necessary?
+#else
         FILE* pyfile = cfpython_pyfile_asfile(scriptfile);
         PyRun_SimpleFile(pyfile, cf_get_maps_directory("python/events/python_init.py", path, sizeof(path)));
+#endif
         Py_DECREF(scriptfile);
     }
 
