@@ -43,6 +43,9 @@
     #include <Python.h>
 #endif
 
+// Declare this so we can use it anywhere.
+static void log_python_error(void);
+
 /* This is for allowing specific features of Python 3
  * For example, Python 3.8 changes the typecasting on some stuff we use,
  * so make a check for that.
