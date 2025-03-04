@@ -1176,7 +1176,7 @@ void map_path(const char *map, int flags, char *pathname, size_t bufsize) {
 
 mapstruct *mapfile_load_lowlevel(const char *map, const char *pathname, int flags) {
     FILE *fp;
-    if ((fp = fopen(pathname, "r")) == NULL) {
+    if ((fp = fopen(pathname, "rt")) == NULL) {
         LOG((flags&MAP_PLAYER_UNIQUE) ? llevDebug : llevError,
                 "Can't open %s: %s\n", pathname, strerror(errno));
         return NULL;
@@ -1259,7 +1259,7 @@ static int load_temporary_map(mapstruct *m) {
         return 1;
     }
 
-    if ((fp = fopen(m->tmpname, "r")) == NULL) {
+    if ((fp = fopen(m->tmpname, "rt")) == NULL) {
         LOG(llevError, "Cannot open %s: %s\n", m->tmpname, strerror(errno));
         return 2;
     }
@@ -1293,7 +1293,7 @@ static int load_overlay_map(const char *filename, mapstruct *m) {
 
     create_overlay_pathname(filename, pathname, MAX_BUF);
 
-    if ((fp = fopen(pathname, "r")) == NULL) {
+    if ((fp = fopen(pathname, "rt")) == NULL) {
         /* nothing bad to not having an overlay */
         return 0;
     }

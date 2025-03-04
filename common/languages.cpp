@@ -149,7 +149,7 @@ void i18n_init(void) {
             continue;
 
         snprintf(filename, sizeof(filename), "%s%s", dirname, file->d_name);
-        br = bufferreader_init_from_file(NULL, filename, "i18n: couldn't open %s: %s\n", llevError);
+        br = bufferreader_init_from_file(NULL, filename, "rt", "i18n: couldn't open %s: %s\n", llevError);
         if (!br) {
             fatal(SEE_LAST_ERROR);
         }

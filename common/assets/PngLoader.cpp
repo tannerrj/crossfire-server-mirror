@@ -20,6 +20,7 @@
 #include "image.h"
 
 PngLoader::PngLoader(Faces *faces, Facesets *facesets) : m_faces(faces), m_facesets(facesets) {
+  m_binary = true;
 }
 
 void PngLoader::load(BufferReader *reader, const std::string &filename) {

@@ -169,7 +169,7 @@ void accounts_load(void) {
         return;
     }
     snprintf(fname, MAX_BUF,"%s/%s", settings.localdir, ACCOUNT_FILE);
-    if ((br = bufferreader_init_from_file(NULL, fname, "Unable to open %s [%s]. This may be because this is a new server and no accounts exist yet.\n", llevInfo)) == NULL) {
+    if ((br = bufferreader_init_from_file(NULL, fname, "rt", "Unable to open %s [%s]. This may be because this is a new server and no accounts exist yet.\n", llevInfo)) == NULL) {
         return;
     }
 

@@ -366,7 +366,7 @@ int metaserver2_init(void) {
     /* Now load up the values from the file */
     snprintf(buf, sizeof(buf), "%s/metaserver2", settings.confdir);
 
-    if ((fp = fopen(buf, "r")) == NULL) {
+    if ((fp = fopen(buf, "rt")) == NULL) {
         LOG(llevError, "Warning: No metaserver2 file found\n");
         return 0;
     }

@@ -1750,7 +1750,7 @@ static void display_help_file(object *op, const char *filename) {
     BufferReader *br;
     const char *line;
 
-    if ((br = bufferreader_init_from_file(NULL, filename, "Cannot open help file %s: %s\n", llevError)) == NULL) {
+    if ((br = bufferreader_init_from_file(NULL, filename, "rt", "Cannot open help file %s: %s\n", llevError)) == NULL) {
         return;
     }
 

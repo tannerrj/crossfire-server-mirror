@@ -2600,7 +2600,7 @@ void init_stats() {
     memset(new_int_bonuses, 0, NUM_INT_BONUSES * sizeof(int));
     memset(new_float_bonuses, 0, NUM_FLOAT_BONUSES * sizeof(float));
 
-    if ((fp = fopen(buf, "r")) == NULL) {
+    if ((fp = fopen(buf, "rt")) == NULL) {
         LOG(llevError, "Fatal error: could not open experience table (%s)\n", buf);
         exit(1);
     }

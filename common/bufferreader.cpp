@@ -62,8 +62,8 @@ static void bufferreader_init_for_length(BufferReader *br, size_t length) {
     br->line_index = 0;
 }
 
-BufferReader *bufferreader_init_from_file(BufferReader *br, const char *filepath, const char *failureMessage, LogLevel failureLevel) {
-    FILE *file = fopen(filepath, "rb");
+BufferReader *bufferreader_init_from_file(BufferReader *br, const char *filepath, const char *mode, const char *failureMessage, LogLevel failureLevel) {
+    FILE *file = fopen(filepath, mode);
     if (!file) {
         LOG(failureLevel, failureMessage, filepath, strerror(errno));
         return NULL;
@@ -78,8 +78,11 @@ BufferReader *bufferreader_init_from_file(BufferReader *br, const char *filepath
 
     size_t actual = fread(br->buf, 1, br->buffer_length, file);
     if (actual != br->buffer_length) {
-        LOG(llevError, "Expected to read %zu bytes, only read %zu!\n", br->buffer_length, actual);
+        if (strstr(mode, "rb") != NULL) {
+            LOG(llevError, "Expected to read %zu bytes, only read %zu!\n", br->buffer_length, actual);
+        }
         br->buffer_length = actual;
+        br->buf[br->buffer_length] = '\0';
     }
     fclose(file);
     return br;

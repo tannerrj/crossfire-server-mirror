@@ -40,5 +40,10 @@ public:
      * @param filename full filename.
      */
     virtual void load(BufferReader *reader, const std::string &filename) = 0;
+
+    /**
+    * Whether or not the file should be opened in binary or text mode.
+    */
+    bool m_binary = false;
 };
 #endif /* ASSETLOADER_H */

@@ -14,6 +14,7 @@
 #include "string.h"
 
 TarLoader::TarLoader(AssetLoader *loader) : m_loader(loader) {
+    m_binary = true;
     m_reader = bufferreader_create();
 }
 
