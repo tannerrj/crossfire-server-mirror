@@ -823,6 +823,15 @@ static CFanimation *create_animation(void) {
     return anim;
 }
 
+// Copied over from server/map.cpp, as FOR_MAP_PREPARE requires this, but it is not in plugin_common.cpp.
+MapSpace *map_space(const mapstruct *m, int x, int y) {
+    if (m->spaces == NULL) // guard against map being swapped out
+        abort();
+    if (OUT_OF_REAL_MAP(m, x, y)) // array out of bounds check
+        abort();
+    return &m->spaces[x + m->width * y];
+}
+
 static object *find_by_name(object *origin, const char *name) {
     int x, y, w, h;
     mapstruct *map;
@@ -843,15 +852,14 @@ static object *find_by_name(object *origin, const char *name) {
     w = cf_map_get_width(map);
     h = cf_map_get_height(map);
 
-    // FIXME: Temporarily disabled, as we have some deeply nested symbols missing from this!
-    //for (x = 0; x < w; x++) {
-    //    for (y = 0; y < h; y++) {
-    //        FOR_MAP_PREPARE(map, x, y, ob) {
-    //            if (/*cf_object_get_sstring_property(ob, CFAPI_OBJECT_PROP_NAME)*/ob->name == sname)
-    //                return ob;
-    //        } FOR_MAP_FINISH();
-    //    }
-    //}
+    for (x = 0; x < w; x++) {
+        for (y = 0; y < h; y++) {
+            FOR_MAP_PREPARE(map, x, y, ob) {
+                if (/*cf_object_get_sstring_property(ob, CFAPI_OBJECT_PROP_NAME)*/ob->name == sname)
+                    return ob;
+            } FOR_MAP_FINISH();
+        }
+    }
 
     return NULL;
 }
