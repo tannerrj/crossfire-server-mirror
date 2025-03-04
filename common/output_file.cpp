@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <filesystem>
 
 #include "global.h"
 #include "logger.h"
@@ -74,8 +75,17 @@ int of_close(OutputFile *of) {
         free(of->fname);
         return 0;
     }
-    if (rename(of->fname_tmp, of->fname) != 0) {
-        LOG(llevError, "%s: cannot rename from %s: %s\n", of->fname, of->fname_tmp, strerror(errno));
+
+    try {
+        if (std::filesystem::exists(of->fname)) {
+            auto opts{ std::filesystem::copy_options::update_existing };
+            std::filesystem::copy_file(of->fname_tmp, of->fname, opts);
+            std::filesystem::remove(of->fname_tmp);
+        } else {
+            std::filesystem::rename(of->fname_tmp, of->fname);
+        }
+    } catch (std::filesystem::filesystem_error const& ex) {
+        LOG(llevError, "%s: cannot rename from %s: %s\n", of->fname, of->fname_tmp, ex.what());
         remove(of->fname_tmp);
         free(of->fname_tmp);
         free(of->fname);
