@@ -131,6 +131,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>call "$(ProjectDir)\clone.bat" "$(ProjectDir)\crossfire"</Command>
+      <Message>Clone maps into output dir</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="clone.bat" />
