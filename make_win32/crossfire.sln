@@ -17,8 +17,15 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin_python", "plugin_python\plugin_python.vcxproj", "{FEE40155-A3E5-4092-BA9E-78FA40C754F0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "install_files", "install_files\install_files.vcxproj", "{42DD1CA7-7AD7-4B99-9AB9-2322EE2C30B4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BAEAA4B9-1D03-45E8-BC2F-21E010014EE2} = {BAEAA4B9-1D03-45E8-BC2F-21E010014EE2}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "get_maps", "get_maps\get_maps.vcxproj", "{9E580EF0-0A9F-427E-AA40-5C53A1C4C1E5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{42DD1CA7-7AD7-4B99-9AB9-2322EE2C30B4} = {42DD1CA7-7AD7-4B99-9AB9-2322EE2C30B4}
+		{BAEAA4B9-1D03-45E8-BC2F-21E010014EE2} = {BAEAA4B9-1D03-45E8-BC2F-21E010014EE2}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

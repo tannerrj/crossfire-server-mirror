@@ -110,7 +110,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(ProjectDir)\clone.bat" "$(ProjectDir)\crossfire"</Command>
+      <Command>call "$(ProjectDir)\clone.bat" "$(SolutionDir)\$(Configuration)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Clone maps into output dir</Message>
@@ -132,7 +132,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(ProjectDir)\clone.bat" "$(ProjectDir)\crossfire"</Command>
+      <Command>call "$(ProjectDir)\clone.bat" "$(SolutionDir)\$(Configuration)"</Command>
       <Message>Clone maps into output dir</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

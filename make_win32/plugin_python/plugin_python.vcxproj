@@ -148,7 +148,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <PostBuildEvent>
-      <Command>mkdir -Force $(SolutionDir)\crossfire\lib\plugins &amp; copy $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\crossfire\lib\plugins\*.*</Command>
+      <Command>mkdir -Force $(SolutionDir)\$(Configuration)\lib\plugins &amp; copy $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\$(Configuration)\lib\plugins\*.*</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -232,7 +232,7 @@
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PYTHON_PLUGIN_EXPORTS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>mkdir -Force $(SolutionDir)\crossfire\lib\plugins &amp; copy $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\crossfire\lib\plugins\*.*</Command>
+      <Command>mkdir -Force $(SolutionDir)\$(Configuration)\lib\plugins &amp; copy $(OutDir)$(TargetName)$(TargetExt) $(SolutionDir)\$(Configuration)\lib\plugins\*.*</Command>
     </PostBuildEvent>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>

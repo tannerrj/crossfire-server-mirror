@@ -138,7 +138,7 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) ..\$(TargetName)$(TargetExt)</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ProjectDir)\$(Configuration)\$(TargetName)$(TargetExt)</Command>
     </PostBuildEvent>
     <Midl>
       <TypeLibraryName>.\ReleaseQuit\crossfire32.tlb</TypeLibraryName>
@@ -225,7 +225,7 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy $(OutDir)$(TargetName)$(TargetExt) ..\$(TargetName)$(TargetExt)</Command>
+      <Command>copy $(OutDir)$(TargetName)$(TargetExt) $(ProjectDir)\$(Configuration)\$(TargetName)$(TargetExt)</Command>
     </PostBuildEvent>
     <Midl>
       <TypeLibraryName>.\FullDebug\crossfire32.tlb</TypeLibraryName>

@@ -110,13 +110,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(ProjectDir)\install.bat" "$(ProjectDir)\..\crossfire"</Command>
+      <Command>call "$(ProjectDir)\install.bat" "$(SolutionDir)\$(Configuration)\"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Install CF Files to destination dir</Message>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>call "$(ProjectDir)\collect.bat" "$(ProjectDir)\..\crossfire"</Command>
+      <Command>call "$(ProjectDir)\collect.bat" "$(SolutionDir)\$(Configuration)\"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Collect assets</Message>
@@ -138,9 +138,13 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>call "$(ProjectDir)\install.bat" "$(ProjectDir)\..\crossfire"</Command>
+      <Command>call "$(ProjectDir)\install.bat" "$(SolutionDir)\$(Configuration)\"</Command>
       <Message>Install CF Files to destination dir</Message>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>call "$(ProjectDir)\collect.bat" "$(SolutionDir)\$(Configuration)\"</Command>
+      <Message>Collect assets</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="collect.bat" />
