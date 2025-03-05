@@ -1310,6 +1310,22 @@ static void rec_sighup(int i) {
     }
 }
 
+#ifdef WIN32
+/**
+ * Windows console signal handler. 
+ */
+BOOL WINAPI consoleHandler(DWORD signal) noexcept {
+  switch (signal) {
+  case CTRL_C_EVENT:
+  case CTRL_CLOSE_EVENT:
+  case CTRL_BREAK_EVENT:
+    signal_shutdown(0);
+    return TRUE;
+  }
+  return FALSE;
+}
+#endif
+
 /**
  * Setup our signal handlers.
  */
@@ -1324,5 +1340,15 @@ void init_signals(void) {
     sigaction(SIGHUP, &sa, NULL);
     signal(SIGINT, signal_shutdown);
     signal(SIGPIPE, SIG_IGN);
+#else
+  HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+  if (hStdin == INVALID_HANDLE_VALUE) {
+    LOG(llevError, "invalid stdin handle\n");
+    return;
+  }
+
+  if (!SetConsoleCtrlHandler(consoleHandler, TRUE)) {
+    LOG(llevError, "could not set control handler\n");
+  }
 #endif /* win32 */
 }
