@@ -130,7 +130,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>..\include;.\;..\include\random_maps;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>LOCALDIR="./var";CONFDIR="./etc";DATADIR="./share";LIBDIR="./lib";PLUGIN_SUFFIX=".dll";WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LOCALDIR="./var";CONFDIR="./etc";DATADIR="./share";LIBDIR="./lib";PLUGIN_SUFFIX=".dll";WIN32;NDEBUG;ESRV_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <LanguageStandard>stdcpp20</LanguageStandard>
