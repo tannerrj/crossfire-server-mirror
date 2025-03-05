@@ -144,12 +144,10 @@
       <TypeLibraryName>.\ReleaseQuit\crossfire32.tlb</TypeLibraryName>
     </Midl>
     <ResourceCompile>
-      <Culture>0x0407</Culture>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\ReleaseQuit\crossfire32.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
