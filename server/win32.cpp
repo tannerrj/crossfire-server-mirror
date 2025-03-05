@@ -18,7 +18,7 @@
  * This file should probably not be used apart under Windows.
  */
 
-#if defined(WIN32) || defined (CF_MXE_CROSS_COMPILE)
+#if (defined(WIN32) || defined (CF_MXE_CROSS_COMPILE)) && defined(USE_WIN_SVC)
 
 #include <global.h>
 

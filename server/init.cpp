@@ -400,7 +400,7 @@ static struct Command_Line_Options options[] = {
     { "-uniquedir", 1, 1, (cmdlinefunc_args0)set_uniquedir },
     { "-v", 0, 1, (cmdlinefunc_args0)call_version },
 
-#ifdef WIN32
+#if defined(WIN32) && defined(USE_WIN_SVC)
     /* Windows service stuff */
     { "-regsrv", 0, 1, service_register },
     { "-unregsrv", 0, 1, service_unregister },
