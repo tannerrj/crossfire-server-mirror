@@ -4146,7 +4146,7 @@ static int read_gulfstreammap(const Settings *settings) {
     snprintf(filename, sizeof(filename), "%s/gulfstreammap", settings->localdir);
     LOG(llevDebug, "Reading gulf stream data from %s...\n", filename);
     // Read the file into a buffer
-    bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
+    bfr = bufferreader_init_from_file(NULL, filename, "Cannot open %s for reading: %s\n", llevError);
     // If it fails, we initialize and write to file.
     if (bfr == NULL) {
         LOG(llevInfo, "Initializing gulf stream maps...\n");
