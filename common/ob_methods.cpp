@@ -45,6 +45,8 @@ method_ret ob_apply(object *op, object *applier, int aflags) {
     method_ret ret;
     ob_methods *methods;
 
+    Profiler oa(std::string("ob apply ") + std::to_string(op->type));
+
     if (events_execute_object_event(op, EVENT_APPLY, applier, NULL, NULL, SCRIPT_FIX_ALL) != 0)
         return METHOD_OK;
 

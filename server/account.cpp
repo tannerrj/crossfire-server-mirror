@@ -254,6 +254,7 @@ static void account_write_entry(FILE *fp, account_struct *ac)
  */
 void accounts_save(void)
 {
+    Profiler as("accounts save");
     char fname[MAX_BUF];
     FILE *fp;
     OutputFile of;

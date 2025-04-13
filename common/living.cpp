@@ -896,6 +896,7 @@ void add_statbonus(object *op) {
  */
 static void fix_player(object *op, int *ac, int *wc, const object *grace_obj, const object *mana_obj, const object *wc_obj, int weapon_speed, float added_speed)
 {
+    Profiler fp("fix player");
     int pl_level, i;
     float maxhp, tmpf;
 
@@ -1130,6 +1131,7 @@ static void fix_player(object *op, int *ac, int *wc, const object *grace_obj, co
  * this function is too long, and should be cleaned / split.
  */
 void fix_object(object *op) {
+    Profiler fo("fix object");
     int i;
     float max = 9, added_speed = 0, speed_reduce_from_disease = 1;
     int weapon_speed = 0;

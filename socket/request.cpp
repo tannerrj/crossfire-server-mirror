@@ -864,6 +864,7 @@ static void send_extra_stats(SockList *sl, player *pl) {
  * commands for now.
  */
 void esrv_update_stats(player *pl) {
+    Profiler p("esrv_update_stats");
     SockList sl;
     char buf[MAX_BUF];
     uint16_t flags;

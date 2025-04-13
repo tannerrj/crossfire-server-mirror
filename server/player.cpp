@@ -3902,6 +3902,7 @@ static void kill_player_permadeath(object *op) {
  * @todo is this still useful?
  */
 void fix_weight(void) {
+    Profiler fw("fix weight");
     player *pl;
 
     for (pl = first_player; pl != NULL; pl = pl->next) {
@@ -3918,6 +3919,7 @@ void fix_weight(void) {
  * Fixes luck of players, slowly move it towards 0.
  */
 void fix_luck(void) {
+    Profiler fl("fix luck");
     player *pl;
 
     for (pl = first_player; pl != NULL; pl = pl->next)

@@ -2003,6 +2003,7 @@ void free_all_readable(void) {
  * Write out the updated book archive to bookarch file.
  */
 void write_book_archive(void) {
+    Profiler wba("write book archive");
     FILE *fp;
     OutputFile of;
     int index;

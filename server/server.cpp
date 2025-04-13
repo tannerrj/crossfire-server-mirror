@@ -954,6 +954,7 @@ static void do_follow(player *pl) {
  * @sa process_players2().
  */
 static void process_players1(void) {
+    Profiler pp("process players 1");
     int flag;
     player *pl, *plnext;
 
@@ -1046,6 +1047,7 @@ static void process_players1(void) {
  * @todo explain why 2 passes for players.
  */
 static void process_players2(void) {
+    Profiler pp("process_players 2");
     player *pl;
 
     /* Then check if any players should use weapon-speed instead of speed */
@@ -1086,6 +1088,8 @@ void process_events(void) {
     tag_t tag;
 
     process_players1();
+
+    Profiler pe("process events loop");
 
     memset(&marker, 0, sizeof(object));
     /* Put marker object at beginning of active list */
@@ -1220,6 +1224,8 @@ void process_events(void) {
         marker.active_prev->active_next = NULL;
     else
         active_objects = NULL;
+
+    pe.stop();
 
     process_players2();
 }
@@ -1522,6 +1528,7 @@ void login_check_shutdown(object* const op) {
  * doing the various things.
  */
 static void do_specials(void) {
+    Profiler ds("do specials");
     if (check_shutdown()) {
         do_shutdown();
     }

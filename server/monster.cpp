@@ -461,6 +461,7 @@ static inline uint16_t estimate_distance(int16_t ax, int16_t ay, int16_t bx, int
  * @todo cache path, smart adjustment and such things to not compute all the time ; try directions randomly.
  */
 int monster_compute_path(object *source, object *target, int default_dir) {
+    Profiler mcp("monster compute path");
     path_data *distance, *current, *explore;
     path_data *heaparr[MAX_EXPLORE];
     int dirs[8];

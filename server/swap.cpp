@@ -137,6 +137,8 @@ int swap_map(mapstruct *map) {
     player *pl;
     int res;
 
+    Profiler sm("swap map");
+
     if (map->in_memory != MAP_IN_MEMORY) {
         LOG(llevError, "Tried to swap out map which was not in memory.\n");
         return SAVE_ERROR_NOT_IN_MEMORY;
@@ -199,6 +201,7 @@ int swap_map(mapstruct *map) {
  * Finds maps in memory to swap.
  */
 void check_active_maps(void) {
+    Profiler cam("check active maps");
     /* Swapping can take many tens of milliseconds. Swapping too many maps in
      * one tick can cause enough latency for the server to skip time. */
     int num_to_swap = 1;
@@ -289,6 +292,7 @@ bool map_can_reset(const mapstruct *map, long current_time) {
  * This is very useful if the tmp-disk is very full.
  */
 void flush_old_maps(void) {
+    Profiler fom("flush old maps");
     mapstruct *m, *oldmap;
     long sec;
     sec = seconds();

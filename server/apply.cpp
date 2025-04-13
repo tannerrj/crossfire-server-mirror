@@ -1526,6 +1526,7 @@ static void auto_apply_fix_inventory(mapstruct *m, object *tmp)
 
 void apply_auto_fix(mapstruct *m) {
     int x, y;
+    Profiler aaf("apply auto fix");
 
     if (m == NULL)
         return;

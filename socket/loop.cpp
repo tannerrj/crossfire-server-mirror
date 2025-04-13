@@ -159,6 +159,9 @@ void request_info_cmd(char *buf, int len, socket_struct *ns) {
             params = cp+1;
             break;
         }
+
+    Profiler ric(std::string("request info cmd ") + buf);
+
     if (!strcmp(buf, "image_info"))
         send_image_info(ns);
     else if (!strcmp(buf, "image_sums"))
@@ -219,6 +222,7 @@ handle_cmd(socket_struct *ns, player *pl, char *cmd, char *data, int len) {
     for (int i = 0; client_commands[i].cmdname != NULL; i++) {
         if (strcmp(cmd, client_commands[i].cmdname) == 0) {
             if (client_commands[i].cmdproc != NULL) {
+                Profiler cc(client_commands[i].cmdname);
                 client_commands[i].cmdproc(data, len, ns);
             }
             return 0;
@@ -235,6 +239,7 @@ handle_cmd(socket_struct *ns, player *pl, char *cmd, char *data, int len) {
         for (int i = 0; player_commands[i].cmdname != NULL; i++) {
             if (strcmp(cmd, player_commands[i].cmdname) == 0) {
                 if (pl->state == ST_PLAYING || player_commands[i].flag == 0) {
+                    Profiler pc(player_commands[i].cmdname);
                     player_commands[i].cmdproc(data, len, pl);
                 }
                 return 1;
@@ -288,6 +293,8 @@ bool handle_client(socket_struct *ns, player *pl) {
         char *data;
         char *cmd = strtok_r((char *)ns->inbuf.buf + 2, " ", &data);
 
+        Profiler hc(std::string("handle cmd ") + cmd);
+
         int got_player_cmd;
         if (data != NULL) {
             int rem = ns->inbuf.len - ((unsigned char *)data - ns->inbuf.buf);
@@ -331,6 +338,7 @@ bool handle_client(socket_struct *ns, player *pl) {
  * all the needed include files for socket support
  */
 void watchdog(void) {
+    Profiler w("watchdog");
     static int fd = -1;
     static struct sockaddr_in insock;
 
@@ -522,6 +530,7 @@ void check_all_fds() {
  *
  */
 void do_server(void) {
+    Profiler ds1("do server 1");
     fd_set tmp_read, tmp_exceptions;
     FD_ZERO(&tmp_read);
     FD_ZERO(&tmp_exceptions);
@@ -568,6 +577,9 @@ void do_server(void) {
         cst_lst.ticks_overtime++;
 #endif
     }
+    ds1.stop();
+
+    profiler_end_tick(sleep_time < 1000);
 
     // Log information about last tick. This can't be in log_time() because
     // CS_Stat is in socket/, and time is in common/.
@@ -599,6 +611,7 @@ void do_server(void) {
             return;
         }
 
+        Profiler ces("do server sockets");
         /* Check for any exceptions/input on the sockets */
         for (int i = 0; i < socket_info.allocated_sockets; i++) {
             /* listen sockets can stay in status Ns_Dead */
@@ -617,7 +630,9 @@ void do_server(void) {
                     handle_client(&init_sockets[i], NULL);
             }
         }
+        ces.stop();
 
+        Profiler cep("do server players");
         /* This does roughly the same thing, but for the players now */
         for (pl = first_player; pl != NULL; pl = next) {
             next = pl->next;
@@ -664,6 +679,8 @@ void do_server(void) {
                 }
             }
         }
+        cep.stop();
+
         sleep_time = get_sleep_remaining();
     }
 }
@@ -672,6 +689,7 @@ void do_server(void) {
  * Send updates to players. Called once per tick.
  */
 void update_players() {
+    Profiler up("update players");
     player *pl, *next;
     for (pl = first_player; pl != NULL; pl = next) {
         next = pl->next;

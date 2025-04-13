@@ -1271,6 +1271,7 @@ static void expand_objects(void) {
  * will never fail, as expand_objects() will fatal() if memory allocation error.
  */
 object *object_new(void) {
+    Profiler on("object new");
     object *op;
 #ifdef MEMORY_DEBUG
     /* FIXME: However this doesn't work since object_free() sometimes add
@@ -2856,6 +2857,8 @@ void object_add_weight(object *op, signed long weight) {
  */
 object *object_insert_in_ob(object *op, object *where) {
     object *otmp;
+
+    Profiler oiio("object insert in ob");
 
     if (!QUERY_FLAG(op, FLAG_REMOVED)) {
         StringBuffer *sb;

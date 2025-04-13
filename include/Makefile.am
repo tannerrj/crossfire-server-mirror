@@ -17,7 +17,8 @@ random_maps/room_gen.h \
 random_maps/rproto.h \
 compat.h \
 shop.h \
-server.h
+server.h \
+cf_profiling.h
 
 BUILT_SOURCES = svnversion.h
 

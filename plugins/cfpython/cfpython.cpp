@@ -922,6 +922,8 @@ static PyCodeObject *compilePython(char *filename) {
         return NULL;
     }
 
+    CfProfiler cp(std::string("Pc ") + (filename + std::max(size_t(0), strlen(filename) - 37)));
+
     sh_path = cf_add_string(filename);
 
     /* Search through cache. Four cases:
@@ -1040,6 +1042,7 @@ static int do_script(CFPContext *context) {
 
     pycode = compilePython(context->script);
     if (pycode) {
+        CfProfiler exec(std::string("Pe ") + (context->script + std::max(size_t(0), strlen(context->script) - 37)));
         pushContext(context);
         dict = PyDict_New();
         PyDict_SetItemString(dict, "__builtins__", PyEval_GetBuiltins());

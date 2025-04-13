@@ -75,6 +75,7 @@ extern void         cf_system_get_map_vector(int property, std::vector<mapstruct
 extern void         cf_system_get_archetype_vector(int property, std::vector<archetype *> *list);
 extern void         cf_system_get_party_vector(int property, std::vector<partylist *> *list);
 extern void         cf_system_get_region_vector(int property, std::vector<region *> *list);
+extern void         cf_system_profiling(const char *name, int start);
 
 /* Objects */
 extern void         cf_object_set_int_property(object *op, int propcode, int value);
@@ -244,5 +245,16 @@ extern int          cf_quest_get_player_state(object *pl, sstring quest_code);
 extern void         cf_quest_start(object *pl, sstring quest_code, int state);
 extern void         cf_quest_set_player_state(object *pl, sstring quest_code, int state);
 extern int          cf_quest_was_completed(object *pl, sstring quest_code);
+
+class CfProfiler {
+public:
+  CfProfiler(const std::string &name) : m_name(name) { cf_system_profiling(name.c_str(), true); }
+  ~CfProfiler() { stop(); }
+
+  void stop() { cf_system_profiling(m_name.c_str(), false); }
+
+private:
+  std::string m_name;
+};
 
 #endif /* PLUGIN_COMMON_H */

@@ -178,6 +178,8 @@ void decay_objects(mapstruct *m) {
     if (m->unique)
         return;
 
+    Profiler dobjs("decay objects");
+
     for (x = 0; x < MAP_WIDTH(m); x++)
         for (y = 0; y < MAP_HEIGHT(m); y++)
             FOR_MAP_PREPARE(m, x, y, op) {

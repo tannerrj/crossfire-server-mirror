@@ -574,6 +574,7 @@ static void fix_container_multipart(object *container) {
  */
 static void link_multipart_objects(mapstruct *m) {
     int x, y;
+    Profiler lmo("link multipart objects");
 
     for (x = 0; x < MAP_WIDTH(m); x++)
         for (y = 0; y < MAP_HEIGHT(m); y++)
@@ -601,6 +602,7 @@ static void link_multipart_objects(mapstruct *m) {
  * the same as we get with mapfile_load()
  */
 void load_objects(mapstruct *m, FILE *fp, int mapflags) {
+    Profiler lo("load objects");
     int i, j, bufstate = LO_NEWFILE;
     int unique;
     object *op, *prev = NULL, *last_more = NULL;
@@ -649,6 +651,7 @@ void load_objects(mapstruct *m, FILE *fp, int mapflags) {
             }
         }
 
+        Profiler oiinma("object insert in map (from load objects)");
         switch (i) {
         case LL_NORMAL:
             /* if we are loading an overlay, put the floors on the bottom */
@@ -774,6 +777,7 @@ int save_objects(mapstruct *m, FILE *fp, FILE *fp2, int flag) {
  * will never return NULL, but call fatal() if memory error.
  */
 mapstruct *get_linked_map(void) {
+    Profiler glm("get linked map");
     mapstruct *map = static_cast<mapstruct *>(calloc(1, sizeof(mapstruct)));
     /* mapstruct *mp;*/
 
@@ -810,6 +814,7 @@ uint32_t map_size(mapstruct *m) {
  * will never fail, since it calls fatal() if memory allocation failure.
  */
 void allocate_map(mapstruct *m) {
+    Profiler am("allocate map");
     m->in_memory = MAP_IN_MEMORY;
     /* Log this condition and free the storage.  We could I suppose
      * realloc, but if the caller is presuming the data will be intact,
@@ -986,6 +991,7 @@ static void print_shop_string(mapstruct *m, char *output_string, int size) {
  * 0 on success, 1 on failure.
  */
 static int load_map_header(FILE *fp, mapstruct *m) {
+    Profiler lmh("load map header");
     char buf[HUGE_BUF], *key = NULL, *value;
 
     m->width = m->height = 0;
@@ -1173,6 +1179,7 @@ void map_path(const char *map, int flags, char *pathname, size_t bufsize) {
 }
 
 mapstruct *mapfile_load_lowlevel(const char *map, const char *pathname, int flags) {
+    Profiler mll("mapfile load lowlevel");
     FILE *fp;
     if ((fp = fopen(pathname, "r")) == NULL) {
         LOG((flags&MAP_PLAYER_UNIQUE) ? llevDebug : llevError,
@@ -1214,6 +1221,7 @@ mapstruct *mapfile_load_lowlevel(const char *map, const char *pathname, int flag
  * loaded map, or NULL if failure.
  */
 mapstruct *mapfile_load(const char *map, int flags) {
+    Profiler ml("mapfile load");
     mapstruct *m;
     PROFILE_BEGIN();
     char pathname[MAX_BUF];
@@ -1251,6 +1259,8 @@ mapstruct *mapfile_load(const char *map, int flags) {
  */
 static int load_temporary_map(mapstruct *m) {
     FILE *fp;
+
+    Profiler ltm("load temporary map");
 
     if (!m->tmpname) {
         LOG(llevError, "No temporary filename for map %s\n", m->path);
@@ -1350,6 +1360,8 @@ static void load_unique_objects(mapstruct *m) {
     int count;
     char name[MAX_BUF], firstname[sizeof(name) + 4];
 
+    Profiler luo("load unique objects");
+
     create_items_path(m->path, name, MAX_BUF);
     for (count = 0; count < 10; count++) {
         snprintf(firstname, sizeof(firstname), "%s.v%02d", name, count);
@@ -1393,6 +1405,7 @@ static void load_unique_objects(mapstruct *m) {
  * one of @ref SAVE_ERROR_xxx "SAVE_ERROR_xxx" values.
  */
 int save_map(mapstruct *m, int flag) {
+    Profiler sm("save map");
     FILE *fp, *fp2;
     OutputFile of, of2;
     char filename[MAX_BUF], shop[MAX_BUF];
@@ -1766,6 +1779,7 @@ void map_reset_swap(mapstruct *m) {
  * pointer to the given map, NULL on failure.
  */
 mapstruct *ready_map_name(const char *name, int flags) {
+    Profiler rmn("ready map name");
     mapstruct *m;
 
     if (!name)

@@ -78,6 +78,7 @@ void dump_friendly_objects(void) {
  * (ie, do not have friendly flag set, freed, etc)
  */
 void clean_friendly_list(void) {
+    Profiler cfl("clean friendly list");
     int count = 0;
 
     auto item = friends.begin();

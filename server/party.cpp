@@ -213,6 +213,7 @@ partylist *party_get_next(const partylist *party) {
  * Remove unused parties (no players).
  */
 void party_obsolete_parties(void) {
+    Profiler pop("party obsolete parties");
     partylist *party;
     partylist *next;
     for (party = firstparty; party != NULL; party = next) {

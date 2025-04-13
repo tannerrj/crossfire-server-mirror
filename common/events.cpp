@@ -36,6 +36,8 @@ void events_execute_global_event(int eventcode, ...) {
     const char *buf;
     int i, rt;
 
+    Profiler eege(std::string("execute global event ") + std::to_string(eventcode));
+
     va_start(args, eventcode);
 
     switch (eventcode) {
@@ -231,6 +233,7 @@ static int do_execute_event(object *op, int eventcode, object *activator, object
         return 0;
     }
 
+    Profiler dee(std::string("do execute event ") + std::to_string(eventcode));
     FOR_INV_PREPARE(op, tmp) {
         if (tmp->type == EVENT_CONNECTOR && tmp->subtype == eventcode) {
             if (debug_events) {

@@ -62,6 +62,7 @@ libcross_a_SOURCES = \
 	path.cpp \
 	porting.cpp \
 	player.cpp \
+	cf_profiling.cpp \
 	re-cmp.cpp \
 	readable.cpp \
 	recipe.cpp \

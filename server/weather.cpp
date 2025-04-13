@@ -92,6 +92,7 @@ static void dawn_to_dusk(const timeofday_t *tod) {
  * Please don't modify tod in the dependant function.
  */
 void tick_the_clock(void) {
+    Profiler ttc("tick the clock");
     timeofday_t tod;
 
     todtick++;

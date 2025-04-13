@@ -147,6 +147,7 @@ static void cfapi_system_get_map_vector(int *type, ...);
 static void cfapi_system_get_archetype_vector(int *type, ...);
 static void cfapi_system_get_party_vector(int *type, ...);
 static void cfapi_system_get_region_vector(int *type, ...);
+static void cfapi_system_profiling(int *type, ...);
 
 /**
  * All hooked functions plugins can call.
@@ -251,6 +252,7 @@ static const hook_entry plug_hooks[] = {
     { cfapi_system_get_archetype_vector,   101, "cfapi_get_archetype_vector" },
     { cfapi_system_get_party_vector,    102, "cfapi_get_party_vector" },
     { cfapi_system_get_region_vector,   103, "cfapi_get_region_vector" },
+    { cfapi_system_profiling, 104, "cfapi_system_profiling" },
 };
 
 /** List of loaded plugins. */
@@ -4556,6 +4558,23 @@ static void cfapi_unregister_command(int *type, ...) {
     va_end(args);
 
     command_unregister(cr);
+}
+
+void cfapi_system_profiling(int *type, ...) {
+    va_list args;
+
+    va_start(args, type);
+    const char *name = va_arg(args, const char *);
+    int start = va_arg(args, int);
+    va_end(args);
+
+    if (start) {
+        profiler_start(name);
+    } else {
+        profiler_stop(name);
+    }
+
+    *type = CFAPI_NONE;
 }
 
 /*****************************************************************************/

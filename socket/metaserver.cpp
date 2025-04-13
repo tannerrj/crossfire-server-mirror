@@ -78,6 +78,7 @@ int count_players() {
  * data structure, doing locking in the process.
  */
 void metaserver_update(void) {
+    Profiler mu("metaserver update");
 #ifdef HAVE_LIBCURL
     /* Everything inside the lock/unlock is related
      * to metaserver2 synchronization.

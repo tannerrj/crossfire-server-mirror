@@ -457,6 +457,8 @@ void command_execute(object *pl, char *command) {
     registered_command *csp;
     char *cp, *low;
 
+    Profiler ce(std::string("cmd exec: ") + command);
+
     pl->contr->has_hit = 0;
 
     /*

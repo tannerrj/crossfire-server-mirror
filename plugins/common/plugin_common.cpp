@@ -134,6 +134,7 @@ static f_plug_api cfapiSystem_get_map_vector = NULL;
 static f_plug_api cfapiSystem_get_archetype_vector = NULL;
 static f_plug_api cfapiSystem_get_region_vector = NULL;
 static f_plug_api cfapiSystem_get_party_vector = NULL;
+static f_plug_api cfapiSystem_profiling = NULL;
 
 #define GET_HOOK(x, y, z) { \
     getHooks(&z, 1, y, &x); \
@@ -242,6 +243,7 @@ int cf_init_plugin(f_plug_api getHooks) {
     GET_HOOK(cfapiSystem_get_archetype_vector, "cfapi_get_archetype_vector", z);
     GET_HOOK(cfapiSystem_get_party_vector, "cfapi_get_party_vector", z);
     GET_HOOK(cfapiSystem_get_region_vector, "cfapi_get_region_vector", z);
+    GET_HOOK(cfapiSystem_profiling, "cfapi_system_profiling", z);
     return 1;
 }
 
@@ -2141,4 +2143,10 @@ void cf_system_get_region_vector(int property, std::vector<region *> *list) {
     int type;
     cfapiSystem_get_region_vector(&type, property, list);
     assert(type == CFAPI_REGION_VECTOR);
+}
+
+void cf_system_profiling(const char *name, int start) {
+    int type;
+    cfapiSystem_profiling(&type, name, start);
+    assert(type == CFAPI_NONE);
 }
