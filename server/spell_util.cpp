@@ -693,9 +693,15 @@ int fire_arch_from_position(object *op, object *caster, int16_t x, int16_t y, in
         }
 
         tmp->stats.dam = spell->stats.dam+SP_level_dam_adjust(caster, spell);
-        tmp->duration = spell->duration+SP_level_duration_adjust(caster, spell);
+        /* tmp->duration = spell->duration+SP_level_duration_adjust(caster, spell);
+         * Temporarily disable setting the duration variable, as both duration
+         * and food counters cannot be used at the same time with commit
+         * 54e11c21cf / time.cpp:process_object().
+         * Currently fire_arch_from_position() is only called for SP_BULLET,
+         * SP_MAGIC_MISSILE, SP_MOVING_BALL, and the projectiles created from
+         * SP_SWARM, all of which do not currently use the duration counter. */
         /* code in time.c uses food for some things, duration for others */
-        tmp->stats.food = tmp->duration;
+        tmp->stats.food = spell->duration+SP_level_duration_adjust(caster, spell);
         tmp->range = spell->range+SP_level_range_adjust(caster, spell);
         tmp->attacktype = spell->attacktype;
         if (object_get_owner(op) != NULL)
