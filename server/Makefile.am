@@ -59,8 +59,11 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -DDATADIR=\"$(pkgdatadir)\" -DCONFDIR=\"$(
 
 crossfire_server_LDFLAGS=$(ECL_LDFLAGS) $(LIBDL_LDFLAGS)
 
-crossfire_server_LDADD = libserver.a ../common/libcross.a ../random_maps/librandom_map.a \
+crossfire_server_LDADD = libserver_lisp.a libserver.a ../common/libcross.a ../random_maps/librandom_map.a \
 		../socket/libsocket.a ../types/libtypes.a
+
+libserver_lisp.a: server_lisp.lisp
+	$(ECL) -norc --shell build.lisp
 
 ../common/libcross.a:
 	( cd ../common ; make libcross.a )

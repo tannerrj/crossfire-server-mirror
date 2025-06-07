@@ -193,6 +193,7 @@
 /server/crossfire
 /server/crossfire-server
 /server/libserver.a
+/server/libserver_lisp.a
 /socket/.deps
 /socket/Makefile
 /socket/Makefile.in

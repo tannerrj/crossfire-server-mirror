@@ -68,6 +68,7 @@ dnl ECL
 AC_PATH_PROG([ECL_CONFIG], [ecl-config])
 AC_SUBST([ECL_CFLAGS], [`$ECL_CONFIG --cflags`])
 AC_SUBST([ECL_LDFLAGS], [`$ECL_CONFIG --ldflags`])
+AC_PATH_PROG([ECL], [ecl])
 
 dnl Metaserver2
 LIBCURL_CHECK_CONFIG()
