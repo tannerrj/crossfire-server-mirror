@@ -37,6 +37,10 @@
 
 #include <ecl/ecl.h>
 
+extern "C" {
+#include "server_capi.h"
+}
+
 #include "object.h"
 #include "path.h"
 #include "random_maps/random_map.h"
@@ -1419,7 +1423,7 @@ static void save_and_kick_all_players(void) {
     }
 }
 
-static void do_shutdown(void) {
+void do_shutdown(void) {
     draw_ext_info(NDI_UNIQUE | NDI_ALL, 5, NULL, MSG_TYPE_ADMIN,
             MSG_TYPE_ADMIN_DM, "The server has shut down.");
     save_and_kick_all_players();
