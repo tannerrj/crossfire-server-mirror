@@ -229,12 +229,13 @@ static void create_all_treasures(treasure *t, object *op, int flag, int difficul
  * can abort() if treasure has errors.
  * @ingroup page_treasure_list
  */
+const int MAX_TRIES = 100;
 static void create_one_treasure(treasurelist *tl, object *op, int flag, int difficulty, int tries) {
     int value = RANDOM()%tl->total_chance;
     treasure *t;
 
-    if (tries++ > 100) {
-        LOG(llevDebug, "create_one_treasure: tries exceeded 100, returning without making treasure\n");
+    if (tries++ > MAX_TRIES) {
+        LOG(llevDebug, "create_one_treasure: tries exceeded MAX_TRIES, returning without making treasure\n");
         return;
     }
 
@@ -258,15 +259,18 @@ static void create_one_treasure(treasurelist *tl, object *op, int flag, int diff
         return;
     }
     bool got_one = false;
-    while (tries < 100) {
+    for (int i = 0; i < 3 && tries < MAX_TRIES; i++) {
         if (do_single_item(t, op, flag, difficulty)) {
             got_one = true;
             break;
         }
         tries++;
     }
-    if (!got_one)
-        LOG(llevError, "create_one_treasure failed to create at least one treasure for item %s on list %s\n", t->item->name, tl->name);
+
+    if (!got_one) {
+        // try again with an entirely different item
+        create_one_treasure(tl, op, flag, difficulty, tries);
+    }
 }
 
 /**
@@ -285,8 +289,8 @@ static void create_one_treasure(treasurelist *tl, object *op, int flag, int diff
  * @ingroup page_treasure_list
  */
 void create_treasure(treasurelist *t, object *op, int flag, int difficulty, int tries) {
-    if (tries++ > 100) {
-        LOG(llevDebug, "createtreasure: tries exceeded 100, returning without making treasure\n");
+    if (tries++ > MAX_TRIES) {
+        LOG(llevDebug, "createtreasure: tries exceeded MAX_TRIES, returning without making treasure\n");
         return;
     }
     if (!t->items) {
