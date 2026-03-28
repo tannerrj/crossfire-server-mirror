@@ -58,13 +58,6 @@ void ResourcesManager::load()
 {
     setlocale(LC_NUMERIC, "C");
 
-    settings.assets_tracker = this;
-    add_server_collect_hooks();
-    assets_add_collector_hook(".LICENSE", [this] (BufferReader *reader, const char *filename) { myLicenseManager.readLicense(reader, filename); });
-    assets_add_collector_hook("", [] (BufferReader *, const char *) { QCoreApplication::processEvents(); });
-    settings.fatal_hook = onFatalInit;
-    settings.ignore_assets_errors = 1;
-
     QStringList log;
     bool hasWarningOrError = false;
     auto log_callback = [&] (LogLevel logLevel, const char *format, va_list va) {
@@ -80,6 +73,13 @@ void ResourcesManager::load()
         }
     };
     settings.log_callback = log_callback;
+
+    settings.assets_tracker = this;
+    add_server_collect_hooks();
+    assets_add_collector_hook(".LICENSE", [this] (BufferReader *reader, const char *filename) { myLicenseManager.readLicense(reader, filename); });
+    assets_add_collector_hook("", [] (BufferReader *, const char *) { QCoreApplication::processEvents(); });
+    settings.fatal_hook = onFatalInit;
+    settings.ignore_assets_errors = 1;
 
     init_globals();
     init_library();
