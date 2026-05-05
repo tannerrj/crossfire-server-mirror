@@ -529,7 +529,7 @@ void check_login(object *op, const char *password) {
     int correct = 0;
     time_t elapsed_save_time = 0;
     struct stat statbuf;
-    char *party_name = NULL, party_password[9];
+    std::string party_name, party_password;
 
     strcpy(pl->maplevel, first_map_path);
     party_password[0] = 0;
@@ -752,10 +752,9 @@ void check_login(object *op, const char *password) {
         } else if (!strcmp(buf, "party_rejoin_mode"))
             pl->rejoin_party = (enum party_rejoin_mode)value;
         else if (!strcmp(buf, "party_rejoin_name"))
-            party_name = strdup_local(val_string);
+            party_name = val_string;
         else if (!strcmp(buf, "party_rejoin_password")) {
-            strncpy(party_password, val_string, sizeof(party_password));
-            party_password[sizeof(party_password) - 1] = 0;
+            party_password = val_string;
         } else if (!strcmp(buf, "language")) {
             pl->language = i18n_get_language_by_code(val_string);
         }
@@ -863,9 +862,6 @@ void check_login(object *op, const char *password) {
         kill_player(op, NULL);
         if (pl->state != ST_PLAYING)
         {
-            // Prevent memory leak from strdup-ed party_name.
-            if (party_name)
-                free(party_name);
             return;
         }
     }
@@ -908,25 +904,24 @@ void check_login(object *op, const char *password) {
         SET_FLAG(op, FLAG_USE_SHIELD);
 
     /* Rejoin party if needed. */
-    if (pl->rejoin_party != party_rejoin_no && party_name != NULL) {
+    if (pl->rejoin_party != party_rejoin_no && !party_name.empty()) {
         partylist *party;
 
-        party = party_find(party_name);
+        party = party_find(party_name.c_str());
         if (!party && pl->rejoin_party == party_rejoin_always) {
-            party = party_form(op, party_name);
+            party = party_form(op, party_name.c_str());
             if (party)
-                party_set_password(party, party_password);
+                party_set_password(party, party_password.c_str());
         }
-        if (party && !pl->party && party_confirm_password(party, party_password)) {
+        if (party && !pl->party && party_confirm_password(party, party_password.c_str())) {
             party_join(op, party);
         }
 
         if (pl->party)
             snprintf(buf, MAX_BUF, "Rejoined party %s.", party->partyname);
         else
-            snprintf(buf, MAX_BUF, "Couldn't rejoin party %s: %s.", party_name, party ? "invalid password." : "no such party.");
+            snprintf(buf, MAX_BUF, "Couldn't rejoin party %s: %s.", party_name.c_str(), party ? "invalid password." : "no such party.");
         draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_SUCCESS,
                       buf);
     }
-    free(party_name);
 }
