@@ -4323,7 +4323,6 @@ void dragon_ability_gain(object *who, int atnr, int level) {
     treasure *tr;      /* treasure */
     object *tmp, *skop;      /* tmp. object */
     object *item;      /* treasure object */
-    char buf[MAX_BUF];      /* tmp. string buffer */
     int i = 0, j = 0;
 
     /* get the appropriate treasurelist */
@@ -4422,20 +4421,20 @@ void dragon_ability_gain(object *who, int atnr, int level) {
             skin->path_attuned |= item->path_attuned; /* add attunement to skin */
 
             /* print message */
-            snprintf(buf, sizeof(buf), "You feel attuned to ");
+            std::string buf{"You feel attuned to "};
             for (i = 0, j = 0; i < NRSPELLPATHS; i++) {
                 if (item->path_attuned&(1<<i)) {
                     if (j)
-                        strcat(buf, " and ");
+                        buf += " and ";
                     else
                         j = 1;
-                    strcat(buf, spellpathnames[i]);
+                    buf += spellpathnames[i];
                 }
             }
-            strcat(buf, ".");
+            buf += ".";
             draw_ext_info(NDI_UNIQUE|NDI_BLUE, 0, who,
                           MSG_TYPE_ATTRIBUTE, MSG_TYPE_ATTRIBUTE_RACE,
-                          buf);
+                          buf.c_str());
         }
 
         /* evtl. adding flags: */
