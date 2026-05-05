@@ -25,6 +25,7 @@
 
 #include "global.h"
 
+#include <assert.h>
 #include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
@@ -506,12 +507,11 @@ size_t split_string(char *str, char *array[], size_t array_size, char sep) {
  * Describe the specified path attenuation.
  * @param attenuation string describing if "Attenued", "Denied", "Repelled", may be NULL.
  * @param value path value to describe.
- * @param buf where to describe, can be NULL.
- * @return buf, newly allocated StringBuffer the caller should free if buf was NULL.
+ * @param buf where to describe, must not be NULL.
+ * @return buf the same buf that was passed in
  */
 StringBuffer *describe_spellpath_attenuation(const char *attenuation, int value, StringBuffer *buf) {
-    if (buf == NULL)
-        buf = stringbuffer_new();
+    assert(buf != NULL);
 
     if (value) {
         int i, j = 0;

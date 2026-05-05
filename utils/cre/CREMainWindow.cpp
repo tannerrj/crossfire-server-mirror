@@ -862,9 +862,9 @@ static QString spellsTable(const QString& skill)
     getManager()->archetypes()->each([&skill, &spells, &one] (const archetype *spell) {
         if (spell->clone.type == SPELL && spell->clone.skill == skill)
         {
-            auto buf = stringbuffer_finish(describe_spellpath_attenuation(nullptr, spell->clone.path_attuned, nullptr));
-            spells[spell->clone.level].append(QString("<tr><td>%1</td><td>%2</td><td>%3</td></tr>").arg(spell->clone.name).arg(spell->clone.level).arg(buf));
-            free(buf);
+            StringBuffer sb;
+            describe_spellpath_attenuation(nullptr, spell->clone.path_attuned, &sb);
+            spells[spell->clone.level].append(QString("<tr><td>%1</td><td>%2</td><td>%3</td></tr>").arg(spell->clone.name).arg(spell->clone.level).arg(QString::fromStdString(sb)));
             one = true;
         }
     });
