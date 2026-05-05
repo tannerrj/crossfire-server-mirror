@@ -79,6 +79,7 @@ BufferReader *bufferreader_init_from_file(BufferReader *br, const char *filepath
         bufferreader_init_for_length(br, ftell(file));
         if (fseek(file, 0, SEEK_SET) != 0) {
             // could not seek back to beginning, bail out
+            fclose(file);
             return NULL;
         }
     }
