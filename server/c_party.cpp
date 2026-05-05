@@ -65,7 +65,7 @@ void receive_party_password(object *op, const char *password) {
 }
 
 /**
- * 'gsay' command, talks to party.
+ * Group say ('gsay') command. Alias for "party say ..."
  *
  * @param op
  * player.
@@ -73,15 +73,15 @@ void receive_party_password(object *op, const char *password) {
  * message.
  */
 void command_gsay(object *op, const char *params) {
-    char party_params[MAX_BUF];
+    std::string party_params;
 
     if (*params == '\0') {
         draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_ERROR, "Say what?");
         return;
     }
-    strcpy(party_params, "say ");
-    strcat(party_params, params);
-    command_party(op, party_params);
+    party_params += "say ";
+    party_params += params;
+    command_party(op, party_params.c_str());
 }
 
 /**
