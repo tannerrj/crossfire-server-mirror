@@ -539,7 +539,7 @@ static anim_move_result runtrigger(CFanimation *animation, long int id, void *pa
 
     /* locate objectlink for this connected value */
     if (!map->buttons) {
-        cf_log(llevError, "Map %s called for trigger on connected %d but there ain't any button list for that map!\n", cf_map_get_sstring_property(map, CFAPI_MAP_PROP_PATH), id);
+        cf_log(llevError, "Map %s called for trigger on connected %ld but there ain't any button list for that map!\n", cf_map_get_sstring_property(map, CFAPI_MAP_PROP_PATH), id);
         return mr_finished;
     }
     for (olp = map->buttons; olp; olp = olp->next) {
