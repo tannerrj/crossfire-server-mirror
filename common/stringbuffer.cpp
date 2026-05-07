@@ -79,11 +79,10 @@ void stringbuffer_append_int64(StringBuffer *sb, int64_t x) {
 void stringbuffer_append_printf(StringBuffer *sb, const char *format, ...) {
     va_list arg;
     va_start(arg, format);
-    char *buf;
-    vasprintf(&buf, format, arg);
+    char buf[HUGE_BUF];
+    vsnprintf(buf, sizeof(buf), format, arg);
     va_end(arg);
     stringbuffer_append_string(sb, buf);
-    free(buf);
 }
 
 void stringbuffer_append_stringbuffer(StringBuffer *sb, const StringBuffer *sb2) {
