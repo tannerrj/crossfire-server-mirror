@@ -28,3 +28,26 @@ jobs:
       run: git clone --depth=1 https://git.code.sf.net/p/crossfire/crossfire-maps lib/maps
     - name: test
       run: cd test && ctest -j --output-on-failure
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            flex
+            mingw-w64-x86_64-curl
+            mingw-w64-x86_64-gcc
+          pacboy: >-
+            cmake:p
+            ninja:p
+
+      - name: run cmake
+        shell: msys2 {0}
+        run: cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=. -DMAPPER=OFF
+
+      - name: cmake build
+        shell: msys2 {0}
+        run: cmake --build build
