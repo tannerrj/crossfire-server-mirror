@@ -8,6 +8,10 @@ option(TEST "Build tests (requires check)" OFF)
 option(EXTRAS "Build extra utilities" OFF)
 option(CRE "Build resource editor (requires Qt5)" OFF)
 
+if(NOT WIN32)
+    set(BUILD_SHARED_LIBS ON)
+endif()
+
 find_package(FLEX REQUIRED)
 
 find_package(Python COMPONENTS Interpreter Development)
@@ -29,7 +33,7 @@ add_custom_command(OUTPUT arch_types_valid.cpp
 
 flex_target(LOADER common/loader.l loader.cpp COMPILE_FLAGS "-i -B -Cf")
 
-add_library(cross SHARED
+add_library(cross
     ${FLEX_LOADER_OUTPUTS}
 	arch_types_valid.cpp
 
@@ -109,7 +113,7 @@ target_precompile_headers(cross PRIVATE include/global.h)
 flex_target(READER random_maps/reader.l reader.cpp
     COMPILE_FLAGS "-P rm"
 )
-add_library(random_map_lib SHARED
+add_library(random_map_lib
     ${FLEX_READER_OUTPUTS}
 	random_maps/decor.cpp
 	random_maps/door.cpp
@@ -139,7 +143,7 @@ target_link_libraries(random_map random_map_lib)
 # }}}
 
 # server {{{
-add_library(cfserver SHARED
+add_library(cfserver
 	server/account.cpp
 	server/account_char.cpp
 	server/alchemy.cpp
@@ -271,7 +275,12 @@ add_executable(crossfire-server
 )
 target_precompile_headers(cfserver PRIVATE include/global.h)
 target_compile_definitions(cfserver PRIVATE PLUGIN_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}")
-target_link_libraries(cfserver PUBLIC cross random_map_lib crypt)
+target_link_libraries(cfserver PUBLIC cross random_map_lib)
+if (WIN32)
+    target_link_libraries(cfserver PUBLIC ws2_32)
+else()
+    target_link_libraries(cfserver PUBLIC crypt)
+endif()
 target_link_libraries(crossfire-server cfserver)
 install(TARGETS crossfire-server RUNTIME)
 install(TARGETS cross cfserver random_map_lib DESTINATION ${CMAKE_INSTALL_LIBDIR}/${CMAKE_PROJECT_NAME})

@@ -97,12 +97,7 @@ void init_connection(socket_struct *ns, const char *from_ip) {
     SockList sl;
 
 #ifdef WIN32 /* ***WIN32 SOCKET: init win32 non blocking socket */
-#ifdef CF_MXE_CROSS_COMPILE
     u_long temp = 1;
-#else
-    long temp = 1;
-#endif
-
     if (ioctlsocket(ns->fd, FIONBIO , &temp) == -1)
         LOG(llevError, "init_connection:  Error on ioctlsocket.\n");
 #else
