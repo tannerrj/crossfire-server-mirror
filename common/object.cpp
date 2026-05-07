@@ -39,7 +39,7 @@
 #include "sproto.h"
 #include "stringbuffer.h"
 
-#ifdef CF_MXE_CROSS_COMPILE
+#if defined(CF_MXE_CROSS_COMPILE) || defined(WIN32)
 #   define ffs(word) (__builtin_constant_p (word)                             \
                       ? __builtin_ffs (word)                                  \
                       : ({ int __cnt, __tmp;                                  \
