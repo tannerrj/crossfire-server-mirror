@@ -51,3 +51,15 @@ jobs:
       - name: cmake build
         shell: msys2 {0}
         run: cmake --build build
+
+      - name: build artifacts
+        shell: msys2 {0}
+        working-directory: ./build
+        run: cpack -G ZIP
+
+      - name: upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-artifacts
+          archive: false
+          path: build/*.zip
