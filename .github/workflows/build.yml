@@ -46,7 +46,7 @@ jobs:
 
       - name: run cmake
         shell: msys2 {0}
-        run: cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=. -DMAPPER=OFF
+        run: cmake -B build -G Ninja -DCMAKE_INSTALL_PREFIX=. -DCMAKE_EXE_LINKER_FLAGS="-static" -DMAPPER=OFF
 
       - name: cmake build
         shell: msys2 {0}
