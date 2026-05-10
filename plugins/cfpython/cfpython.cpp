@@ -1492,7 +1492,7 @@ static PyObject* PyInit_Crossfire(void)
 }
 
 extern "C"
-int initPlugin(const char *iversion, f_plug_api gethooksptr) {
+CF_PLUGIN int initPlugin(const char *iversion, f_plug_api gethooksptr) {
     PyObject *m;
     /* Python code to redirect stdouts/stderr. */
     const char *stdOutErr =
