@@ -599,7 +599,15 @@ void do_server(void) {
             } else if (errno == EBADF) {
                 check_all_fds();
             }
+#ifdef WIN32
+            int wsa_err = WSAGetLastError();
+            if (wsa_err == 10004) { return; }
+            if (wsa_err == 10038) { check_all_fds(); return; }
+            if (wsa_err == 10022) { check_all_fds(); return; }
+            LOG(llevError, "select failed: Winsock error %d\n", wsa_err);
+#else
             LOG(llevError, "select failed: %s\n", strerror(errno));
+#endif
             return;
         } else if (!pollret) {
             return;

@@ -197,7 +197,11 @@ void init_listening_socket(socket_struct *ns) {
 
     ns->fd = socket(ns->listen->family, ns->listen->socktype, ns->listen->protocol);
     if (ns->fd == -1) {
+#ifdef WIN32
+        LOG(llevError, "Cannot create socket: Winsock error %d\n", WSAGetLastError());
+#else
         LOG(llevError, "Cannot create socket: %s\n", strerror(errno));
+#endif
         return;
     }
 
@@ -249,7 +253,12 @@ void init_listening_socket(socket_struct *ns) {
         snprintf(buf1, sizeof(buf1), "%ld.%ld.%ld.%ld", (ip>>24)&255, (ip>>16)&255, (ip>>8)&255, ip&255);
         snprintf(buf2, sizeof(buf2), "%d", port&65535);
 #endif
+#ifdef WIN32
+        LOG(llevError, "Cannot bind socket to [%s]:%s: Winsock error %d\n", buf1, buf2, WSAGetLastError());
+#else
         LOG(llevError, "Cannot bind socket to [%s]:%s: %s\n", buf1, buf2, strerror(errno));
+#endif
+
 #ifdef WIN32 /* ***win32: close() -> closesocket() */
         shutdown(ns->fd, SD_BOTH);
         closesocket(ns->fd);
@@ -260,7 +269,11 @@ void init_listening_socket(socket_struct *ns) {
         return;
     }
     if (listen(ns->fd, 5) == (-1))  {
+#ifdef WIN32
+        LOG(llevError, "Cannot listen on socket: Winsock error %d\n", WSAGetLastError());
+#else
         LOG(llevError, "Cannot listen on socket: %s\n", strerror(errno));
+#endif
 #ifdef WIN32 /* ***win32: close() -> closesocket() */
         shutdown(ns->fd, SD_BOTH);
         closesocket(ns->fd);
@@ -290,9 +303,11 @@ void init_server(void) {
     WSADATA w;
 
     socket_info.max_filedescriptor = 1; /* used in select, ignored in winsockets */
-    WSAStartup(0x0101, &w);     /* this setup all socket stuff */
-    /* ill include no error tests here, winsocket 1.1 should always work */
-    /* except some old win95 versions without tcp/ip stack */
+    int wsaerr = WSAStartup(0x0101, &w);
+    if (wsaerr != 0) {
+        LOG(llevError, "WSAStartup failed with error %d\n", wsaerr);
+        exit(1);
+    }
 #else /* non windows */
 
 #ifdef HAVE_SYSCONF
