@@ -16,6 +16,9 @@
 #include <string.h>
 
 #include "global.h"
+#ifdef WIN32
+#include <windows.h>
+#endif
 #include "logger.h"
 #include "output_file.h"
 
@@ -74,6 +77,19 @@ int of_close(OutputFile *of) {
         free(of->fname);
         return 0;
     }
+#ifdef WIN32
+    /* Windows: use MoveFileExA with replace flag to handle locked files */
+    if (!MoveFileExA(of->fname_tmp, of->fname, MOVEFILE_REPLACE_EXISTING)) {
+        DWORD err = GetLastError();
+        char errbuf[256];
+        FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, errbuf, sizeof(errbuf), NULL);
+        LOG(llevError, "%s: cannot rename from %s: %s\n", of->fname, of->fname_tmp, errbuf);
+        remove(of->fname_tmp);
+        free(of->fname_tmp);
+        free(of->fname);
+        return 0;
+    }
+#else
     if (rename(of->fname_tmp, of->fname) != 0) {
         LOG(llevError, "%s: cannot rename from %s: %s\n", of->fname, of->fname_tmp, strerror(errno));
         remove(of->fname_tmp);
@@ -81,6 +97,7 @@ int of_close(OutputFile *of) {
         free(of->fname);
         return 0;
     }
+#endif
     free(of->fname_tmp);
     free(of->fname);
     return 1;
