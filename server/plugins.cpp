@@ -4589,6 +4589,68 @@ static void cfapi_unregister_command(int *type, ...) {
  * plugins_init_plugin() for each file found.
  */
 void initPlugins(void) {
+#ifdef WIN32
+    size_t l;
+    WIN32_FIND_DATAA findData;
+    HANDLE hFind;
+    char buf[MAX_PATH];
+    char searchPath[MAX_PATH];
+    char exepath[MAX_PATH];
+    /* Get absolute path to install dir (parent of bin\) */
+    GetModuleFileNameA(NULL, exepath, MAX_PATH);
+    {
+        /* Strip crossfire-server.exe */
+        char *last = strrchr(exepath, '\\');
+        if (last) *last = '\0';
+        /* Strip \bin */
+        last = strrchr(exepath, '\\');
+        if (last) *last = '\0';
+    }
+    /* Set DLL search path to bin\ so plugins can find runtime DLLs */
+    {
+        char binpath[MAX_PATH];
+        snprintf(binpath, sizeof(binpath), "%s\\bin", exepath);
+        SetDllDirectoryA(binpath);
+    }
+
+    snprintf(buf, sizeof(buf), "%s\\lib\\crossfire\\plugins\\", exepath);
+    LOG(llevDebug, "plugins: loading from %s\n", buf);
+
+    snprintf(searchPath, sizeof(searchPath), "%s\\lib\\crossfire\\plugins\\*.dll", exepath);
+    hFind = FindFirstFileA(searchPath, &findData);
+    if (hFind == INVALID_HANDLE_VALUE) {
+        LOG(llevError, "plugins: cannot open plugin dir %s\n", buf);
+        return;
+    }
+
+    do {
+        const char *fname = findData.cFileName;
+        l = strlen(fname);
+        int ignore = 0;
+
+        for (auto disable = serverSettings.disabled_plugins.cbegin(); disable != serverSettings.disabled_plugins.cend(); ++disable) {
+            if (strcmp(disable->c_str(), "All") == 0) {
+                LOG(llevInfo, "plugins: disabling (all) %s\n", fname);
+                ignore = 1;
+                break;
+            }
+            if (strncmp(disable->c_str(), fname, disable->length()) == 0 && strlen(fname) == strlen(PLUGIN_SUFFIX) + disable->length()) {
+                LOG(llevInfo, "plugins: disabling %s\n", fname);
+                ignore = 1;
+                break;
+            }
+        }
+        if (ignore == 0) {
+            snprintf(buf, sizeof(buf), "%s\\lib\\crossfire\\plugins\\%s", exepath, fname);
+            for (char *p = buf; *p; p++) if (*p == '/') *p = '\\';
+            LOG(llevInfo, "plugins: loading %s\n", fname);
+            plugins_init_plugin(buf);
+        }
+    } while (FindNextFileA(hFind, &findData));
+
+    FindClose(hFind);
+
+#else
     struct dirent *currentfile;
     DIR *plugdir;
     size_t l;
@@ -4630,6 +4692,7 @@ void initPlugins(void) {
     }
 
     closedir(plugdir);
+#endif
 }
 
 /**
