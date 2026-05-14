@@ -588,6 +588,20 @@ void do_server(void) {
     // process_*_utime variables anyway.
 
     while (sleep_time > 0) {
+        
+        // Windows/Winsock doesn't like it when you call select(), but
+        // don't pass any sockets. So instead we just sleep and bail early.
+        // I feel like this shouldn't happen anyway, but it happens quite a lot.
+        
+        #ifdef WIN32
+        if (tmp_read.fd_count == 0) {
+            LOG(llevDebug, "No sockets, sleeping for %dms\n", sleep_time);
+            // On Windows, a capital-S Sleep() is in milliseconds.
+            Sleep(sleep_time/1000);
+            return;
+        }
+        #endif
+        
         socket_info.timeout.tv_sec = 0;
         socket_info.timeout.tv_usec = sleep_time;
         int pollret = select(socket_info.max_filedescriptor, &tmp_read, NULL,
@@ -600,6 +614,12 @@ void do_server(void) {
                 check_all_fds();
             }
             LOG(llevError, "select failed: %s\n", strerror(errno));
+            
+            #ifdef WIN32
+            int winsockerror = WSAGetLastError();
+            LOG(llevError, "Winsock error was: %d\n", winsockerror);
+            #endif
+            
             return;
         } else if (!pollret) {
             return;
