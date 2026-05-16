@@ -365,16 +365,23 @@ void commands_clear() {
  * @param legend
  * banner to print before the commands.
  */
-static void show_commands(object *op, uint8_t type, const char *legend) {
+static void show_commands(object *op, uint8_t type, const char *legend, bool link_help) {
     char line[HUGE_BUF];
 
     draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_INFO, legend);
 
     line[0] = '\0';
-    std::for_each(registered_commands.begin(), registered_commands.end(), [&type, &line] (auto cmd) {
+    std::for_each(registered_commands.begin(), registered_commands.end(), [&type, &line, link_help] (auto cmd) {
         if (cmd.second.back()->type == type) {
+            if (link_help) {
+                strcat(line, "[help]");
+            }
             strcat(line, cmd.first.c_str());
-            strcat(line, " ");
+            if (link_help) {
+                strcat(line, "[/help] ");
+            } else {
+                strcat(line, " ");
+            }
         }
     });
     draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_INFO, line);
@@ -387,12 +394,12 @@ static void show_commands(object *op, uint8_t type, const char *legend) {
  * @param is_dm true if the player is a DM, false else.
  */
 void command_list(object *pl, bool is_dm) {
-    show_commands(pl, COMMAND_TYPE_NORMAL, "      Commands:");
+    show_commands(pl, COMMAND_TYPE_NORMAL, "      Commands:", true);
     draw_ext_info(NDI_UNIQUE, 0, pl, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_INFO, "\n");
-    show_commands(pl, COMMAND_TYPE_COMMUNICATION, "      Communication commands:");
+    show_commands(pl, COMMAND_TYPE_COMMUNICATION, "      Communication commands:", false);
     if (is_dm) {
         draw_ext_info(NDI_UNIQUE, 0, pl, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_INFO, "\n");
-        show_commands(pl, COMMAND_TYPE_WIZARD, "      Wiz commands:");
+        show_commands(pl, COMMAND_TYPE_WIZARD, "      Wiz commands:", true);
     }
 }
 

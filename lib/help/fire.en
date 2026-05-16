@@ -8,4 +8,4 @@ Use "stay f" to target yourself.
 You can turn off the fire command with fire_stop.
 To make a script or keybinding fire a single time in a particular direction, prefix the direction to the fire command. For instance, “east fire”
 
-See Also: fire_stop
+See Also: [help]fire_stop[/help]

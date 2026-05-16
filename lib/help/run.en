@@ -23,5 +23,5 @@ Additionally, depending on client implementation, you may stop running if you re
 
 At the time of writing the JX Client seems to stop running when the run key is released but the GTK client does not.
 
-See Also: bind
-See Also: run_stop
+See Also: [help]bind[/help]
+See Also: [help]run_stop[/help]

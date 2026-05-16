@@ -15,4 +15,4 @@ This will not delete your login account or any of your other characters associat
 
 NOTE: On older servers, this command does not exist. The delete command was added to avoid confusion with the quit command which back then was used to purge the active character file in those older servers.
 
-See also: quit
+See also: [help]quit[/help]

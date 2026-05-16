@@ -9,6 +9,6 @@ Ok, you are the Dungeon Master!
 
 All players in the game see a "The Dungeon Master has arrived!" message.
 
-See also: nodm
-See also: dmhide
-See also: dm_commands
+See also: [help]nodm[/help]
+See also: [help]dmhide[/help]
+See also: [help]dm_commands[/help]

@@ -100,6 +100,8 @@ Existing tags
 [print]         set the font to the client default one
 [color=<value>] activate color and set it to <value> (see color section bottom)
 [/color]        deactivate color
+[help]          starts a link to a help topic/command.
+[/help]         ends the help link.
 
 Colors
 ======
@@ -134,3 +136,13 @@ distingiush from normal black text).  Likewise, it is possible that some
 of the fonts the player uses may be italic fonts (handwriting being
 a likely case), and applying an italic style to an already italicized
 font has no effect.
+
+help
+====
+The help tag is used to create a link from the word/phrase so a player
+can click on the link and the client will send the "help <word>" command to
+the server.
+
+For example:
+How to use help:
+  'help [help]topics[/help]    (list of help topics)

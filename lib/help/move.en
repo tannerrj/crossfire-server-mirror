@@ -32,8 +32,8 @@ Firing a ranged attack ('help range) such as a bow, crossbow, wand, staff, rod, 
 
 'help traps for help with finding and disarming traps
 
-See Also: range
-See Also: mouse
-See Also: melee
-See Also: traps
-See Also: cast
+See Also: [help]range[/help]
+See Also: [help]mouse[/help]
+See Also: [help]melee[/help]
+See Also: [help]traps[/help]
+See Also: [help]cast[/help]

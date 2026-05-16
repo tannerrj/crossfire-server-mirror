@@ -10,5 +10,5 @@ The skill must be used by firing in a direction; ready_skill does not directly a
 
 The result depends on the skill selected and what items are around you.
 
-See Also: skills
-See Also: use_skill
+See Also: [help]skills[/help]
+See Also: [help]use_skill[/help]

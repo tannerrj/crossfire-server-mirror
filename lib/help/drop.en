@@ -23,4 +23,4 @@ Drop all items of the specified type. Types are the same as the "pickup" command
 
 Drop the item at the specified index. Index 1 is the last item taken, and so on.
 
-See also 'dropall' and mouse button control within the client for dropping objects.
+See also '[help]dropall[/help]' and mouse button control within the client for dropping objects.

@@ -14,4 +14,4 @@ Le type peut prendre l'une des valeurs suivantes:
 
 Si le type n'est pas spécifié, tous les objets à l'exception de la nourriture, de l'argent, des clefs et des conteneurs seront déposés.
 
-Voir aussi: drop, comment utiliser la souris pour déposer un objet.
+Voir aussi: [help]drop[/help], comment utiliser la souris pour déposer un objet.

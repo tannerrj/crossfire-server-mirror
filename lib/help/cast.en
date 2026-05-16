@@ -10,6 +10,6 @@ If you don't know the spell, the command output will show which spells you do kn
 
 It is helpful to bind strings like 'cast burning hands' to keys. 
 
-See Also: bind
-See Also: range
-See Also: invoke 
+See Also: [help]bind[/help]
+See Also: [help]range[/help]
+See Also: [help]invoke[/help]

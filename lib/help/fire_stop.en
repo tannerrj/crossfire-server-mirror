@@ -6,4 +6,4 @@ Cancels fire mode. Normally this is done automatically when using the fire key+d
 
 Especially useful when using the fire command in scripts, to fire a skill like punching onto a spot, then the fire command should be terminated by fire_stop immediately. When a script exits then the player is still firing and they are in a distressed situation, it is very uncomfortable to type in fire_stop in the command line.
 
-See Also: fire
+See Also: [help]fire[/help]

@@ -21,9 +21,9 @@ The mouse has the following uses of items in the You see window:
   Middle button: apply item (i.e., lever) if possible or applicable
   Right button: picks up the item(s) and adds it to your inventory
 
-See Also: lock
-See Also: mark
-See Also: apply
-See Also: drop
-See Also: get
-See Also: take
+See Also: [help]lock[/help]
+See Also: [help]mark[/help]
+See Also: [help]apply[/help]
+See Also: [help]drop[/help]
+See Also: [help]get[/help]
+See Also: [help]take[/help]

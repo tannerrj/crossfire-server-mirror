@@ -1682,8 +1682,9 @@ static void help_topics(object *op, int what) {
         && (namelen == 1 || de->d_name[1] == '.'))
             continue;
         if (strstr(de->d_name, suffix)) {
+            strcat(line, "[help]");
             strcat(line, strtok(de->d_name, "."));
-            strcat(line, " ");
+            strcat(line, "[/help] ");
         }
     }
     draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_COMMAND, MSG_TYPE_COMMAND_INFO,

@@ -12,7 +12,7 @@ If you don't know the spell, the command output will show which spells you do kn
 
 It is helpful to bind strings like 'prepare burning hands' to keys. 
 
-See Also: cast
-See Also: bind
-See Also: range
-See Also: invoke
+See Also: [help]cast[/help]
+See Also: [help]bind[/help]
+See Also: [help]range[/help]
+See Also: [help]invoke[/help]

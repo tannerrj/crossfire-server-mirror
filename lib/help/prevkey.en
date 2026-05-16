@@ -8,5 +8,5 @@ This is just like the up arrow under most command-line interfaces (CLI).
 
 Special note for GTKV2, one has to use the bind command (i.e., 'bind prevkey) as the the keybinding GUI does not work with this command.
 
-See Also: nextkey
-See Also: bind
+See Also: [help]nextkey[/help]
+See Also: [help]bind[/help]

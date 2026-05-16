@@ -15,7 +15,7 @@ Apply the spellbook or prayerbook for a chance to learn the spell.
 
 To cast a spell, you can either use the cast or invoke commands.
 
-See Also: apply
-See Also: cast
-See Also: invoke
-See Also: skills
+See Also: [help]apply[/help]
+See Also: [help]cast[/help]
+See Also: [help]invoke[/help]
+See Also: [help]skills[/help]

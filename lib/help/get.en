@@ -6,6 +6,6 @@ Another useful count is `all' to act like pickup 4 and pickup 5:
 
   get all
   
-  See Also: pickup
-  See Also: take
-  See Also: bind
+  See Also: [help]pickup[/help]
+  See Also: [help]take[/help]
+  See Also: [help]bind[/help]

@@ -14,4 +14,4 @@ Summary:
   unbind -g # - will reset the global keybinding of the specified number (i.e., unbind -g 23 will unbind keybinding number 23)
   unbind reset - will reset your character to all default keybindings
 
-See Also: bind
+See Also: [help]bind[/help]

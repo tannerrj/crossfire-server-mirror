@@ -23,4 +23,4 @@ Dépose tous les objets du type spécifié. Les types sont les mêmes que pour l
 
 Dépose l'objet situé à l'index spécifié. L'index 1 est le dernier objet pris, et ainsi de suite.
 
-[color=green]Voir aussi[/color] : dropall, comment utiliser la souris pour déposer des objets.
+[color=green]Voir aussi[/color] : [help]dropall[/help], comment utiliser la souris pour déposer des objets.

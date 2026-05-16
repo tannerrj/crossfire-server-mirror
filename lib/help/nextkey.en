@@ -6,5 +6,5 @@ This is just like the down arrow under most command line interfaces (CLI).
 
 Special note for GTKV2, one has to use the bind command (i.e., 'bind nextkey) as the the keybinding GUI does not work with this command.
 
-See also: prevkey
-See also: bind
+See also: [help]prevkey[/help]
+See also: [help]bind[/help]

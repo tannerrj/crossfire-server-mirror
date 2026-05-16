@@ -55,6 +55,6 @@ Valid types are:
 
 Three options are possible for the first character: [color=#ff5500]+[/color] will make you pick the item type, [color=#ff5500]-[/color] will make you stop picking the item type and [color=#ff5500]![/color] will toggle the pick mode.
 
-  See Also: get
-  See Also: take
-  See Also: bind
+  See Also: [help]get[/help]
+  See Also: [help]take[/help]
+  See Also: [help]bind[/help]

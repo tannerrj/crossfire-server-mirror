@@ -1,8 +1,8 @@
 How to use help:
-  'help topics    (list of help topics)
-  'help commands  (list of valid commands)
+  'help [help]topics[/help]    (list of help topics)
+  'help [help]commands[/help]  (list of valid commands)
   'help <command> (help on a topic or command)
 
 To report a bug or request help from dungeon masters if they are offline, use:
 
-  'report <description of issue>
+  '[help]report[/help] <description of issue>

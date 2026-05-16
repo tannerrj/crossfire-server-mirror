@@ -11,6 +11,6 @@ Example:
 
 This command is best used with keybindings (see help bind), as it does not set the designated skill as your active skill (see help ready_skill).
 
-See Also: bind
-See Also: skills
-See Also: ready_skill
+See Also: [help]bind[/help]
+See Also: [help]skills[/help]
+See Also: [help]ready_skill[/help]
