@@ -1735,7 +1735,7 @@ int dimension_door(object *op, object *caster, object *spob, int dir) {
 /**
  * Heals something.
  * @param op
- * who is casting.
+ * who is being healed
  * @param caster
  * what is casting.
  * @param spell
@@ -1760,7 +1760,8 @@ int cast_heal(object *op, object *caster, object *spell, int dir) {
      */
     heal = spell->stats.dam;
     if (spell->stats.hp)
-        heal += random_roll(spell->stats.hp, 6, op, PREFER_HIGH)+spell->stats.hp;
+        // use the target's luck to determine how much is healed, not the caster's
+        heal += random_roll(spell->stats.hp, 6, target, PREFER_HIGH)+spell->stats.hp;
 
     if (heal) {
         if (target->stats.hp >= target->stats.maxhp) {
@@ -1795,7 +1796,7 @@ int cast_heal(object *op, object *caster, object *spell, int dir) {
         }
     }
     if (spell->attacktype&AT_DISEASE)
-        if (cure_disease(target, op, caster && caster->type != PLAYER ? caster->skill : spell->skill))
+        if (cure_disease(target, caster, caster && caster->type != PLAYER ? caster->skill : spell->skill))
             success = 1;
 
     if (spell->attacktype&AT_POISON) {
