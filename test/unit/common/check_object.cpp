@@ -1187,6 +1187,12 @@ START_TEST(test_object_matches_string) {
     FAIL_UNLESS(val != 0, "unpaid cloak didn't match cloak with %d", val);
     val = object_matches_string(pl, o2, "wrong");
     FAIL_UNLESS(val == 0, "unpaid cloak matched wrong name %d", val);
+    char buf[10];
+    snprintf(buf, sizeof(buf), "%d", o2->count);
+    val = object_matches_string(pl, o2, buf);
+    FAIL_UNLESS(val == 30, "tag %s didn't match cloak, returned with value %d", buf, val);
+    val = object_matches_string(pl, o2, "1234567");
+    FAIL_UNLESS(val == 0, "tag 1234567 matched cloak, returned with value %d", val);
 }
 END_TEST
 

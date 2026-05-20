@@ -4541,6 +4541,7 @@ int object_set_value(object *op, const char *key, const char *value, int add_key
  * base name                  16
  * short name                 18
  * full name                  20
+ * number matching tag        30
  * (note, count is extracted from begin of name parameter or
  *  from pl->contr->count, name has priority)
  *
@@ -4559,6 +4560,14 @@ int object_set_value(object *op, const char *key, const char *value, int add_key
 int object_matches_string(object *pl, object *op, const char *name) {
     char *cp, local_name[MAX_BUF], name_op[MAX_BUF], name_short[HUGE_BUF], bname_s[MAX_BUF], bname_p[MAX_BUF];
     int count, retval = 0;
+
+    char *endptr;
+    if (op->count == strtoul(name, &endptr, 10)) {
+        if ((endptr != name) && (*endptr == '\0')) {
+            return 30;
+        }
+    }
+
     /* strtok is destructive to name */
     safe_strncpy(local_name, name, sizeof(local_name));
     sstring custom_name = object_get_value(op, CUSTOM_NAME_FIELD);
