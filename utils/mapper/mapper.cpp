@@ -2473,13 +2473,18 @@ static void fill_json(nlohmann::json &json) {
     }
 
     size_t map_index = 0;
-    for (auto map : reverse_maps) {
-        auto cur = map.first;
+    // Iterate all_maps (already qsorted by name/path) instead of reverse_maps,
+    // which is keyed by pointer and would produce ASLR-dependent order each run.
+    for (size_t i = 0; i < all_maps.count; i++) {
+        auto cur = all_maps.maps[i];
         if (cur->tiled_group)
+            continue;
+        auto key_it = reverse_maps.find(cur);
+        if (key_it == reverse_maps.end())
             continue;
         if (cur->cfregion == nullptr)
             need_unknown_region = true;
-        auto m = create_map_object(cur, map.second);
+        auto m = create_map_object(cur, key_it->second);
         m["_index"] = map_index;
         json["maps"].push_back(m);
         auto link = env->render(get_template("search-links/map"), m);
