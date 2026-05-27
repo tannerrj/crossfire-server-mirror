@@ -232,14 +232,15 @@ END_TEST
  *  object *object_find_by_tag_global(tag_t i);
  */
 START_TEST(test_object_find_by_tag_global) {
-    object *ob1;
-    object *result;
-
-    cctk_create_game_object(NULL);
-    cctk_create_game_object(NULL);
-    ob1 = cctk_create_game_object(NULL);
-    result = object_find_by_tag_global(ob1->count);
-    FAIL_UNLESS(result == ob1, "Should find ob1(%p) while search for item %d but got %p", ob1, ob1->count, result);
+    object *ob1 = cctk_create_game_object(NULL);
+    object *ob2 = cctk_create_game_object(NULL);
+    object *ob3 = cctk_create_game_object(NULL);
+    ck_assert_ptr_eq(object_find_by_tag_global(ob3->count), ob3);
+    ck_assert_ptr_eq(object_find_by_tag_global(ob1->count), ob1);
+    ck_assert_ptr_eq(object_find_by_tag_global(ob2->count), ob2);
+    object_free(ob1, 0);
+    ck_assert_ptr_null(object_find_by_tag_global(ob1->count));
+    ck_assert_ptr_null(object_find_by_tag_global(OBJECT_INVALID));
 }
 END_TEST
 

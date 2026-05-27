@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <map>
+
 #ifndef WIN32 /* ---win32 exclude headers */
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -295,6 +297,8 @@ static object *objects;           /**< Pointer to the list of used objects */
 static object *free_objects;      /**< Pointer to the list of unused objects */
 object *active_objects;    /**< List of active objects that need to be processed */
 
+static std::map<tag_t, object *> object_map;
+
 /** X offset when searching around a spot. */
 short freearr_x[SIZEOFFREE] = {
     0, 0, 1, 1, 1, 0, -1, -1, -1, 0, 1, 2, 2, 2, 2, 2, 1, 0, -1, -2, -2, -2, -2, -2, -1,
@@ -348,6 +352,8 @@ void init_objects(void) {
     SET_FLAG(&objarray[STARTMAX-1], FLAG_REMOVED);
     SET_FLAG(&objarray[STARTMAX-1], FLAG_FREED);
 #endif
+
+    object_map = {};
 }
 
 /**
@@ -710,12 +716,16 @@ void object_dump_all(void) {
  * matching object, NULL if not found.
  */
 object *object_find_by_tag_global(tag_t i) {
-    object *op;
+    if (i == OBJECT_INVALID) {
+        return nullptr;
+    }
 
-    for (op = objects; op != NULL; op = op->next)
-        if (op->count == i)
-            break;
-    return op;
+    auto it = object_map.find(i);
+    if (it != object_map.end()) {
+        return it->second;
+    } else {
+        return nullptr;
+    }
 }
 
 /**
@@ -770,6 +780,8 @@ void object_free_all_data(void) {
         op = next;
     }
 #endif
+
+    object_map.clear();
 
     LOG(llevDebug, "%d allocated objects, %d free objects, STARMAX=%d\n", nrofallocobjects, nroffreeobjects, STARTMAX);
 }
@@ -1283,6 +1295,7 @@ object *object_new(void) {
     nroffreeobjects--;
 #endif
     op->count = ++ob_count;
+    object_map[op->count] = op;
     op->name = NULL;
     op->name_pl = NULL;
     op->title = NULL;
@@ -1676,6 +1689,7 @@ void object_free(object *ob, int flags) {
     object_update_speed(ob);
 
     SET_FLAG(ob, FLAG_FREED);
+    object_map.erase(ob->count);
     ob->count = 0;
 
     /* Remove this object from the list of used objects */

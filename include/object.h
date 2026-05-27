@@ -258,6 +258,8 @@ enum object_type {
 
 typedef uint32_t ob_flags[4];
 
+const tag_t OBJECT_INVALID = 0;
+
 /**
  * Main Crossfire structure, one ingame object.
  *
