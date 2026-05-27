@@ -490,7 +490,6 @@ struct archetype {
     int reference_count;    /**< How many times this temporary archetype is used. If 0, "permanent" archetype. */
 };
 
-extern object *objects;
 extern object *active_objects;
 
 extern int nrofallocobjects;

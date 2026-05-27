@@ -291,7 +291,7 @@ int nroffreeobjects = STARTMAX;  /**< How many OBs allocated and free (free) */
 int nrofallocobjects = STARTMAX; /**< How many OBs allocated (free + used) */
 #endif
 
-object *objects;           /**< Pointer to the list of used objects */
+static object *objects;           /**< Pointer to the list of used objects */
 static object *free_objects;      /**< Pointer to the list of unused objects */
 object *active_objects;    /**< List of active objects that need to be processed */
 
