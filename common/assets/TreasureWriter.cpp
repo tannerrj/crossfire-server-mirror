@@ -32,6 +32,7 @@ static void writeItem(const treasure *item, const std::string &indent, StringBuf
         stringbuffer_append_printf(buf, "%schance %d\n", indentItems.c_str(), item->chance);
     }
     W(nrof, "nrof %d");
+    W(nrof_rolls, "nrof_rolls %d");
     W(magic, "magic %d");
     if (item->next_yes) {
         stringbuffer_append_printf(buf, "%syes\n", indentItems.c_str());

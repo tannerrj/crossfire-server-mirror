@@ -77,6 +77,7 @@ struct treasure {
                                          * required to go to the new list
                                          */
     uint16_t nrof;                        /**< Random 1 to nrof items are generated */
+    uint16_t nrof_rolls;                  /**< Number of times nrof gets rolled. nrof=10, nrof_rolls=3 corresponds to 3d10. */
 };
 
 /**

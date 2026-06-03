@@ -84,6 +84,8 @@ treasure *TreasureLoader::loadTreasure(BufferReader *reader, const std::string &
             t->chance = (uint8_t)value;
         else if (sscanf(cp, "nrof %d", &value))
             t->nrof = (uint16_t)value;
+        else if (sscanf(cp, "nrof_rolls %d", &value))
+            t->nrof_rolls = (uint16_t)value;
         else if (sscanf(cp, "magic %d", &value))
             t->magic = (uint8_t)value;
         else if (!strcmp(cp, "yes"))

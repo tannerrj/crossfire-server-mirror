@@ -126,6 +126,14 @@ static void change_treasure(treasure *t, object *op) {
     }
 }
 
+static int AT_LEAST_1(int x) {
+    if (x < 1) {
+        return 1;
+    } else {
+        return x;
+    }
+}
+
 /**
  * Creates the item for a treasure.
  *
@@ -144,8 +152,11 @@ static bool do_single_item(treasure *t, object *op, int flag, int difficulty) {
         return false;
 
     object *tmp = arch_to_object(t->item);
-    if (t->nrof && tmp->nrof <= 1)
-        tmp->nrof = RANDOM()%((int)t->nrof)+1;
+    if (t->nrof && tmp->nrof <= 1) {
+        for (int i = 0; i < AT_LEAST_1(t->nrof_rolls); i++) {
+            tmp->nrof += RANDOM()%((int)t->nrof)+1;
+        }
+    }
     if (t->artifact) {
         const artifact *art = find_artifact(tmp, t->artifact);
         if (!art || !legal_artifact_combination(tmp, art)) {
