@@ -1,0 +1,19 @@
+Sends a private message to a particular person. 
+
+Usage:
+  tell <person> <message>
+
+<person> is case sensitive
+
+If Joe types:
+  tell Jack Hi!
+  
+Player Jack sees:
+  Joe tells you: Hi!
+
+See also: reply
+See also: say
+See also: shout
+See also: chat
+See also: tell
+See also: party
