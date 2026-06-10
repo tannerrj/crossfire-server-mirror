@@ -1095,7 +1095,7 @@ void add_server_collect_hooks() {
  * writes to without checking that the directories already exist).
  */
 static void mklocaldirs() {
-    auto dirs = {"", "/account", "/maps", "/players", "/unique-items"};
+    auto dirs = {"", "account/", "maps/", "players/", "unique-items/"};
     std::string localdir(settings.localdir);
     for (auto dir : dirs) {
         if (!make_path_to_file((localdir + "/" + dir).c_str()))

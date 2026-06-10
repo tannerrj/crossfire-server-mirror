@@ -153,7 +153,10 @@ void remove_directory(const char *path) {
 }
 
 /**
- * Checks if any directories in the given path doesn't exist, and creates if necessary.
+ * Recursively creates missing directories in the path to filename until the
+ * last directory separator '/'. Add a trailing '/' to filename if it is a
+ * directory. For example, if filename is /a/b/c, create directories /a and
+ * /a/b.
  *
  * @param filename
  * file path we'll want to access. Can be NULL.
