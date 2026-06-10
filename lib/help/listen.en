@@ -1,11 +1,42 @@
-Listen, sets the level of messages you will hear.
+Controls how many server messages you receive. Higher level = more messages; lower level = fewer. Your setting is saved with your character. Default is 10.
 
 If no parameters are set, the current listen level is shown:
 
 listen
   Set listen to what (presently 10)?
 
-If a numeric listen level is specified, the following message is the output:
+If a numeric listen level is specified (i.e., 10), the following message is the output:
 
 listen 10
   Your verbose level is now 10.
+
+Listen Levels:
+
+  Level 0   = Nothing. Private tells still reach you regardless
+  Level 1   = Your own game feedback only: combat results, spell effects, level-ups, item use, command responses
+  Level 2   = Level 1, plus shouts (red) from other players, and DM login/logout announcements
+  Level 6   = Level 2, plus player logins/logouts, party join/leave, server shutdown warnings
+  Level 10  = Level 6, plus chat (blue) from other players. **(default)** 
+  Level 11+ = Level 10, plus kill announcements when any player kills a monster
+
+Examples:
+
+  listen    = show your current level
+  listen 1  = your own game feedback only; no social channels
+  listen 2  = adds shouts; good if the chat channel is busy
+  listen 6  = adds logins and party events, but no chat
+  listen 10 = default; see all normal messages including chat
+
+Notes:
+
+  * Private tells always reach you, no matter how low your listen level is
+  * Shouts carry urgent server-wide messages (admin warnings, etc.); set at least listen 2 to see them
+  * Chat is general player conversation; requires listen 10 (the default)
+  * Negative values are not accepted
+  * No known messages use priority above 10; raising above 11 has no further effect
+
+See also: say
+See also: shout
+See also: chat
+See also: tell
+See also: party
