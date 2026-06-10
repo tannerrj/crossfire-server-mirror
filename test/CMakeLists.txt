@@ -20,7 +20,7 @@ endfunction()
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(CHECK check REQUIRED)
 
-set(COMMON_TESTS check_arch check_artifact check_friend check_holy check_image check_item check_living check_loader check_map check_mapsave check_minheap check_object check_path check_readable check_recipe check_region check_shstr check_stringbuffer check_time check_treasure check_utils check_asset_load_write)
+set(COMMON_TESTS check_arch check_artifact check_friend check_holy check_image check_item check_living check_loader check_map check_minheap check_object check_path check_readable check_recipe check_region check_shstr check_stringbuffer check_time check_treasure check_utils check_asset_load_write)
 
 set(SERVER_TESTS check_account check_account_char check_alchemy check_apply check_attack check_monster check_c_object comet_perf check_c_party check_shop check_swap check_monster_change check_player perf_tests)
 
@@ -32,6 +32,10 @@ foreach(test IN ITEMS ${COMMON_TESTS})
     add_common_test(${test})
     add_test(NAME ${test} COMMAND ./${test})
 endforeach()
+
+# This is a manual test executable, so build it separately without Check. Fixes CI build.
+add_executable(check_mapsave unit/common/check_mapsave.cpp unit/common/stubs_common.cpp)
+target_link_libraries(check_mapsave cfserver)
 
 make_directory(${CMAKE_CURRENT_BINARY_DIR}/unit/server) # for test log output
 foreach(test IN ITEMS ${SERVER_TESTS})
