@@ -1,0 +1,22 @@
+The mapscale client command changes how large the map is drawn on screen by scaling map tiles up or down.
+
+Usage:
+  mapscale <percent>
+
+The value is a percentage of the normal tile size:
+  100 - normal size (the default)
+  below 100 - zooms out, drawing smaller tiles so more of the map is visible at once
+  above 100 - zooms in, drawing larger tiles so less of the map is visible at once
+
+Valid values are between 10 and 200. Anything outside that range is ignored and your previous scale is kept.
+
+Examples:
+  mapscale 50   - shows the map at half size (zoomed out)
+  mapscale 150  - shows the map at one and a half times size (zoomed in)
+  mapscale 100  - restores the normal/default scale
+
+Note: if the map is taking too long to redraw at your current scale, the client may automatically reduce the zoom level back toward 100% on its own to keep the display responsive.
+
+Use the 'savedefaults' command to keep your chosen scale between play sessions.
+
+This is a GTKv2 Client only command.
