@@ -35,8 +35,8 @@ Notes:
   * Negative values are not accepted
   * No known messages use priority above 10; raising above 11 has no further effect
 
-See also: say
-See also: shout
-See also: chat
-See also: tell
-See also: party
+See also: [help]say[/help]
+See also: [help]shout[/help]
+See also: [help]chat[/help]
+See also: [help]tell[/help]
+See also: [help]party[/help]
