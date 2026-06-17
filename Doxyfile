@@ -555,6 +555,12 @@ HIDE_COMPOUND_REFERENCE= NO
 
 SHOW_INCLUDE_FILES     = YES
 
+# If the SHOW_HEADERFILE tag is set to YES then the documentation for a class
+# will show which file the class was declared in.
+# The default value is: YES.
+
+SHOW_HEADERFILE        = YES
+
 # If the SHOW_GROUPED_MEMB_INC tag is set to YES then Doxygen will add for each
 # grouped member an include statement to the documentation, telling the reader
 # which file to include in order to use the member.
