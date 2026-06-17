@@ -820,7 +820,7 @@ WARN_LOGFILE           =
 
 INPUT                  = . \
                          utils/mapper/mapper.cpp \
-                         utils/bwp.c \
+                         utils/bwp.cpp \
                          utils/gridarta-types-convert.cpp
 
 # This tag can be used to specify the character encoding of the source files
