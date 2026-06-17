@@ -1595,6 +1595,13 @@ MATHJAX_CODEFILE       =
 
 OBFUSCATE_EMAILS       = YES
 
+# If the HTML_CODE_FOLDING tag is set to YES then classes and functions in the
+# HTML source code can be expanded or collapsed by clicking on a control widget.
+# The default value is: YES.
+# This tag requires that the tag SOURCE_BROWSER is set to YES.
+
+HTML_CODE_FOLDING      = YES
+
 # When the SEARCHENGINE tag is enabled doxygen will generate a search box for
 # the HTML output. The underlying search engine uses javascript and DHTML and
 # should work on any modern browser. Note that when using HTML help
