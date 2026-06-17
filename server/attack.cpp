@@ -2420,7 +2420,7 @@ void paralyze_living(object *op, int dam) {
         SET_FLAG(op, FLAG_PARALYZED);
         if (op->type == PLAYER)
             draw_ext_info(NDI_UNIQUE, 0, op, MSG_TYPE_ATTRIBUTE, MSG_TYPE_ATTRIBUTE_BAD_EFFECT_START,
-                      "You limbs stop moving!");
+                      "Your limbs stop moving!");
     }
     /* If the flag is already set, then the paralysis is merely extended.
      * At this point, we do nothing.
