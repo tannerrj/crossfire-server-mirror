@@ -2418,6 +2418,12 @@ PLANTUML_CFG_FILE      =
 
 PLANTUML_INCLUDE_PATH  =
 
+# The EXTERNAL_TOOL_PATH tag can be used to extend the search path (PATH
+# environment variable) so that doxygen can find tools needed to generate the
+# documentation.
+
+EXTERNAL_TOOL_PATH     =
+
 # The DOT_GRAPH_MAX_NODES tag can be used to set the maximum number of nodes
 # that will be shown in the graph. If the number of nodes in a graph becomes
 # larger than this value, doxygen will truncate the graph, which is visualized
