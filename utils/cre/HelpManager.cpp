@@ -16,6 +16,7 @@
 #include <QDialog>
 #include <QHelpContentWidget>
 #include <QHelpIndexWidget>
+#include <QHelpLink>
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QSplitter>
@@ -66,9 +67,9 @@ QUrl HelpManager::computeUrlForWidget(QWidget *widget) const {
     }
     auto helpId = widget->property(helpIdProperty);
     if (!helpId.isNull()) {
-        auto links = linksForIdentifier(helpId.toString());
+        auto links = documentsForIdentifier(helpId.toString());
         if (!links.empty()) {
-            return links.begin().value();
+            return links.front().url;
         }
     }
     return computeUrlForWidget(widget->parentWidget());

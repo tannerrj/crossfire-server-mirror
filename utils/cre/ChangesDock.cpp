@@ -15,6 +15,7 @@
 #include <QFile>
 #include "CRESettings.h"
 #include <QHelpEngineCore>
+#include <QHelpLink>
 
 ChangesDock::ChangesDock(QHelpEngineCore *help, QWidget *parent) : QDockWidget(tr("Changes"), parent) {
     setAllowedAreas(Qt::RightDockWidgetArea);
@@ -30,9 +31,9 @@ ChangesDock::ChangesDock(QHelpEngineCore *help, QWidget *parent) : QDockWidget(t
 
 void ChangesDock::helpReady(QHelpEngineCore *help, QTextEdit *edit) {
     QString content("No content to display");
-    auto links = help->linksForIdentifier("changes");
+    auto links = help->documentsForIdentifier("changes");
     if (!links.empty()) {
-        content = help->fileData(links.begin().value());
+        content = help->fileData(links.front().url);
     }
     edit->setText(content);
 
