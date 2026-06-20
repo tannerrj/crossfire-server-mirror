@@ -780,7 +780,7 @@ void CREMapInformationManager::checkEvent(const object* item, CREMapInformation*
     if (QString(item->slaying).startsWith("/python/quests/"))
     {
         //qDebug() << "quest-related Python stuff";
-        QStringList split = QString(item->name).split(' ', QString::SkipEmptyParts);
+        QStringList split = QString(item->name).split(' ', Qt::SkipEmptyParts);
         if (split.length() > 1)
         {
             //qDebug() << "definitely quest" << split[0];
