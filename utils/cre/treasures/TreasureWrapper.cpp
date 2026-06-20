@@ -52,17 +52,21 @@ QString TreasureWrapper::displayName() const {
     }
 
     auto tlw = dynamic_cast<TreasureListWrapper *>(displayParent());
+    auto count = myWrappedItem->nrof > 0 ? myWrappedItem->nrof_rolls > 1 ?
+                                           tr("%1 x (1 to %2), ").arg(myWrappedItem->nrof_rolls).arg(myWrappedItem->nrof)
+                                           : tr("1 to %1, ").arg(myWrappedItem->nrof)
+                                         : "";
     if (tlw && tlw->totalChance() != 0) {
         name = tr("%1 (%2%3%, %4 chances on %5)")
             .arg(name)
-            .arg(myWrappedItem->nrof > 0 ? tr("1 to %2, ").arg(myWrappedItem->nrof) : "")
+            .arg(count)
             .arg(qRound((float)100 * myWrappedItem->chance / tlw->totalChance()))
             .arg(myWrappedItem->chance)
             .arg(tlw->totalChance());
     } else {
         name = tr("%1 (%2%3%)")
             .arg(name)
-            .arg(myWrappedItem->nrof > 0 ? tr("1 to %2, ").arg(myWrappedItem->nrof) : "")
+            .arg(count)
             .arg(myWrappedItem->chance);
     }
 
@@ -223,6 +227,17 @@ uint16_t TreasureWrapper::nrof() const {
 void TreasureWrapper::setNrof(uint16_t nrof) {
     if (nrof != myWrappedItem->nrof) {
         myWrappedItem->nrof = nrof;
+        markModified(AssetUpdated);
+    }
+}
+
+uint16_t TreasureWrapper::nrofRolls() const {
+    return myWrappedItem->nrof_rolls;
+}
+
+void TreasureWrapper::setNrofRolls(uint16_t nrofRolls) {
+    if (nrofRolls != myWrappedItem->nrof_rolls) {
+        myWrappedItem->nrof_rolls = nrofRolls;
         markModified(AssetUpdated);
     }
 }

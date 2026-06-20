@@ -1533,7 +1533,7 @@ Confirmez-vous ?</translation>
     <name>CREResourcesWindow</name>
     <message>
         <location filename="../CREResourcesWindow.cpp" line="93"/>
-        <location filename="../CREResourcesWindow.cpp" line="279"/>
+        <location filename="../CREResourcesWindow.cpp" line="285"/>
         <source>Filter...</source>
         <translation>Filtrer...</translation>
     </message>
@@ -1553,64 +1553,59 @@ Confirmez-vous ?</translation>
         <translation>Exporter les ressources affichées au format CSV</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="139"/>
+        <location filename="../CREResourcesWindow.cpp" line="136"/>
         <source>No details available.</source>
         <translation>Aucun détail disponible.</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="231"/>
+        <location filename="../CREResourcesWindow.cpp" line="237"/>
         <source>(none)</source>
         <translation>(aucun)</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="248"/>
+        <location filename="../CREResourcesWindow.cpp" line="254"/>
         <source>Quick filter...</source>
         <translation>Filtre rapide...</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="251"/>
+        <location filename="../CREResourcesWindow.cpp" line="257"/>
         <source>Filters definition...</source>
         <translation>Définition des filtres...</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="279"/>
+        <location filename="../CREResourcesWindow.cpp" line="285"/>
         <source>Filter: %1</source>
         <translation>Filtre : %1</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="298"/>
+        <location filename="../CREResourcesWindow.cpp" line="304"/>
         <source>Export as CSV...</source>
         <translation>Exporter en CSV...</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="298"/>
+        <location filename="../CREResourcesWindow.cpp" line="304"/>
         <source>CSV file (*.csv);;All files (*.*)</source>
         <translation>Fichier CSV (*.csv);;Tous les fichiers (*.*)</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="319"/>
+        <location filename="../CREResourcesWindow.cpp" line="325"/>
         <source>Error writing CSV file %1</source>
         <translation>Erreur durant l&apos;écriture du fichier CSV %1</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="319"/>
+        <location filename="../CREResourcesWindow.cpp" line="325"/>
         <source>Unable to write CSV file %1!</source>
         <translation>Impossible d&apos;écrire le fichier CSV %1!</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="324"/>
+        <location filename="../CREResourcesWindow.cpp" line="330"/>
         <source>Ressources correctly exported to CSV file %1.</source>
         <translation>Les ressources ont été correctement exportées dans le fichier CSV %1.</translation>
     </message>
     <message>
-        <location filename="../CREResourcesWindow.cpp" line="324"/>
+        <location filename="../CREResourcesWindow.cpp" line="330"/>
         <source>Export complete</source>
         <translation>Export terminé</translation>
-    </message>
-    <message>
-        <location filename="../CREResourcesWindow.cpp" line="351"/>
-        <source>Quest %1 already exists!</source>
-        <translation>La quête « %1 » existe déjà !</translation>
     </message>
 </context>
 <context>
@@ -2640,26 +2635,31 @@ face %1.111
     </message>
     <message>
         <location filename="../treasures/TreasurePanel.cpp" line="26"/>
+        <source>Rolls count:</source>
+        <translation>Nombre de lancers :</translation>
+    </message>
+    <message>
+        <location filename="../treasures/TreasurePanel.cpp" line="27"/>
         <source>Treasure:</source>
         <translation>Trésor :</translation>
     </message>
     <message>
-        <location filename="../treasures/TreasurePanel.cpp" line="27"/>
+        <location filename="../treasures/TreasurePanel.cpp" line="28"/>
         <source>Magic to generate with:</source>
         <translation>Magie avec laquelle générer :</translation>
     </message>
     <message>
-        <location filename="../treasures/TreasurePanel.cpp" line="28"/>
+        <location filename="../treasures/TreasurePanel.cpp" line="29"/>
         <source>Magic adjustment:</source>
         <translation>Ajustement de la magie :</translation>
     </message>
     <message>
-        <location filename="../treasures/TreasurePanel.cpp" line="29"/>
+        <location filename="../treasures/TreasurePanel.cpp" line="30"/>
         <source>Archetype:</source>
         <translation>Archétype :</translation>
     </message>
     <message>
-        <location filename="../treasures/TreasurePanel.cpp" line="30"/>
+        <location filename="../treasures/TreasurePanel.cpp" line="31"/>
         <source>Artifact:</source>
         <translation>Artéfact :</translation>
     </message>
@@ -2673,27 +2673,31 @@ face %1.111
     </message>
     <message>
         <location filename="../treasures/TreasureWrapper.cpp" line="56"/>
+        <source>%1 x (1 to %2), </source>
+        <translation>%1 x (1 à %2), </translation>
+    </message>
+    <message>
+        <location filename="../treasures/TreasureWrapper.cpp" line="57"/>
+        <source>1 to %1, </source>
+        <translation>1 à %1, </translation>
+    </message>
+    <message>
+        <location filename="../treasures/TreasureWrapper.cpp" line="60"/>
         <source>%1 (%2%3%, %4 chances on %5)</source>
         <translation>%1 (%2%3%, %4 chances sur %5)</translation>
     </message>
     <message>
-        <location filename="../treasures/TreasureWrapper.cpp" line="58"/>
-        <location filename="../treasures/TreasureWrapper.cpp" line="65"/>
-        <source>1 to %2, </source>
-        <translation>1 à %2, </translation>
-    </message>
-    <message>
-        <location filename="../treasures/TreasureWrapper.cpp" line="63"/>
+        <location filename="../treasures/TreasureWrapper.cpp" line="67"/>
         <source>%1 (%2%3%)</source>
         <translation>%1 (%2%3%)</translation>
     </message>
     <message>
-        <location filename="../treasures/TreasureWrapper.cpp" line="304"/>
+        <location filename="../treasures/TreasureWrapper.cpp" line="319"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../treasures/TreasureWrapper.cpp" line="306"/>
+        <location filename="../treasures/TreasureWrapper.cpp" line="321"/>
         <source>Swap &apos;yes&apos; and &apos;no&apos;</source>
         <translation>Échanger « oui » et « non »</translation>
     </message>
@@ -2701,12 +2705,12 @@ face %1.111
 <context>
     <name>TreasureYesNo</name>
     <message>
-        <location filename="../treasures/TreasureWrapper.cpp" line="346"/>
+        <location filename="../treasures/TreasureWrapper.cpp" line="361"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../treasures/TreasureWrapper.cpp" line="347"/>
+        <location filename="../treasures/TreasureWrapper.cpp" line="362"/>
         <source>Swap &apos;yes&apos; and &apos;no&apos;</source>
         <translation>Échanger « oui » et « non »</translation>
     </message>

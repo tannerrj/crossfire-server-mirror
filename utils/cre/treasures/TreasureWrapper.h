@@ -36,6 +36,7 @@ class TreasureWrapper : public AssetWithArtifacts<treasure> {
     Q_PROPERTY(quint8 chance READ chance WRITE setChance)
     Q_PROPERTY(quint8 magic READ magic WRITE setMagic)
     Q_PROPERTY(quint16 nrof READ nrof WRITE setNrof)
+    Q_PROPERTY(quint16 nrof_rolls READ nrofRolls WRITE setNrofRolls)
     Q_PROPERTY(const treasurelist *list READ list WRITE setList)
     Q_PROPERTY(quint8 list_magic_value READ listMagicValue WRITE setListMagicValue)
     Q_PROPERTY(qint8 list_magic_adjustment READ listMagicAdjustment WRITE setListMagicAdjustment)
@@ -67,6 +68,8 @@ public:
     void setMagic(uint8_t magic);
     uint16_t nrof() const;
     void setNrof(uint16_t nrof);
+    uint16_t nrofRolls() const;
+    void setNrofRolls(uint16_t nrofRolls);
     const treasurelist *list() const;
     void setList(const treasurelist *list);
     quint8 listMagicValue() const;
