@@ -234,7 +234,7 @@ QVariant CREMessageItemModel::headerData(int section, Qt::Orientation orientatio
 Qt::ItemFlags CREMessageItemModel::flags(const QModelIndex& index) const
 {
     if (!index.isValid())
-        return 0;
+        return Qt::NoItemFlags;
     return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
 }
 
