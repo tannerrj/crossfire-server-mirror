@@ -60,6 +60,7 @@ public:
     UseFilterAssetModel(QObject *parent);
 
     void setFilter(AssetWrapper *asset);
+    AssetWrapper *filter() const { return myAsset; }
     virtual QVariant data(const QModelIndex& index, int role) const override;
 
 protected:

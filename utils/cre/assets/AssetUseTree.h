@@ -25,13 +25,14 @@ class AssetModel;
 class AssetUseTree : public QTreeView {
     Q_OBJECT
 
-    Q_PROPERTY(AssetWrapper *filter WRITE setFilter)
+    Q_PROPERTY(AssetWrapper *filter READ filter WRITE setFilter)
 public:
     AssetUseTree(AssetModel *assets, QWidget *parent);
 
 protected:
     UseFilterAssetModel *myFilter;
 
+    AssetWrapper *filter() const;
     void setFilter(AssetWrapper *filter);
 };
 

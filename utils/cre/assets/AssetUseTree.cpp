@@ -21,6 +21,11 @@ AssetUseTree::AssetUseTree(AssetModel *assets, QWidget *parent) : QTreeView(pare
     setRootIsDecorated(true);
 }
 
+AssetWrapper *AssetUseTree::filter() const
+{
+    return myFilter->filter();
+}
+
 void AssetUseTree::setFilter(AssetWrapper *filter) {
     myFilter->setFilter(filter);
 }
