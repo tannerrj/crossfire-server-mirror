@@ -16,6 +16,7 @@
 #include "AssetWrapper.h"
 #include "../ResourcesManager.h"
 #include "AssetsCollection.h"
+#include <algorithm>
 
 template<typename T>
 class AssetsCollectionWrapper : public AssetWrapper {
@@ -25,7 +26,7 @@ public:
         collection->each([&] (T *asset) {
             myAssets.append(resources->wrap(asset, this));
         });
-        qSort(myAssets.begin(), myAssets.end(), compareByDisplayName);
+        std::sort(myAssets.begin(), myAssets.end(), compareByDisplayName);
         setProperty(tipProperty, tip);
     }
 

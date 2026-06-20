@@ -122,7 +122,7 @@ QStringList ResourcesManager::recipes(int count) const
         return QStringList();
 
     QStringList keys = myRecipes[count - 1].keys();
-    qSort(keys);
+    keys.sort();
     return keys;
 }
 
