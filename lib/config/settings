@@ -258,8 +258,7 @@ pk_max_experience_percent 10
 
 # This allows reduced damage against other players when in
 # peaceful mode.  The value is the percent of damage done
-# compared to normal.  This does not change damage done
-# by not targeted things like walls, explosions, cone spells, disease, poison...
+# compared to normal.
 
 set_friendly_fire 5
 
