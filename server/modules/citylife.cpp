@@ -273,7 +273,7 @@ static int eventListener(int *type, ...) {
         object *th = object_find_by_type_subtype(who, EVENT_CONNECTOR, EVENT_TIME);
         if (th) {   // Should not be NULL, but play it safe
             object_remove(th);
-            object_free(th, 0);
+            object_free(th, FREE_OBJ_NO_DESTROY_CALLBACK);
         }   // Attacked hook is unique thus removed by the event handler
         CLEAR_FLAG(who, FLAG_RANDOM_MOVE);
         CLEAR_FLAG(who, FLAG_STAND_STILL);
