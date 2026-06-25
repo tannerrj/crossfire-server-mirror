@@ -52,6 +52,7 @@
 #include "sproto.h"
 #include "server.h"
 #include "assets.h"
+#include "modules.h"
 
 /** Module name for the event system. */
 #define CITYLIFE_NAME   "citylife"
@@ -423,7 +424,9 @@ static void load_citylife(BufferReader *reader, const char *filename) {
 
 static event_registration c, m;
 
-void citylife_init(Settings *, ServerSettings *serverSettings) {
+void citylife_init(Settings *, ServerSettings *serverSettings, StartupStage stage) {
+    if (stage != STARTUP_STAGE_COLLECT_HOOKS)
+        return;
     c = events_register_global_handler(EVENT_CLOCK, citylife_globalEventListener);
     m = events_register_global_handler(EVENT_MAPLOAD, citylife_globalEventListener);
     events_register_object_handler(CITYLIFE_NAME, eventListener);

@@ -52,7 +52,7 @@ struct module_information {
     const char *name;           /**< Module name, without space. */
     char const *description;    /**< Module long description. */
     bool enabled;               /**< Whether the module is enabled or not. */
-    void (*init)(Settings *, ServerSettings *);   /**< Initialisation function. */
+    void (*init)(Settings *, ServerSettings *, StartupStage);   /**< Initialisation function. */
     void (*close)();            /**< Cleanup function. */
 };
 
@@ -68,15 +68,19 @@ static module_information modules[] = {
 /**
  * Init all modules which are not disabled.
  */
-void init_modules() {
-    LOG(llevInfo, "Initializing modules\n");
+void init_modules(StartupStage stage) {
+    LOG(llevInfo, "Initializing modules, stage %d\n", stage);
     for (int module = 0; modules[module].name != NULL; module++) {
         module_information *mod = &modules[module];
         if (!mod->enabled) {
-            LOG(llevInfo, "  %s (%s): disabled\n", mod->name, mod->description);
+            if (stage == STARTUP_STAGE_FIRST) {
+                LOG(llevInfo, "  %s (%s): disabled\n", mod->name, mod->description);
+            }
         } else {
-            mod->init(&settings, &serverSettings);
-            LOG(llevInfo, "  %s (%s): activated\n", mod->name, mod->description);
+            mod->init(&settings, &serverSettings, stage);
+            if (stage == STARTUP_STAGE_FIRST) {
+                LOG(llevInfo, "  %s (%s): activated\n", mod->name, mod->description);
+            }
         }
     }
 }
@@ -1088,6 +1092,7 @@ void load_settings(void) {
 void add_server_collect_hooks() {
     assets_add_collector_hook("/materials", load_materials);
     assets_add_collector_hook("/races", load_races);
+    init_modules(STARTUP_STAGE_COLLECT_HOOKS);
 }
 
 /**
@@ -1144,7 +1149,7 @@ void init(int argc, char **argv) {
     parse_args(argc, argv, 3);
 
     init_beforeplay();
-    init_modules();
+    init_modules(STARTUP_STAGE_BEFORE_SERVER);
     if (argc != 0) {
         // Invocations from the command-line (e.g. crossfire-server) have the
         // binary name in argv[0]. If that is not there, assume we are running

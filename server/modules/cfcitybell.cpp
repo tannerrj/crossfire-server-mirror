@@ -28,6 +28,7 @@
 #include "sproto.h"
 #include "server.h"
 #include "assets.h"
+#include "modules.h"
 
 #include <string.h>
 #include <unordered_map>
@@ -150,7 +151,10 @@ static event_registration global_handler;
  * Citybells module initialisation.
  * @param settings server settings.
  */
-void cfcitybell_init(Settings *, ServerSettings *serverSettings) {
+void cfcitybell_init(Settings *, ServerSettings *serverSettings, StartupStage stage) {
+    if (stage != STARTUP_STAGE_COLLECT_HOOKS)
+        return;
+
     timeofday_t tod;
     get_tod(&tod);
     last_hr = tod.hour;

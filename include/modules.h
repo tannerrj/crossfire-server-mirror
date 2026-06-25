@@ -18,15 +18,21 @@
 #ifndef MODULES_H
 #define MODULES_H
 
-void cfcitybell_init(Settings *settings, ServerSettings *serverSettings);
+enum StartupStage {
+    STARTUP_STAGE_FIRST = 0,            /**< Dummy stage, don't change, used for logging. */
+    STARTUP_STAGE_COLLECT_HOOKS = 0,    /**< Called when adding collect hooks, before assets loading. */
+    STARTUP_STAGE_BEFORE_SERVER,        /**< Called when everything is loaded but before the sockets are opened. */
+};
+
+void cfcitybell_init(Settings *settings, ServerSettings *serverSettings, StartupStage stage);
 void cfcitybell_close();
 
-void citylife_init(Settings *settings, ServerSettings *serverSettings);
+void citylife_init(Settings *settings, ServerSettings *serverSettings, StartupStage stage);
 void citylife_close();
 
-void random_house_generator_init(Settings *settings, ServerSettings *serverSettings);
+void random_house_generator_init(Settings *settings, ServerSettings *serverSettings, StartupStage stage);
 void random_house_generator_close();
 
-void cfweather_init(Settings *settings, ServerSettings *servserSettings);
+void cfweather_init(Settings *settings, ServerSettings *servserSettings, StartupStage stage);
 void cfweather_close();
 #endif /* MODULES_H */
