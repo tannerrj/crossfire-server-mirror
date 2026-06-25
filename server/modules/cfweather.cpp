@@ -4817,7 +4817,7 @@ static command_registration command_handler = 0;
  * Weather module initialisation.
  * @param settings server settings.
  */
-void cfweather_init(Settings *settings, ServerSettings *serv, StartupStage stage) {
+void cfweather_init(Settings *settings, ServerSettings *server, StartupStage stage) {
     if (stage != STARTUP_STAGE_BEFORE_SERVER)
         return;
 
@@ -4922,7 +4922,7 @@ void cfweather_init(Settings *settings, ServerSettings *serv, StartupStage stage
     // Register the 'weather command
     command_handler = command_register("weather", COMMAND_TYPE_NORMAL, command_weather, 0.0);
     /* Disable the plugin in case it's still there */
-    serv->disabled_plugins.push_back(strdup("cfweather"));
+    server->disabled_plugins.push_back(strdup("cfweather"));
 }
 
 void cfweather_close() {

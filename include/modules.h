@@ -33,6 +33,6 @@ void citylife_close();
 void random_house_generator_init(Settings *settings, ServerSettings *serverSettings, StartupStage stage);
 void random_house_generator_close();
 
-void cfweather_init(Settings *settings, ServerSettings *servserSettings, StartupStage stage);
+void cfweather_init(Settings *settings, ServerSettings *serverSettings, StartupStage stage);
 void cfweather_close();
 #endif /* MODULES_H */
