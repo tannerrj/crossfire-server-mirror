@@ -175,6 +175,8 @@ static void add_npc_to_point(const mapzone *zone, mapstruct *map) {
     int which;
     object *npc = get_npc(zone);
 
+    if (!npc)
+        return;
     which = RANDOM() % zone->points.size();
     if (!object_teleport(npc, map, zone->points[which].x, zone->points[which].y)) {
         object_free_drop_inventory(npc);
