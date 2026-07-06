@@ -16,22 +16,20 @@
         <li id="q{{ quest._index }}"><h2>{{ quest.title }} ({{ quest.code }})</h2>
           <p>{{ quest.description }}</p>
           {% if length(quest.steps) %}
-          <p>Steps:
-            <ul>
-              {% for step in quest.steps %}
-              <li>{{ step.description }}{% if step.is_completion %} (end){% endif %}</li>
-              {% endfor %}
-            </ul>
-          </p>
+          <p>Steps:</p>
+          <ul>
+            {% for step in quest.steps %}
+            <li>{{ step.description }}{% if step.is_completion %} (end){% endif %}</li>
+            {% endfor %}
+          </ul>
           {% endif %}
           {% if length(quest.maps) %}
-          <p>Linked maps:
-            <ul>
-              {% for m in quest.maps %}{% set map = get_by_field(maps, "_key", m.map) %}
-              <li><a href='{{ link_to_page("map.html", m.map) }}'>{{ map.name }} ({{ m.description }})</a></li>
-              {% endfor %}
-            </ul>
-          </p>
+          <p>Linked maps:</p>
+          <ul>
+            {% for m in quest.maps %}{% set map = get_by_field(maps, "_key", m.map) %}
+            <li><a href='{{ link_to_page("map.html", m.map) }}'>{{ map.name }} ({{ m.description }})</a></li>
+            {% endfor %}
+          </ul>
           {% endif %}
           {% if quest.replayable %}<p>This quest can be replayed.</p>{% endif %}
         </li>
