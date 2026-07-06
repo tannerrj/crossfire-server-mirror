@@ -34,7 +34,9 @@
           {% if quest.replayable %}<p>This quest can be replayed.</p>{% endif %}
         </li>
     {% endfor %}
+    {% if length(system_quests) > 0 %}
       </ul>
     </li>
+    {% endif %}
   </ul>
 {% endblock %}

@@ -15,7 +15,9 @@
     {% endif %}
         <li><a href='{{ link_to_page("region.html", region._key) }}'>{{ region.longname }} ({{ region.name }})</a></li>
     {% endfor %}
+    {% if length(regions) > 0 %}
       </ul>
     </li>
+    {% endif %}
   </ul>
 {% endblock %}
