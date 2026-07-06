@@ -13,8 +13,7 @@
     <li>{{ letter }}
       <ul>
     {% endif %}
-        <li>
-          <a name='quest_{{ quest.number }}'></a>
+        <li id="quest_{{ quest.number }}">
           <h2>{{ quest.name }}</h2>
           <p>{{ quest.description }}</p>
           {% if length(quest.main_map) > 0 %}{% set map = get_by_field(maps, "_key", quest.main_map) %}<p>Starts in: <a href='{{ link_to_page("map.html", quest.main_map) }}'>{{ map.name }}</a></p>{% endif %}
