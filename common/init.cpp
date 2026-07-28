@@ -111,7 +111,7 @@ artifactlist *first_artifactlist;    /**< First artifact. */
 long trying_emergency_save; /**< True when emergency_save() is reached. */
 long nroferrors;            /**< If it exceeds MAX_ERRORS, call fatal() */
 
-FILE *logfile;                    /**< Used by server/daemon.c */
+FILE *logfile = stderr;           /**< Used by server/daemon.c */
 int exiting;                      /**< True if the game is about to exit. */
 long nrofartifacts;               /**< Only used in malloc_info(). */
 long nrofallowedstr;              /**< Only used in malloc_info(). */
