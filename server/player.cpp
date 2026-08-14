@@ -3921,7 +3921,9 @@ void fix_weight(void) {
     player *pl;
 
     for (pl = first_player; pl != NULL; pl = pl->next) {
-        int old = pl->ob->carrying, sum = object_sum_weight(pl->ob);
+        int old = pl->ob->carrying;
+        object_sum_weight(pl->ob);
+        int sum = pl->ob->carrying;
 
         if (old == sum)
             continue;

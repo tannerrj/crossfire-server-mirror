@@ -542,21 +542,19 @@ int object_can_merge(object *ob1, object *ob2) {
 
 /**
  * object_sum_weight() is a recursive function which calculates the weight
- * an object is carrying.  It goes through in figures out how much
- * containers are carrying, and sums it up.
+ * an object is carrying and stores it in op->carrying. It goes through in
+ * figures out how much containers are carrying, and sums it up.
  *
  * This takes into account the container's weight reduction.
  *
  * @param op
  * object we want the weight of.
- * @return
- * weight of this item and all its inventory.
  *
  * @note
  * The object's carrying field is updated.
  */
 /* TODO should check call this this are made a place where we really need reevaluaton of whole tree */
-signed long object_sum_weight(object *op) {
+void object_sum_weight(object *op) {
     signed long sum;
 
     sum = 0;
@@ -568,7 +566,6 @@ signed long object_sum_weight(object *op) {
     if (op->type == CONTAINER && op->stats.Str)
         sum = (sum*(100-op->stats.Str))/100;
     op->carrying = sum;
-    return sum;
 }
 
 /**

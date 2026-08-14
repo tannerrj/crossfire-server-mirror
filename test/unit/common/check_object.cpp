@@ -126,7 +126,6 @@ START_TEST(test_object_sum_weight) {
     object *ob2;
     object *ob3;
     object *ob4;
-    unsigned long sum;
 
     ob1 = cctk_create_game_object(NULL);
     ob2 = cctk_create_game_object(NULL);
@@ -142,8 +141,8 @@ START_TEST(test_object_sum_weight) {
     object_insert_in_ob(ob2, ob1);
     object_insert_in_ob(ob3, ob1);
     object_insert_in_ob(ob4, ob1);
-    sum = object_sum_weight(ob1);
-    FAIL_UNLESS(sum == 45, "Sum of object's inventory should be 45 ((6*10+7+8)*.6) but was %lu.", sum);
+    object_sum_weight(ob1);
+    FAIL_UNLESS(ob1->carrying == 45, "Sum of object's inventory should be 45 ((6*10+7+8)*.6) but was %lu.", ob1->carrying);
 }
 END_TEST
 
@@ -620,7 +619,6 @@ START_TEST(test_object_sub_weight) {
     object *ob2;
     object *ob3;
     object *ob4;
-    unsigned long sum;
 
     ob1 = cctk_create_game_object(NULL);
     ob2 = cctk_create_game_object(NULL);
@@ -637,8 +635,8 @@ START_TEST(test_object_sub_weight) {
     object_insert_in_ob(ob2, ob1);
     object_insert_in_ob(ob3, ob2);
     object_insert_in_ob(ob4, ob3);
-    sum = object_sum_weight(ob1);
-    FAIL_UNLESS(sum == 18, "Sum of object's inventory should be 18 (30*0.6+10) but was %lu.", sum);
+    object_sum_weight(ob1);
+    FAIL_UNLESS(ob1->carrying == 18, "Sum of object's inventory should be 18 (30*0.6+10) but was %lu.", ob1->carrying);
     object_sub_weight(ob4, 10);
     FAIL_UNLESS(ob1->carrying == 12, "after call to object_sub_weight, carrying of ob1 should be 22 but was %d", ob1->carrying);
 }

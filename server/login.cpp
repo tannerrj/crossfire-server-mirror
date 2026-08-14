@@ -824,7 +824,7 @@ void check_login(object *op, const char *password) {
 #ifdef AUTOSAVE
     pl->last_save_tick = pticks;
 #endif
-    op->carrying = object_sum_weight(op);
+    object_sum_weight(op);
 
     link_player_skills(op);
 

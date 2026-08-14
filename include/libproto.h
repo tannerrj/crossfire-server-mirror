@@ -249,7 +249,7 @@ extern void register_move_on(int ob_type, move_on_func method);
 extern void register_trigger(int ob_type, trigger_func method);
 /* object.cpp */
 extern int object_can_merge(object *ob1, object *ob2);
-extern signed long object_sum_weight(object *op);
+extern void object_sum_weight(object *op);
 extern object *object_get_env_recursive(object *op);
 extern object *object_get_player_container(object *op);
 extern void object_dump(const object *op, StringBuffer *sb);
