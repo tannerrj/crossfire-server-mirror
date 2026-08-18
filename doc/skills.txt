@@ -298,7 +298,13 @@
 			of a talisman or learned via a skill scroll.
 
       +	     stealing	User can take items from the inventory of other
-			monsters.
+			monsters.  A creature which notices the attempt
+			calls for help and guards its inventory from then
+			on, so that nothing more can be stolen from it.
+			The singing skill shares that state: a creature
+			which has been sung to cannot be stolen from, and
+			one which has caught a thief cannot be calmed by
+			singing.
 
      	thaumagragist	User can ident rods, wands and horns that they
 			are holding.
