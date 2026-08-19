@@ -7,6 +7,11 @@
 		<th>Description</th>
 	</tr>	<tr>
 		<td>
+@ref page_type_18
+		</td><td>            The casting level of the &lt;spell&gt;.</td>
+	</tr>
+	<tr>
+		<td>
 @ref page_type_8
 		</td><td>            If this value is set to be greater than zero, the player needs a
             certain literacy level to succeed reading the book. The book can be

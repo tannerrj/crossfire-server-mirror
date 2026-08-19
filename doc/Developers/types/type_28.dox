@@ -197,8 +197,10 @@ Type defined by:
 	<tr>
 		<td>carries weight</td>
 		<td>@ref object::carrying</td>
-		<td>            If a monster has something in the inventory, this value can be set
-            to reflect the slowdown due to the carried weight.
+		<td>            This value contains the weight of all items in its inventory. You
+            usually should not set it because the server re-calculates it
+            automatically. You can set if on objects which do not have items
+            in its inventory.
 		</td>
 	</tr>
 	<tr>
@@ -296,6 +298,27 @@ Type defined by:
 		<td>            If &lt;glow radius&gt; is set to a value greater zero, the object
             appears lit up on dark maps. &lt;glow radius&gt; can be a value
             between 0 and 4, the higher, the more light does the object emit.
+		</td>
+	</tr>
+	<tr>
+		<td>guards inventory</td>
+		<td>@ref FLAG_NO_STEAL</td>
+		<td>                A creature with &lt;guards inventory&gt; has already noticed a
+                thief and lets nothing more be taken from it. While it can
+                detect the thief it calls for help, loses &lt;unaggressive&gt;
+                and the steal attempt fails outright. If it cannot detect the
+                thief it raises its own &lt;wisdom&gt; instead, making it harder
+                to steal from next time.
+
+                The server sets this flag by itself as soon as a steal attempt
+                is noticed, so you only need to set it here to make a creature
+                suspicious from the very start.
+
+                The singing skill shares this flag: a creature with &lt;guards
+                inventory&gt; cannot be calmed by singing, and a creature that
+                has been sung to cannot be stolen from afterwards. Unlike on
+                items, this flag is not cleared when the creature is inserted
+                into a map.
 		</td>
 	</tr>
 	<tr>

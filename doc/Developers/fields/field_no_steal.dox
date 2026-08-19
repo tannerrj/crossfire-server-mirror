@@ -1,0 +1,44 @@
+/**
+@fn FLAG_NO_STEAL
+# Use
+<table>
+	<tr>
+		<th>Type(s)</th>
+		<th>Description</th>
+	</tr>	<tr>
+		<td>
+@ref page_type_72
+		</td><td>            An item with &lt;cannot be stolen&gt; cannot be taken out of a
+            creature's inventory with the stealing skill. Flesh items generated
+            from a creature's &lt;treasurelist&gt; get this flag set
+            automatically, together with their name, level and resistances, so
+            you only need to set it by hand on items you place into an
+            inventory yourself.
+
+            The flag is cleared again whenever the object is inserted into a
+            map. Setting it on an item lying on the floor therefore has no
+            effect: an item keeps it only for as long as it stays in an
+            inventory.</td>
+	</tr>
+	<tr>
+		<td>
+@ref page_type_215, @ref page_type_28
+		</td><td>                A creature with &lt;guards inventory&gt; has already noticed a
+                thief and lets nothing more be taken from it. While it can
+                detect the thief it calls for help, loses &lt;unaggressive&gt;
+                and the steal attempt fails outright. If it cannot detect the
+                thief it raises its own &lt;wisdom&gt; instead, making it harder
+                to steal from next time.
+
+                The server sets this flag by itself as soon as a steal attempt
+                is noticed, so you only need to set it here to make a creature
+                suspicious from the very start.
+
+                The singing skill shares this flag: a creature with &lt;guards
+                inventory&gt; cannot be calmed by singing, and a creature that
+                has been sung to cannot be stolen from afterwards. Unlike on
+                items, this flag is not cleared when the creature is inserted
+                into a map.</td>
+	</tr>
+
+*/

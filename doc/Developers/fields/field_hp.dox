@@ -158,7 +158,22 @@
 		</td><td>            "Create number" specifies how many pieces of the given treasurelist
             will appear. Note that for every piece there is a chance that
             nothing is generated. Also, sometimes there can be stacks of items
-            generated, like for gems/money.</td>
+            generated, like for gems/money.
+
+            A &lt;create number&gt; below 1 generates nothing at all. The
+            contents are then fixed to whatever inventory the map itself
+            places inside the object.
+
+            -1 is the value the server leaves behind after a treasure object
+            has generated once, so it appears routinely in saved maps and is
+            not an error by itself.
+
+            If &lt;create number&gt; is below 1, make sure the object really
+            does have inventory in the map. An empty chest tells the player
+            "The chest was empty." and is then destroyed.
+
+            To fix the contents deliberately it is clearer to set
+            &lt;treasurelist&gt; to none and leave &lt;create number&gt; at 1.</td>
 	</tr>
 	<tr>
 		<td>

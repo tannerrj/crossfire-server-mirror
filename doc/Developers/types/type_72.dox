@@ -50,6 +50,31 @@ Type defined by:
 		</td>
 	</tr>
 	<tr>
+		<td>cannot be stolen</td>
+		<td>@ref FLAG_NO_STEAL</td>
+		<td>            An item with &lt;cannot be stolen&gt; cannot be taken out of a
+            creature's inventory with the stealing skill. Flesh items generated
+            from a creature's &lt;treasurelist&gt; get this flag set
+            automatically, together with their name, level and resistances, so
+            you only need to set it by hand on items you place into an
+            inventory yourself.
+
+            The flag is cleared again whenever the object is inserted into a
+            map. Setting it on an item lying on the floor therefore has no
+            effect: an item keeps it only for as long as it stays in an
+            inventory.
+		</td>
+	</tr>
+	<tr>
+		<td>carries weight</td>
+		<td>@ref object::carrying</td>
+		<td>            This value contains the weight of all items in its inventory. You
+            usually should not set it because the server re-calculates it
+            automatically. You can set if on objects which do not have items
+            in its inventory.
+		</td>
+	</tr>
+	<tr>
 		<td>changing</td>
 		<td>@ref FLAG_CHANGING</td>
 		<td>            A &lt;changing&gt; object converts to &lt;food&gt; &lt;other_arch&gt;

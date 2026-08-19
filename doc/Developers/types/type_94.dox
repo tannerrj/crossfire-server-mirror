@@ -6,14 +6,12 @@ See @ref page_type_94
 /**
 @page page_type_94 Pit
 
-            Pits are holes, transporting the player when he walks (and falls)
-            into them. A specialty about pits is that they don't transport the
-            player to the exact destination, but within a two-square radius of
-            the destination (never on blocked squares).
-            <br>
+            Pits are holes in the floor. Items or players standing on an open
+            pit "fall through" to a random free location within 3 tiles of the
+            destination.
+            <p>
             Optionally, pits can get closed and opened, similar to gates.
-            <br>
-            <br>
+            <p>
             Monsters and items are affected by pits just as well as players.
             Even multi-part monsters can fall through them, given enough space.
             
@@ -60,6 +58,15 @@ Type defined by:
 		<td>blocks prayers</td>
 		<td>@ref page_custom_attribute_blocks_prayer "blocks_prayer"</td>
 		<td>            Similar to damned, but does not appear in detect curse.
+		</td>
+	</tr>
+	<tr>
+		<td>carries weight</td>
+		<td>@ref object::carrying</td>
+		<td>            This value contains the weight of all items in its inventory. You
+            usually should not set it because the server re-calculates it
+            automatically. You can set if on objects which do not have items
+            in its inventory.
 		</td>
 	</tr>
 	<tr>

@@ -74,9 +74,15 @@
 		<td>
 @ref page_type_13
 		</td><td>            The &lt;chance to break&gt; defines the breaking probability when
-            this projectile hits an obstacle, e.g. wall or monster. The value is
+            this projectile hits an obstacle, e.g. wall or monster, or simply
+            comes to rest after exhausting its flight range. The value is
             the %-chance to break, ranging from 0 (never breaking) to 100
-            (breaking at first shot).</td>
+            (breaking at first shot).
+
+            Note: this is the inverse of "durability" - a higher value makes
+            the projectile more fragile, not less. An artifact's own
+            &lt;chance to break&gt; value (if any) is added to the base
+            projectile's value, not used as a replacement.</td>
 	</tr>
 	<tr>
 		<td>

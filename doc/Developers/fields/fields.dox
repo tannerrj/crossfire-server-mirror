@@ -7,6 +7,8 @@ This page lists all attributes.
 - @subpage FLAG_BLOCKSVIEW
 - @subpage object::move_block
 - @subpage page_custom_attribute_blocks_prayer "blocks_prayer"
+- @subpage object::carrying
+- @subpage object::level
 - @subpage FLAG_CHANGING
 - @subpage FLAG_CLIENT_ANIM_RANDOM
 - @subpage FLAG_CLIENT_ANIM_SYNC
@@ -92,7 +94,6 @@ This page lists all attributes.
 - @subpage living::wc
 - @subpage living::Wis
 - @subpage FLAG_XRAYS
-- @subpage object::level
 - @subpage object::magic
 - @subpage object::last_heal
 - @subpage object::anim_suffix
@@ -118,6 +119,7 @@ This page lists all attributes.
 - @subpage page_custom_attribute_on_use_yield "on_use_yield"
 - @subpage FLAG_UNDEAD
 - @subpage FLAG_SEE_IN_DARK
+- @subpage FLAG_NO_STEAL
 - @subpage FLAG_IS_HILLY
 - @subpage FLAG_NO_MAGIC
 - @subpage object::move_slow
@@ -137,7 +139,6 @@ This page lists all attributes.
 - @subpage FLAG_USE_SHIELD
 - @subpage FLAG_CAN_USE_SKILL
 - @subpage FLAG_USE_WEAPON
-- @subpage object::carrying
 - @subpage page_custom_attribute_death_animation "death_animation"
 - @subpage FLAG_FRIENDLY
 - @subpage FLAG_HITBACK

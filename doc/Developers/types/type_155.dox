@@ -59,6 +59,15 @@ Type defined by:
 		</td>
 	</tr>
 	<tr>
+		<td>carries weight</td>
+		<td>@ref object::carrying</td>
+		<td>            This value contains the weight of all items in its inventory. You
+            usually should not set it because the server re-calculates it
+            automatically. You can set if on objects which do not have items
+            in its inventory.
+		</td>
+	</tr>
+	<tr>
 		<td>changing</td>
 		<td>@ref FLAG_CHANGING</td>
 		<td>            A &lt;changing&gt; object converts to &lt;food&gt; &lt;other_arch&gt;
