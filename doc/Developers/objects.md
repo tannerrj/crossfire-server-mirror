@@ -357,6 +357,33 @@ Kamikaze attacks (one_hit)
 Creatures with this value set to 1 will dissipate when they attack (like
 ghosts).  They dissipate on the first hit, whether it does any damage or not.
 
+Guarded inventory (no_steal)
+=================
+Set to 1 to stop anything being taken from the creature's inventory with
+the stealing skill.
+
+The server also sets this flag on its own: when a creature notices a steal
+attempt - a failed roll, no chance at all, or an item too heavy for the
+thief - it calls for help, loses unaggressive, and gains no_steal so that
+nothing else can be taken from it.  On later attempts, a creature that can
+detect the thief prevents the theft outright; one that cannot instead
+raises its own Wis, making it harder to steal from next time.
+
+The singing skill shares the same flag, so a creature with no_steal cannot
+be calmed by singing, and a creature that has been sung to cannot be stolen
+from afterwards.  This is deliberate: it stops either skill being repeated
+on the same creature for experience.  The reuse is recorded in the ChangeLog
+under "Changes from Crossfire 0.93.6 to 0.93.7": "Can no longer sing and
+make the same monster unagressive multiple times.  The implementation is
+actually borrowing the NO_STEAL flag, which means you can't steal after you
+sing, and after a failed steal, you can't sing and calm it down."
+
+On an item the flag means "this item cannot be stolen" instead, and there
+it is cleared whenever the object is inserted into a map.  It therefore
+only takes effect on items sitting in an inventory; setting it on an item
+lying on the floor of a map does nothing.  Flesh items generated from a
+creature's treasurelist get the flag set automatically.
+
 Morale (run_away)
 ======
 
