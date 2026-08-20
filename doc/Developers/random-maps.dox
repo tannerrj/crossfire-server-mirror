@@ -41,7 +41,7 @@ See the main page ag @subpage page_random_map_styles "Random Map Styles".
 
   layoutstyle &lt;style&gt;	(special!) Pick the layout style for the map.  Currently,
 			"rogue", "spiral", "maze", "snake", "onion",
-                        and "squarespiral"  are allowed.
+                        "squarespiral", and "crawl" are allowed.
                         See below for more detail.
 
   floorstyle &lt;style&gt;	Load /styles/floorstyles/&lt;style&gt; and pick a random
@@ -536,6 +536,81 @@ Layoutoptions1:
     ##D##########D#       #D##########D##
     #             #   <   #             #
     #####################################
+~~~
+
+
+@subsection rmp_crawl Crawl layouts
+
+   No options are available for crawl layouts.
+   Crawl sits between the maze and rogue-like layouts:  it is sparser than a
+   maze, but denser than a rogue-like map.  It sprawls outward from a random
+   starting point, so it will normally use most of the space it is given, but
+   it can occasionally produce a small floor which leaves much of the map as
+   solid wall.
+
+   Crawl layouts are never symmetrized:  the 'symmetry' parameter is ignored,
+   as symmetrizing the result does not produce good mazes.  Doors are added
+   only 25% of the time, since doorifying a crawl layout tends to undo the
+   maze.
+
+   Corridor width is chosen at random from 1 to 3 and cannot yet be set with
+   a parameter.  Map size is best chosen with the corridor width in mind:
+   odd sizes suit width 1, one more than a multiple of 3 (43, 46, 49...)
+   suits width 2, and one more than a multiple of 4 (41, 45, 49...) suits
+   width 3.  Space which does not divide evenly is filled in as wall around
+   the edges of the map.
+
+   This is a basic crawl layout::
+
+~~~
+    ###################################
+    ########### #   ###################
+    ########### # #####################
+    # ###   ###   ##### ###############
+    # ### # ### ####### ###############
+    # ### #       #####     #       ###
+    # ### ##### #######   ##### #######
+    #     # #   #         # #   #   # #
+    ##### # ### # ##### # # # ### ### #
+    #       #           #       #   # #
+    #       #   ### # # # ### # #   # #
+    #       #       # #   # # #       #
+    # # ### ##### ### ##### # #     ###
+    # # #       #                     #
+    # # ### # ### ### ### # ### #######
+    # # #   # #     #     # ###     # #
+    # ######### ### ##### # ####### # #
+    #   #     #     #   # #     #     #
+    ######### # #   #   # #   ### #####
+    #########   #         #     #   ###
+    ###################################
+~~~
+
+   This is a crawl layout with corridors two squares wide::
+
+~~~
+    ##################################
+    #           #              ####  #
+    #           #              ####  #
+    ####  ####  #  ####  #  #######  #
+    #  #           #  #  #           #
+    #  #           #  #  #           #
+    #  #  ####     #  #######  #  #  #
+    #     #              #  #  #  #  #
+    #     #              #  #  #  #  #
+    #######  #######  ####  #  #  ####
+    #     #           #           ####
+    #     #           #           ####
+    #     #     #     ####  ##########
+    #           #     #     ####     #
+    #           #     #     ####     #
+    #  #############  #     #######  #
+    #  ##########     #           #  #
+    #  ##########     #           #  #
+    ###################  ####     #  #
+    ###################     #        #
+    ###################     #        #
+    ##################################
 ~~~
 
 
