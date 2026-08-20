@@ -20,7 +20,6 @@
  * Uses an algorithm that differs from the classic maze generator.
  * Loosely inspired by the dungeon layouts of Dragon Warrior Monsters 1.
  *
- * TODO: Show what crawl mazes look like
  */
 
 #include <queue>
