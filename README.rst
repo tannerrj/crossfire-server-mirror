@@ -49,6 +49,11 @@ even more fun. These include:
   (CFPython) and is *highly* recommended. Most maps, quests, and NPCs will
   not work without it. On some platforms, you will need the "development"
   package that comes with header files.
+  
+  Some Python scripts have additional Python package dependencies. To install
+  them, ``cd`` to the ``maps`` directory and run::
+
+    pip install -r python/requirements.txt
 
 * SQLite3 - for cflogger and cfnewspaper. These plugins are still under
   development and aren't very useful at the moment.
