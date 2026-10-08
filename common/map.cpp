@@ -2213,7 +2213,7 @@ void update_position(mapstruct *m, int x, int y) {
      */
     if (((oldflags&~(P_NEED_UPDATE|P_NO_ERROR)) != flags)
     && (!(oldflags&P_NO_ERROR))) {
-        LOG(llevDebug, "update_position: updated flags do not match old flags: %s (x=%d,y=%d) %x != %x\n",
+        LOG(llevWarn, "update_position: updated flags do not match old flags: %s (x=%d,y=%d) %x != %x\n",
             m->path, x, y, (oldflags&~P_NEED_UPDATE), flags);
     }
 

@@ -126,11 +126,11 @@ static void set_body_info(object *op, char *params) {
  */
 static void check_loaded_object(object *op, bool arch_init) {
     if (!is_type_valid(op->type)) {
-        LOG(llevError, "Invalid type %d for %s\n", op->type, op->arch ? op->arch->name : op->name);
+        LOG(llevWarn, "Invalid type %d for %s\n", op->type, op->arch ? op->arch->name : op->name);
         op->type = 0;
     }
     if (arch_init && op->arch && !op->arch->name) {
-      LOG(llevError, "Archetype with no name somewhere\n");
+      LOG(llevWarn, "Archetype with no name somewhere\n");
       char buf[100];
       snprintf(buf, sizeof(buf), "--unnamed-%d", cf_random());
       op->arch->name = add_string(buf);
@@ -165,10 +165,10 @@ static void check_loaded_object(object *op, bool arch_init) {
      */
     if ((op->type == WEAPON || op->type == BOW) && arch_init) {
         if (!op->skill) {
-            LOG(llevError, "Weapon %s lacks a skill.\n", op->name);
+            LOG(llevWarn, "Weapon %s lacks a skill.\n", op->name);
         } else if ((!strcmp(op->skill, "one handed weapons") && op->body_info[1] != -1) ||
             (!strcmp(op->skill, "two handed weapons") && op->body_info[1] != -2)) {
-            LOG(llevError, "weapon %s arm usage does not match skill: %d, %s\n", op->name, op->body_info[1], op->skill);
+            LOG(llevWarn, "weapon %s arm usage does not match skill: %d, %s\n", op->name, op->body_info[1], op->skill);
         }
     }
 
@@ -185,7 +185,7 @@ static void check_loaded_object(object *op, bool arch_init) {
 
     if (QUERY_FLAG(op, FLAG_MONSTER)) {
         if (op->stats.hp > op->stats.maxhp)
-            LOG(llevDebug, "Monster %s has hp set higher than maxhp (%d>%d)\n", op->name, op->stats.hp, op->stats.maxhp);
+            LOG(llevWarn, "Monster %s has hp set higher than maxhp (%d>%d)\n", op->name, op->stats.hp, op->stats.maxhp);
         }
     if ((QUERY_FLAG(op, FLAG_GENERATOR) && QUERY_FLAG(op, FLAG_CONTENT_ON_GEN))
     || op->type == CREATOR
@@ -246,7 +246,7 @@ static void check_loaded_object(object *op, bool arch_init) {
     }
 
     if (arch_init && op->type == SHOP_FLOOR && !QUERY_FLAG(op, FLAG_AUTO_APPLY)) {
-        LOG(llevDebug, "shop floor %s does not have auto-apply set\n", op->name);
+        LOG(llevWarn, "shop floor %s does not have auto-apply set\n", op->name);
         SET_FLAG(op, FLAG_AUTO_APPLY);
     }
 }

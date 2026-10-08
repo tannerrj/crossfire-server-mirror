@@ -475,7 +475,7 @@ static void send_smooth(socket_struct *ns, const Face *face) {
     // tile, but forgetting to unset smoothlevel.
     if (!find_smooth(face, &smoothface)
     && !find_smooth(smooth_face, &smoothface)) {
-        LOG(llevInfo,
+        LOG(llevWarn,
             "Could not smooth face %s. "
             "Check that this face has a smoothing pixmap, or remove its smoothlevel.\n",
             face->name);
