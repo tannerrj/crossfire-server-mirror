@@ -2391,8 +2391,8 @@ int alchemy(object *op, object *caster, object *spell_ob) {
 
 
 /**
- * This function removes the cursed/damned status on equipped
- * items.
+ * Removes curse on equipped items. If blessed, also removes damnation.
+ * To be backwards-compatible, also removes damnation if FLAG_DAMNED is set on the spell object.
  *
  * @param op
  * who is casting.
@@ -2408,13 +2408,14 @@ int remove_curse(object *op, object *caster, object *spell) {
     int success = 0, was_one = 0;
 
     FOR_INV_PREPARE(op, tmp)
+        const bool removes_damnation = QUERY_FLAG(spell, FLAG_BLESSED) || QUERY_FLAG(spell, FLAG_DAMNED);
         if (QUERY_FLAG(tmp, FLAG_APPLIED)
-        && ((QUERY_FLAG(tmp, FLAG_CURSED) && QUERY_FLAG(spell, FLAG_CURSED))
-            || (QUERY_FLAG(tmp, FLAG_DAMNED) && QUERY_FLAG(spell, FLAG_DAMNED)))) {
+        && (QUERY_FLAG(tmp, FLAG_CURSED)
+            || (QUERY_FLAG(tmp, FLAG_DAMNED) && removes_damnation))) {
             was_one++;
             if (tmp->level <= caster_level(caster, spell)) {
                 success++;
-                if (QUERY_FLAG(spell, FLAG_DAMNED))
+                if (removes_damnation)
                     CLEAR_FLAG(tmp, FLAG_DAMNED);
 
                 CLEAR_FLAG(tmp, FLAG_CURSED);
