@@ -61,12 +61,15 @@ AM_PROG_LEX
 AC_PATH_PROG(BASENAME, basename)
 AC_PATH_PROG(GIT, git)
 AC_PATH_PROG(GZIP, gzip)
-AC_PATH_PROG(LATEX, latex)
 AC_PATH_PROG(PY, python3)
 AC_PATH_PROG(TAR, tar)
 
 AC_SUBST(BASENAME)
 AC_SUBST(GZIP)
+
+dnl For documentation
+AC_PATH_PROG(PERL, perl)
+AC_SUBST(PERL)
 
 dnl#############################################################################
 AS_BOX([Library Checks])
